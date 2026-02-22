@@ -16,7 +16,7 @@ import { useMultiplayer } from './hooks/useMultiplayer';
 import { MultiplayerLobby } from './components/MultiplayerLobby';
 import { ChatBox } from './components/ChatBox';
 import { generateLootBatch } from './utils/game/inventory';
-import { randomInt } from './utils/gameUtils';
+import { randomInt, throttle } from './utils/gameUtils';
 import { ShellType, ItemType } from './types';
 
 type AppState = 'MENU' | 'LOADING_SP' | 'LOADING_GAME' | 'GAME';
@@ -38,21 +38,16 @@ export default function App() {
   const [showRotateWarning, setShowRotateWarning] = useState(false);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    const checkOrientation = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        let isPortrait = false;
-        if (window.matchMedia) {
-          isPortrait = window.matchMedia("(orientation: portrait)").matches;
-        } else {
-          isPortrait = window.innerHeight > window.innerWidth;
-        }
-        const isMobile = window.innerWidth < 950;
-        setShowRotateWarning(isPortrait && isMobile);
-      }, 200);
-    };
+    const checkOrientation = throttle(() => {
+      let isPortrait = false;
+      if (window.matchMedia) {
+        isPortrait = window.matchMedia("(orientation: portrait)").matches;
+      } else {
+        isPortrait = window.innerHeight > window.innerWidth;
+      }
+      const isMobile = window.innerWidth < 950;
+      setShowRotateWarning(isPortrait && isMobile);
+    }, 200);
 
     setTimeout(checkOrientation, 100);
 
@@ -66,7 +61,6 @@ export default function App() {
       if (window.matchMedia) {
         window.matchMedia("(orientation: portrait)").removeEventListener("change", checkOrientation);
       }
-      clearTimeout(timeoutId);
     };
   }, []);
 
