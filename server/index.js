@@ -224,16 +224,24 @@ io.on('connection', (socket) => {
         if (room) {
             const player = room.players.find(p => p.id === socket.id);
             if (player) {
+                if (typeof message !== 'string') return;
+
+                const trimmedMessage = message.trim();
+                if (trimmedMessage.length === 0) return;
+
+                // Truncate to 200 chars
+                const sanitizedMessage = trimmedMessage.slice(0, 200);
+
                 const chatEntry = {
                     sender: player.name,
                     color: player.color,
-                    text: message,
+                    text: sanitizedMessage,
                     timestamp: Date.now()
                 };
                 room.messages.push(chatEntry);
                 room.lastActivity = Date.now();
                 if (room.messages.length > 50) room.messages.shift();
-                console.log(`[CHAT] Room ${roomId} | ${player.name}: ${message}`);
+                console.log(`[CHAT] Room ${roomId} | ${player.name}: ${sanitizedMessage}`);
                 io.to(roomId).emit('chatMessageReceived', chatEntry);
             }
         }
