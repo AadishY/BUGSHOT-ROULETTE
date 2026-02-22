@@ -9,12 +9,21 @@ const _vBullet = new THREE.Vector3();
 export function updateParticles(p: THREE.Points, limit: number) {
     const pos = p.geometry.attributes.position.array as Float32Array;
     const vel = p.geometry.attributes.velocity.array as Float32Array;
-    for (let i = 0; i < pos.length / 3; i++) {
-        const idx = i * 3;
-        pos[idx] += vel[idx]; pos[idx + 1] += vel[idx + 1]; pos[idx + 2] += vel[idx + 2];
-        if (Math.abs(pos[idx]) > limit) pos[idx] *= -0.9;
-        if (Math.abs(pos[idx + 1]) > 15) pos[idx + 1] *= -0.9;
-        if (Math.abs(pos[idx + 2]) > 20) pos[idx + 2] *= -0.9;
+    const len = pos.length;
+    // Optimization: avoid Math.abs overhead and repeated array access
+    // Iterate by 3 to skip multiplication
+    for (let i = 0; i < len; i += 3) {
+        let x = pos[i] + vel[i];
+        let y = pos[i + 1] + vel[i + 1];
+        let z = pos[i + 2] + vel[i + 2];
+
+        if (Math.abs(x) > limit) x *= -0.9;
+        if (Math.abs(y) > 15) y *= -0.9;
+        if (Math.abs(z) > 20) z *= -0.9;
+
+        pos[i] = x;
+        pos[i + 1] = y;
+        pos[i + 2] = z;
     }
     p.geometry.attributes.position.needsUpdate = true;
 }
