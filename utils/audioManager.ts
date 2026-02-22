@@ -9,6 +9,9 @@ class AudioManager {
     public musicVolume: number = 0.5;
     public sfxVolume: number = 0.7;
     private initialized: boolean = false;
+    private aliases: { [key: string]: string } = {
+        'click': 'grab'
+    };
 
     constructor() {
         this.loadAssets();
@@ -19,7 +22,6 @@ class AudioManager {
 
         const soundFiles = {
             grab: '/sound/grab1.ogg',
-            click: '/sound/grab1.ogg',
             blankshell: '/sound/blankshellshoot.wav',
             liveshell: '/sound/liveshellshoot.mp3',
             // New Animation Sounds
@@ -105,7 +107,8 @@ class AudioManager {
     public playSound(key: string, options?: { volume?: number, playbackRate?: number }) {
         // If not initialized, we shouldn't crash, but we might not hear it yet depending on browser.
         // Better: Try to play.
-        const original = this.sounds[key];
+        const actualKey = this.aliases[key] || key;
+        const original = this.sounds[actualKey];
         if (!original) return;
 
         // Clone for polyphony (multiple overlapping sounds)
@@ -120,12 +123,6 @@ class AudioManager {
             'click': 0.8 // Slightly quieter
         };
         const boost = boostMap[key] || 1.0;
-
-        // Handle aliases
-        if (key === 'click' && sound.src.includes('grab1.ogg') === false) {
-            // We need to support alias or just manually map 'click' to 'grab' asset in loadAssets?
-            // Easier: just map it in loadAssets.
-        }
 
         let finalVolume = this.sfxVolume * boost;
         if (options?.volume) finalVolume *= options.volume;
