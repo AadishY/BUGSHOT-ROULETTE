@@ -82,10 +82,19 @@ io.on('connection', (socket) => {
             return;
         }
 
+        // Sanitize player name
+        let cleanName = (typeof playerName === 'string' ? playerName : '').trim();
+        if (cleanName.length > 20) {
+            cleanName = cleanName.substring(0, 20);
+        }
+        if (!cleanName) {
+            cleanName = `Player ${room.players.length + 1}`;
+        }
+
         const playerColor = PLAYER_COLORS[room.players.length % PLAYER_COLORS.length];
         const newPlayer = {
             id: socket.id,
-            name: playerName || `Player ${room.players.length + 1}`,
+            name: cleanName,
             color: playerColor,
             ready: false,
             hp: room.settings.hp,
@@ -98,7 +107,7 @@ io.on('connection', (socket) => {
         room.players.push(newPlayer);
         socket.join(roomId);
 
-        console.log(`[JOIN] ${playerName} joined room ${roomId} (${room.players.length}/4)`);
+        console.log(`[JOIN] ${cleanName} joined room ${roomId} (${room.players.length}/4)`);
 
         io.to(roomId).emit('roomUpdated', room);
         socket.emit('joinedRoom', { room, playerId: socket.id });
@@ -107,7 +116,7 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('chatMessageReceived', {
             sender: 'SYSTEM',
             color: '#aaaaaa',
-            text: `${playerName} has joined the lobby.`,
+            text: `${cleanName} has joined the lobby.`,
             timestamp: Date.now()
         });
     });
