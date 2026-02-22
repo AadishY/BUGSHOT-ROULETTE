@@ -3,7 +3,8 @@ import * as THREE from 'three';
 import { CameraView, TurnOwner, AimTarget, AnimationState, GameSettings, SceneContext, PlayerState, GameState } from '../types';
 
 import { updateScene } from '../utils/sceneLogic';
-import { initThreeScene, cleanScene } from '../utils/three/sceneSetup';
+import { initThreeScene, cleanScene, cleanObject } from '../utils/three/sceneSetup';
+import { createDealerModel, createPlayerAvatar } from '../utils/threeHelpers';
 
 interface ThreeSceneProps {
     isSawed: boolean;
@@ -246,7 +247,31 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
             }
             if (containerRef.current) containerRef.current.innerHTML = '';
         };
-    }, [gameState.isMultiplayer]); // Added isMultiplayer to rebuild scene when switching between SP/MP
+    }, []); // Only init once. Mode switching handled separately to avoid context loss.
+
+    // Handle Dealer/Player Avatar Swap without destroying scene
+    useEffect(() => {
+        if (!sceneRef.current) return;
+        const { scene, dealerGroup } = sceneRef.current;
+
+        // Clean up old dealer group
+        scene.remove(dealerGroup);
+        cleanObject(dealerGroup);
+
+        // Create new dealer group
+        const isMP = gameState.isMultiplayer;
+        let newDealerGroup: THREE.Group;
+
+        if (isMP) {
+            const opponentName = gameState.opponentName || 'OPPONENT';
+            newDealerGroup = createPlayerAvatar(scene, new THREE.Vector3(0, -4.5, -8), Math.PI, opponentName);
+            newDealerGroup.name = 'DEALER';
+        } else {
+            newDealerGroup = createDealerModel(scene);
+        }
+
+        sceneRef.current.dealerGroup = newDealerGroup;
+    }, [gameState.isMultiplayer, gameState.opponentName]);
 
     // Separate effect for Pixel Scale / Resolution updates (No Rebuild)
     useEffect(() => {

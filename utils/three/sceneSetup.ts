@@ -4,19 +4,23 @@ import { setupLighting, createTable, createGunModel, createDealerModel, createPl
 
 
 
-export const cleanScene = (scene: THREE.Scene) => {
-    scene.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-            if (object.geometry) object.geometry.dispose();
-            if (object.material) {
-                if (Array.isArray(object.material)) {
-                    object.material.forEach((mat) => mat.dispose());
+export const cleanObject = (object: THREE.Object3D) => {
+    object.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) {
+                if (Array.isArray(child.material)) {
+                    child.material.forEach((mat) => mat.dispose());
                 } else {
-                    object.material.dispose();
+                    child.material.dispose();
                 }
             }
         }
     });
+};
+
+export const cleanScene = (scene: THREE.Scene) => {
+    cleanObject(scene);
 };
 
 export const initThreeScene = (container: HTMLElement, props: any): SceneContext | null => {
