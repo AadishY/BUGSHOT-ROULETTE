@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { Settings as SettingsIcon, HelpCircle, Trophy, ShieldAlert, Lock, User, Terminal, BookOpen, Crown, ChevronDown, ChevronUp, Award, Crosshair, Skull, Shield } from 'lucide-react';
+import { Settings as SettingsIcon, HelpCircle, Trophy, ShieldAlert, Lock, User, Terminal, BookOpen, Crown, Shield, Skull, X, Crosshair, Swords, Activity, Award } from 'lucide-react';
 import { audioManager } from '../../utils/audioManager';
 import { loginUser, registerUser, getLeaderboard } from '../../utils/redisService';
-
 
 interface IntroScreenProps {
     playerName: string;
@@ -49,10 +48,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         return null;
     });
 
-    // Leaderboard state
+    // Leaderboard & Detailed Profile states
     const [leaderboard, setLeaderboard] = React.useState<any[]>([]);
     const [isLoadingLeaderboard, setIsLoadingLeaderboard] = React.useState(false);
-    const [expandedUser, setExpandedUser] = React.useState<string | null>(null);
+    const [selectedCareerUser, setSelectedCareerUser] = React.useState<any | null>(null);
 
     const loadLeaderboardData = async () => {
         setIsLoadingLeaderboard(true);
@@ -91,24 +90,19 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         };
         checkStandalone();
 
-        // Prevent keyboard popup on mobile (touch devices or small screens)
-        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
         const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isSmallScreen = window.innerWidth < 1024;
 
         // Detect Mobile & iOS
         const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
         setIsIOS(ios);
         setIsMobile(isMobileUA);
 
-        // ALWAYS Show Install Button on Mobile (Fallback instructions if event fails)
         if (isMobileUA || ios) setIsInstallable(true);
 
         const handleResize = () => {
             const hScale = Math.min(1, (window.innerHeight - 20) / 650);
             const wScale = Math.min(1, (window.innerWidth - 20) / 850);
             let newScale = Math.min(hScale, wScale);
-            // On mobile, we want it a bit larger than 0.4 if possible
             if (window.innerWidth < 500) {
                 newScale = Math.max(newScale, 0.55);
             } else {
@@ -121,13 +115,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         window.addEventListener('resize', handleResize);
         handleResize();
 
-        // Check if event was already captured globally
         if ((window as any).deferredPWAPrompt) {
             setDeferredPrompt((window as any).deferredPWAPrompt);
             setIsInstallable(true);
         }
 
-        // PWA Install Handler
         const pwaHandler = (e: any) => {
             e.preventDefault();
             setDeferredPrompt(e);
@@ -170,7 +162,6 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                 setIsInstallable(false);
             }
         } else {
-            // Fallback: Instructions if browser prompt isn't ready/supported
             if (isIOS) {
                 alert("📲 INSTALL ON iOS:\n\n1. Tap the Share button (square with arrow)\n2. Scroll down and tap 'Add to Home Screen'");
             } else {
@@ -183,7 +174,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         audioManager.playSound('click');
         localStorage.removeItem('aadish_roulette_logged_in_user');
         setLoggedInUser(null);
-        window.location.reload(); // Hard reset session
+        window.location.reload();
     };
 
     const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -245,6 +236,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         }
     };
 
+    // Derived values for the Career Modal popup
+    const winRate = selectedCareerUser ? Math.round((selectedCareerUser.wins / Math.max(1, selectedCareerUser.wins + selectedCareerUser.losses)) * 100) : 0;
+    const precisionRate = selectedCareerUser && selectedCareerUser.stats.shotsFired > 0 ? Math.round((selectedCareerUser.stats.shotsHit / selectedCareerUser.stats.shotsFired) * 100) : 0;
+
     return (
         <div className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden pointer-events-auto bg-black/40 backdrop-blur-[2px]">
             
@@ -297,16 +292,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
             {/* Hard Mode Warning Modal */}
             {showHardModeWarning && (
                 <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/95 animate-in fade-in zoom-in duration-500 p-4">
-                    {/* Retro Static Overlay */}
                     <div className="absolute inset-0 opacity-[0.02] pointer-events-none mix-blend-screen bg-[url('https://media.giphy.com/media/oEI9uWU0WMrQmInJWC/giphy.gif')] bg-repeat" />
-
                     <div
                         className="relative bg-stone-950/80 backdrop-blur-xl border border-red-900/50 p-6 md:p-12 max-w-xl text-center shadow-[0_0_100px_rgba(220,38,38,0.2)] overflow-hidden group origin-center transition-transform duration-200"
                         style={{ transform: `scale(${scale})` }}
                     >
-                        {/* Background Glitch Elements */}
                         <div className="absolute inset-0 opacity-10 pointer-events-none bg-[repeating-linear-gradient(45deg,transparent,transparent_15px,rgba(220,38,38,0.05)_15px,rgba(220,38,38,0.05)_30px)]" />
-
                         <div className="relative z-10 flex flex-col items-center">
                             <div className="text-red-700 mb-6 drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]"><ShieldAlert size={80} /></div>
                             <h2 className="text-5xl md:text-7xl font-black text-red-600 mb-2 tracking-tighter uppercase drop-shadow-[0_0_20px_rgba(220,38,38,0.3)]">WARNING</h2>
@@ -333,7 +324,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                         audioManager.playSound('insert');
                                         onStartGame(true);
                                     }}
-                                    className="w-full py-5 bg-red-900/20 hover:bg-red-700 text-white font-black text-2xl tracking-[0.3em] border-2 border-red-700/50 hover:border-red-500 transition-all hover:scale-[1.02] hover:shadow-[0_0_50px_rgba(220,38,38,0.4)] active:scale-95 group relative overflow-hidden cursor-pointer"
+                                    className="w-full py-5 bg-red-900/20 hover:bg-red-750 text-white font-black text-2xl tracking-[0.3em] border-2 border-red-700/50 hover:border-red-500 transition-all hover:scale-[1.02] hover:shadow-[0_0_50px_rgba(220,38,38,0.4)] active:scale-95 group relative overflow-hidden cursor-pointer"
                                 >
                                     <span className="relative z-10">ACCEPT FATE</span>
                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -358,8 +349,6 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                         className="relative w-full max-w-sm bg-stone-950/90 border-2 border-stone-800/80 p-6 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] font-mono text-center"
                     >
                         <div className="absolute top-0 left-0 w-full h-[2px] bg-red-600/30 animate-[scan-line-move_4s_linear_infinite]" />
-                        
-                        {/* Tab Headers */}
                         <div className="flex border-b border-stone-900 mb-6 bg-stone-900/10 rounded-t-lg overflow-hidden">
                             <button
                                 type="button"
@@ -484,18 +473,6 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                         <span className="text-red-500 font-bold">*</span>
                                         <span>Resolved transitional camera clipping &amp; grey screen bugs</span>
                                     </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-red-500 font-bold">*</span>
-                                        <span>Optimized memory/WebGL loops on tab suspension</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-red-500 font-bold">*</span>
-                                        <span>Enhanced blood particle splatters &amp; gravity</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-red-500 font-bold">*</span>
-                                        <span>Refined visual effects &amp; dealer AI decision flow</span>
-                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -513,7 +490,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                 </div>
             )}
 
-            {/* Leaderboard Modal */}
+            {/* Global Leaderboard Modal */}
             {showLeaderboard && (
                 <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-300">
                     <div className="relative w-full max-w-lg bg-stone-950/90 border-2 border-stone-800/80 p-6 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] font-mono">
@@ -529,7 +506,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                             </span>
                         </div>
 
-                        <div className="space-y-1 max-h-80 overflow-y-auto pr-1 scrollbar-thin">
+                        <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1 scrollbar-thin">
                             {isLoadingLeaderboard ? (
                                 <div className="flex flex-col items-center justify-center py-12 gap-3">
                                     <div className="w-6 h-6 border-2 border-amber-600/40 border-t-amber-500 rounded-full animate-spin" />
@@ -541,7 +518,6 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                 </div>
                             ) : (
                                 leaderboard.map((entry, idx) => {
-                                    const isExpanded = expandedUser === entry.username;
                                     const rankColors = idx === 0 ? 'text-amber-400 bg-amber-500/10 border-amber-600/30' : idx === 1 ? 'text-stone-300 bg-stone-500/5 border-stone-600/20' : idx === 2 ? 'text-orange-400 bg-orange-500/5 border-orange-600/20' : 'text-stone-500 bg-stone-900/20 border-stone-800/30';
                                     const rankIcon = idx === 0 ? '👑' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
                                     return (
@@ -549,7 +525,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                             <button
                                                 onClick={() => {
                                                     audioManager.playSound('click');
-                                                    setExpandedUser(isExpanded ? null : entry.username);
+                                                    setSelectedCareerUser(entry);
                                                 }}
                                                 className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5 cursor-pointer"
                                             >
@@ -571,49 +547,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                                         </span>
                                                     )}
                                                 </div>
-                                                {isExpanded ? <ChevronUp size={14} className="text-stone-600 shrink-0" /> : <ChevronDown size={14} className="text-stone-600 shrink-0" />}
                                             </button>
-                                            {isExpanded && (
-                                                <div className="px-4 pb-4 pt-1 border-t border-white/5 animate-in slide-in-from-top-2 duration-200">
-                                                    <div className="grid grid-cols-3 gap-2 text-center">
-                                                        <div className="bg-black/30 rounded-lg p-2">
-                                                            <div className="text-[8px] text-stone-600 font-bold tracking-widest uppercase mb-1">Rounds</div>
-                                                            <div className="text-sm font-black text-white">{entry.stats.totalRounds || 0}</div>
-                                                        </div>
-                                                        <div className="bg-black/30 rounded-lg p-2">
-                                                            <div className="text-[8px] text-stone-600 font-bold tracking-widest uppercase mb-1">Damage</div>
-                                                            <div className="text-sm font-black text-red-400">{entry.stats.damageDealt || 0}</div>
-                                                        </div>
-                                                        <div className="bg-black/30 rounded-lg p-2">
-                                                            <div className="text-[8px] text-stone-600 font-bold tracking-widest uppercase mb-1">Accuracy</div>
-                                                            <div className="text-sm font-black text-cyan-400">
-                                                                {entry.stats.shotsFired > 0 ? Math.round(((entry.stats.shotsHit || 0) / entry.stats.shotsFired) * 100) : 0}%
-                                                            </div>
-                                                        </div>
-                                                        <div className="bg-black/30 rounded-lg p-2">
-                                                            <div className="text-[8px] text-stone-600 font-bold tracking-widest uppercase mb-1">Items</div>
-                                                            <div className="text-sm font-black text-yellow-400">{entry.stats.itemsUsed || 0}</div>
-                                                        </div>
-                                                        <div className="bg-black/30 rounded-lg p-2">
-                                                            <div className="text-[8px] text-stone-600 font-bold tracking-widest uppercase mb-1">Best Rd</div>
-                                                            <div className="text-sm font-black text-purple-400">{entry.stats.highestRound || 0}</div>
-                                                        </div>
-                                                        <div className="bg-black/30 rounded-lg p-2">
-                                                            <div className="text-[8px] text-stone-600 font-bold tracking-widest uppercase mb-1">Score</div>
-                                                            <div className="text-sm font-black text-amber-400">{entry.stats.itemPoints || 0}</div>
-                                                        </div>
-                                                    </div>
-                                                    {(entry.stats.matchHistory || []).length > 0 && (
-                                                        <div className="mt-2 flex gap-1 justify-center flex-wrap">
-                                                            {(entry.stats.matchHistory || []).slice(0, 10).map((m: any, mi: number) => (
-                                                                <span key={mi} className={`w-5 h-5 rounded-md text-[8px] font-black flex items-center justify-center ${m.result === 'WIN' ? 'bg-green-600/30 text-green-400 border border-green-700/40' : 'bg-red-600/20 text-red-500 border border-red-800/30'}`}>
-                                                                    {m.result === 'WIN' ? 'W' : 'L'}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
                                         </div>
                                     );
                                 })
@@ -633,6 +567,138 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                 </div>
             )}
 
+            {/* TACTICAL PROFILE POPUP MODAL (CAREER LOG) */}
+            {selectedCareerUser && (
+                <div className="absolute inset-0 z-[110] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                    <div className="relative w-full max-w-xl bg-stone-950/95 border border-stone-850 p-6 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.9)] font-mono text-left max-h-[85vh] overflow-y-auto scrollbar-thin">
+                        <div className="absolute top-0 left-0 w-full h-[2px] bg-amber-600/30" />
+                        
+                        {/* Header Box */}
+                        <div className="flex items-start justify-between border-b border-stone-900 pb-4 mb-6">
+                            <div className="flex items-center gap-3.5">
+                                <div className="p-3 bg-amber-500/10 border border-amber-600/30 text-amber-500 rounded-xl">
+                                    <Trophy size={22} />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-black text-stone-200 uppercase tracking-widest flex items-center gap-2">
+                                        Career Log: {selectedCareerUser.username}
+                                        {selectedCareerUser.isDeveloper && (
+                                            <span className="px-1.5 py-0.5 bg-purple-600/30 border border-purple-500/40 text-purple-400 text-[7px] font-black tracking-widest rounded-md uppercase shrink-0">DEV</span>
+                                        )}
+                                    </h2>
+                                    <p className="text-[9px] text-stone-500 font-bold tracking-widest uppercase mt-0.5">Tactical Performance Data</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    audioManager.playSound('click');
+                                    setSelectedCareerUser(null);
+                                }}
+                                className="text-stone-500 hover:text-stone-200 transition-colors p-1 bg-stone-900/40 rounded-lg hover:bg-stone-900 cursor-pointer"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        {/* Top Summary Blocks */}
+                        <div className="grid grid-cols-3 gap-3 mb-6">
+                            <div className="bg-stone-900/30 border border-stone-900 rounded-xl p-4 text-center">
+                                <div className="text-[8px] text-stone-500 font-bold tracking-widest uppercase mb-1">Wins</div>
+                                <div className="text-2xl font-black text-stone-200">{selectedCareerUser.wins}</div>
+                            </div>
+                            <div className="bg-stone-900/30 border border-stone-900 rounded-xl p-4 text-center">
+                                <div className="text-[8px] text-stone-500 font-bold tracking-widest uppercase mb-1">Losses</div>
+                                <div className="text-2xl font-black text-stone-200">{selectedCareerUser.losses}</div>
+                            </div>
+                            <div className="bg-stone-900/30 border border-stone-900 rounded-xl p-4 text-center">
+                                <div className="text-[8px] text-stone-500 font-bold tracking-widest uppercase mb-1">Success</div>
+                                <div className="text-2xl font-black text-stone-200">{winRate}<span className="text-xs text-stone-500 ml-0.5">%</span></div>
+                            </div>
+                        </div>
+
+                        {/* Combat Analysis Block Divider */}
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="h-[1px] w-8 bg-stone-900" />
+                            <span className="text-[8px] text-stone-500 font-bold tracking-[0.3em] uppercase whitespace-nowrap">Combat Analysis</span>
+                            <div className="h-[1px] flex-1 bg-stone-900" />
+                        </div>
+
+                        {/* Core Stats Details Container */}
+                        <div className="grid grid-cols-4 gap-2.5 mb-6">
+                            <div className="bg-stone-900/10 border border-stone-900/40 rounded-xl p-3 text-center">
+                                <Activity size={14} className="text-blue-500 mx-auto mb-1.5" />
+                                <div className="text-base font-black text-stone-200">{selectedCareerUser.stats.totalRounds || 0}</div>
+                                <div className="text-[7px] text-stone-500 font-bold uppercase tracking-widest mt-0.5">Rounds</div>
+                            </div>
+                            <div className="bg-stone-900/10 border border-stone-900/40 rounded-xl p-3 text-center">
+                                <Crosshair size={14} className="text-red-500 mx-auto mb-1.5" />
+                                <div className="text-base font-black text-stone-200">{precisionRate}%</div>
+                                <div className="text-[7px] text-stone-500 font-bold uppercase tracking-widest mt-0.5">Precision</div>
+                            </div>
+                            <div className="bg-stone-900/10 border border-stone-900/40 rounded-xl p-3 text-center">
+                                <Swords size={14} className="text-amber-500 mx-auto mb-1.5" />
+                                <div className="text-base font-black text-stone-200">{selectedCareerUser.stats.damageDealt || 0}</div>
+                                <div className="text-[7px] text-stone-500 font-bold uppercase tracking-widest mt-0.5">Lethality</div>
+                            </div>
+                            <div className="bg-stone-900/10 border border-stone-900/40 rounded-xl p-3 text-center">
+                                <Skull size={14} className="text-purple-500 mx-auto mb-1.5" />
+                                <div className="text-base font-black text-stone-200">{selectedCareerUser.stats.highestRound || 0}</div>
+                                <div className="text-[7px] text-stone-500 font-bold uppercase tracking-widest mt-0.5">Tier</div>
+                            </div>
+                        </div>
+
+                        {/* Match Feed Header Block */}
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="h-[1px] w-8 bg-stone-900" />
+                            <span className="text-[8px] text-stone-500 font-bold tracking-[0.3em] uppercase whitespace-nowrap">Recent Operations</span>
+                            <div className="h-[1px] flex-1 bg-stone-900" />
+                        </div>
+
+                        {/* Recent History Feed Loop */}
+                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
+                            {(!selectedCareerUser.stats.matchHistory || selectedCareerUser.stats.matchHistory.length === 0) ? (
+                                <div className="text-center py-6 text-stone-600 text-[10px] font-bold uppercase tracking-wider">
+                                    No records filed in operations matrix
+                                </div>
+                            ) : (
+                                [...selectedCareerUser.stats.matchHistory].reverse().map((match: any, mIdx: number) => {
+                                    const isWin = match.result === 'WIN';
+                                    return (
+                                        <div key={mIdx} className="bg-stone-950 border border-stone-900 p-3 rounded-xl flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-8 h-8 rounded-lg font-black text-xs flex items-center justify-center shrink-0 ${isWin ? 'bg-green-950/40 text-green-400 border border-green-900/30' : 'bg-red-950/40 text-red-500 border border-red-900/20'}`}>
+                                                    {isWin ? 'W' : 'L'}
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs font-black text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
+                                                        {match.isHardMode ? 'STRIKE FORCE 1' : `MISSION ${selectedCareerUser.stats.matchHistory.length - mIdx}`}
+                                                        {match.isHardMode && (
+                                                            <span className="px-1.5 py-0.5 bg-red-950/60 border border-red-900/40 text-red-500 text-[6px] font-black tracking-widest rounded uppercase">ELITE</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-[8px] text-stone-600 font-bold mt-0.5">6/14/2026</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-4 text-right">
+                                                <div>
+                                                    <div className="text-[6px] text-stone-600 font-bold uppercase tracking-widest">Score</div>
+                                                    <div className="text-xs font-black text-amber-500">{(match.score || match.itemPoints || 0).toLocaleString()}</div>
+                                                </div>
+                                                <div className="min-w-8">
+                                                    <div className="text-[6px] text-stone-600 font-bold uppercase tracking-widest">Rounds</div>
+                                                    <div className="text-xs font-black text-stone-300">{match.highestRound || match.rounds || 1}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Menu Center Frame Area */}
             <div
                 className="relative z-10 text-center max-w-xl w-full p-8 flex flex-col justify-center origin-center transition-all duration-300"
                 style={{ transform: `scale(${scale})` }}
@@ -723,7 +789,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                         </button>
                     </div>
 
-                    {/* Leaderboard Button */}
+                    {/* Leaderboard Trigger Button */}
                     <button
                         onClick={() => {
                             audioManager.playSound('click');

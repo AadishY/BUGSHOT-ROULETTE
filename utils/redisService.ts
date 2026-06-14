@@ -32,7 +32,8 @@ const executeRedisCommand = async (command: any[]) => {
 const executeRedisPipeline = async (commands: any[][]) => {
     const { url, token } = getRedisConfig();
     
-    const res = await fetch(url, {
+    // FIX: Routed to /pipeline to allow batch command parsing via Upstash REST API
+    const res = await fetch(`${url}/pipeline`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -206,6 +207,8 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
         const pipelineResults = await executeRedisPipeline(pipelineCmds);
 
         const leaderboard: LeaderboardEntry[] = [];
+        // FIX: Extracting the fallback environment variable config for consistent developer verification
+        const devUser = (import.meta.env.VITE_DEV_USERNAME || 'aadish').toLowerCase();
 
         for (let i = 0; i < keys.length; i++) {
             const resObj = pipelineResults[i];
@@ -222,7 +225,8 @@ export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
                         wins: stats.wins || 0,
                         losses: stats.losses || 0,
                         hardModeWins,
-                        isDeveloper: userData.isDeveloper || userData.username.toLowerCase() === 'aadish',
+                        // FIX: Checks flag configuration alongside matching environment fallback name matches
+                        isDeveloper: userData.isDeveloper || userData.username.toLowerCase() === devUser,
                         stats: stats as GameStats
                     });
                 } catch (e) {
