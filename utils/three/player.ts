@@ -6,8 +6,21 @@ export const createPlayerAvatar = (scene: THREE.Scene, position: THREE.Vector3, 
     avatarGroup.position.copy(position);
     avatarGroup.rotation.y = rotationY;
 
-    const skinMat = new THREE.MeshStandardMaterial({ color: 0xffccaa, roughness: 0.5 });
-    const suitMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+    const settings = scene.userData.settings || {};
+    const ultraPerformance = !!settings.ultraPerformance;
+    const balancedPerformance = !!settings.balancedPerformance;
+
+    const skinMat = ultraPerformance 
+        ? new THREE.MeshBasicMaterial({ color: 0xffccaa }) 
+        : (balancedPerformance 
+            ? new THREE.MeshLambertMaterial({ color: 0xffccaa }) 
+            : new THREE.MeshStandardMaterial({ color: 0xffccaa, roughness: 0.5 }));
+            
+    const suitMat = ultraPerformance 
+        ? new THREE.MeshBasicMaterial({ color: 0x222222 }) 
+        : (balancedPerformance 
+            ? new THREE.MeshLambertMaterial({ color: 0x222222 }) 
+            : new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 }));
 
     // Body
     const torso = new THREE.Mesh(new THREE.BoxGeometry(5, 6, 2.5), suitMat);

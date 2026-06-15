@@ -241,6 +241,9 @@ function createTableTexture() {
 }
 
 export const createEnvironment = (scene: THREE.Scene, isMobile: boolean = false, ultraPerformance: boolean = false) => {
+    const settings = scene.userData.settings || {};
+    const ultraPerformanceMode = ultraPerformance || !!settings.ultraPerformance;
+    const balancedPerformance = !!settings.balancedPerformance;
     // ═══════════════════════════════════════════════════════════════
     // BUCKSHOT ROULETTE BUNKER ENVIRONMENT
     // Dark industrial underground aesthetic
@@ -309,19 +312,21 @@ export const createEnvironment = (scene: THREE.Scene, isMobile: boolean = false,
     };
 
     // Floor - Industrial concrete (brighter)
-    const floorTex = ultraPerformance ? null : createConcreteTexture();
-    const floorMat = ultraPerformance
+    const floorTex = ultraPerformanceMode ? null : createConcreteTexture();
+    const floorMat = ultraPerformanceMode
         ? new THREE.MeshBasicMaterial({ color: 0x050505 })
-        : new THREE.MeshStandardMaterial({
-            map: floorTex,
-            color: 0x1a1614, // Brighter
-            roughness: 0.9,
-            metalness: 0.1
-        });
+        : (balancedPerformance
+            ? new THREE.MeshLambertMaterial({ map: floorTex || undefined, color: 0x1a1614 })
+            : new THREE.MeshStandardMaterial({
+                map: floorTex || undefined,
+                color: 0x1a1614, // Brighter
+                roughness: 0.9,
+                metalness: 0.1
+            }));
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -9;
-    floor.receiveShadow = !isMobile && !ultraPerformance;
+    floor.receiveShadow = !isMobile && !ultraPerformanceMode && !balancedPerformance;
     scene.add(floor);
 
     // Ceiling - Very dark with void feel
@@ -374,23 +379,25 @@ export const createEnvironment = (scene: THREE.Scene, isMobile: boolean = false,
         return tex;
     };
 
-    const wallTex = ultraPerformance ? null : createWallTexture();
+    const wallTex = ultraPerformanceMode ? null : createWallTexture();
     // Back wall with emissive so it's always visible
-    const backWallMat = ultraPerformance
+    const backWallMat = ultraPerformanceMode
         ? new THREE.MeshBasicMaterial({ color: 0x030303 })
-        : new THREE.MeshStandardMaterial({
-            map: wallTex,
-            color: 0x3a3530,
-            roughness: 0.85,
-            emissive: 0x151210,
-            emissiveIntensity: 0.15 // Reduced slightly for spookiness
-        });
+        : (balancedPerformance
+            ? new THREE.MeshLambertMaterial({ map: wallTex || undefined, color: 0x3a3530 })
+            : new THREE.MeshStandardMaterial({
+                map: wallTex || undefined,
+                color: 0x3a3530,
+                roughness: 0.85,
+                emissive: 0x151210,
+                emissiveIntensity: 0.15
+            }));
     const backWall = new THREE.Mesh(new THREE.PlaneGeometry(80, 50), backWallMat);
     backWall.position.set(0, 5, -28); // Moved back (was -22)
-    backWall.receiveShadow = !isMobile && !ultraPerformance;
+    backWall.receiveShadow = !isMobile && !ultraPerformanceMode && !balancedPerformance;
     scene.add(backWall);
 
-    if (!ultraPerformance) {
+    if (!ultraPerformanceMode) {
         // Crate material with slight emissive for visibility
         const crateMat = new THREE.MeshStandardMaterial({
             color: 0x3a3530,
@@ -515,7 +522,7 @@ export const createEnvironment = (scene: THREE.Scene, isMobile: boolean = false,
     };
 
     // Add multiple wires hanging from ceiling
-    if (!ultraPerformance) {
+    if (!ultraPerformanceMode) {
         scene.add(createWire(new THREE.Vector3(-10, 12, -5), new THREE.Vector3(10, 12, -5), 2.5, 10));
         scene.add(createWire(new THREE.Vector3(-15, 12, -10), new THREE.Vector3(5, 14, -15), 3.0, 10));
         scene.add(createWire(new THREE.Vector3(-5, 14, -20), new THREE.Vector3(15, 12, -18), 2.0, 10));
@@ -550,7 +557,7 @@ export const createEnvironment = (scene: THREE.Scene, isMobile: boolean = false,
     hangingLight.add(bulb);
 
     // Fake Volumetric Glow Sprite (Only on Desktop)
-    if (!isMobile && !ultraPerformance) {
+    if (!isMobile && !ultraPerformanceMode) {
         const spriteMat = new THREE.SpriteMaterial({
             map: generateGlowTexture(),
             color: 0xffaa00,
@@ -568,7 +575,7 @@ export const createEnvironment = (scene: THREE.Scene, isMobile: boolean = false,
     const rustMat = new THREE.MeshStandardMaterial({ color: 0x5d4638, roughness: 0.85 });
 
     // --- ENHANCED BACKGROUND PROPS --- (Brighter)
-    if (!ultraPerformance) {
+    if (!ultraPerformanceMode) {
         const boxGeo = new THREE.BoxGeometry(3, 3, 3);
         const boxMat = new THREE.MeshStandardMaterial({ color: 0x5a4a3a, roughness: 0.85 });
 
@@ -1004,40 +1011,42 @@ export const createEnvironment = (scene: THREE.Scene, isMobile: boolean = false,
     }
 
     // === BRICK WALLS === (With emissive for visibility)
-    const brickTex = ultraPerformance ? null : createBrickTexture();
+    const brickTex = ultraPerformanceMode ? null : createBrickTexture();
     if (brickTex) brickTex.repeat.set(2, 2);
-    const brickMat = ultraPerformance
+    const brickMat = ultraPerformanceMode
         ? new THREE.MeshBasicMaterial({ color: 0x060505 })
-        : new THREE.MeshStandardMaterial({
-            map: brickTex,
-            color: 0xbb8877,
-            roughness: 0.8,
-            metalness: 0.1,
-            emissive: 0x1a1210,
-            emissiveIntensity: 0.15 // Reduced slightly
-        });
+        : (balancedPerformance
+            ? new THREE.MeshLambertMaterial({ map: brickTex || undefined, color: 0xbb8877 })
+            : new THREE.MeshStandardMaterial({
+                map: brickTex || undefined,
+                color: 0xbb8877,
+                roughness: 0.8,
+                metalness: 0.1,
+                emissive: 0x1a1210,
+                emissiveIntensity: 0.15
+            }));
 
     // Side Walls - further away for open feel
     const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(60, 40), brickMat);
     leftWall.position.set(-20, 5, -12); // Moved out and back (was -15, -5)
     leftWall.rotation.y = Math.PI / 2;
-    leftWall.receiveShadow = !isMobile && !ultraPerformance;
+    leftWall.receiveShadow = !isMobile && !ultraPerformanceMode && !balancedPerformance;
     scene.add(leftWall);
 
     const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(60, 40), brickMat);
     rightWall.position.set(20, 5, -12); // Moved out and back
     rightWall.rotation.y = -Math.PI / 2;
-    rightWall.receiveShadow = !isMobile && !ultraPerformance;
+    rightWall.receiveShadow = !isMobile && !ultraPerformanceMode && !balancedPerformance;
     scene.add(rightWall);
 
     // Front Wall (Behind Player) - completes room enclosure at Z = 18
     const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(80, 50), brickMat);
     frontWall.position.set(0, 5, 18);
     frontWall.rotation.y = Math.PI;
-    frontWall.receiveShadow = !isMobile && !ultraPerformance;
+    frontWall.receiveShadow = !isMobile && !ultraPerformanceMode && !balancedPerformance;
     scene.add(frontWall);
 
-    if (!ultraPerformance) {
+    if (!ultraPerformanceMode) {
         // Behind Props (Behind Player, Z = 17 to 17.5)
     // Horizontal ceiling pipes behind player
     const behindPipe1 = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 40), pipeMat);
@@ -1213,11 +1222,13 @@ export const createEnvironment = (scene: THREE.Scene, isMobile: boolean = false,
 };
 
 export const createDust = (scene: THREE.Scene, isMobile: boolean = false, ultraPerformance: boolean = false) => {
+    const settings = scene.userData.settings || {};
+    const ultraPerformanceMode = ultraPerformance || !!settings.ultraPerformance;
     // ═══════════════════════════════════════════════════════════════
     // ATMOSPHERIC DUST PARTICLES - Subtle and sparse
     // ═══════════════════════════════════════════════════════════════
 
-    if (ultraPerformance) return null;
+    if (ultraPerformanceMode) return null;
 
     const particleCount = isMobile ? 5 : 20; // Reduced particle count
     const geometry = new THREE.BufferGeometry();
@@ -1258,6 +1269,10 @@ export const createDust = (scene: THREE.Scene, isMobile: boolean = false, ultraP
 };
 
 export const createTable = (scene: THREE.Scene, ultraPerformance: boolean = false) => {
+    const settings = scene.userData.settings || {};
+    const ultraPerformanceMode = ultraPerformance || !!settings.ultraPerformance;
+    const balancedPerformance = !!settings.balancedPerformance;
+    
     const tableGroup = new THREE.Group();
     tableGroup.name = 'TABLE_GROUP';
 
@@ -1266,25 +1281,27 @@ export const createTable = (scene: THREE.Scene, ultraPerformance: boolean = fals
     // ═══════════════════════════════════════════════════════════════
 
     // Generate Procedural Table Texture
-    const tableTex = ultraPerformance ? null : createTableTexture();
+    const tableTex = ultraPerformanceMode ? null : createTableTexture();
 
     // Table Top - Worn green felt with glowing lines
-    const tableMat = ultraPerformance
+    const tableMat = ultraPerformanceMode
         ? new THREE.MeshBasicMaterial({ color: 0x1c2814 }) // flat green
-        : new THREE.MeshStandardMaterial({
-            map: tableTex,
-            color: 0x666655, // Slightly desaturated
-            roughness: 0.85,
-            metalness: 0.05,
-            emissiveMap: tableTex,
-            emissive: 0x443322, // Subtle glow for lines
-            emissiveIntensity: 0.15
-        });
+        : (balancedPerformance
+            ? new THREE.MeshLambertMaterial({ map: tableTex || undefined, color: 0x666655 })
+            : new THREE.MeshStandardMaterial({
+                map: tableTex || undefined,
+                color: 0x666655, // Slightly desaturated
+                roughness: 0.85,
+                metalness: 0.05,
+                emissiveMap: tableTex || undefined,
+                emissive: 0x443322, // Subtle glow for lines
+                emissiveIntensity: 0.15
+            }));
 
     const top = new THREE.Mesh(new THREE.BoxGeometry(20, 0.6, 18), tableMat);
     top.position.y = -1;
-    top.receiveShadow = !ultraPerformance;
-    top.castShadow = !ultraPerformance;
+    top.receiveShadow = !ultraPerformanceMode && !balancedPerformance;
+    top.castShadow = !ultraPerformanceMode && !balancedPerformance;
     tableGroup.add(top);
 
     // ═══════════════════════════════════════════════════════════════
@@ -1334,15 +1351,17 @@ export const createTable = (scene: THREE.Scene, ultraPerformance: boolean = fals
         return tex;
     };
 
-    const rimTex = ultraPerformance ? null : createRimTexture();
-    const rimMat = ultraPerformance
+    const rimTex = ultraPerformanceMode ? null : createRimTexture();
+    const rimMat = ultraPerformanceMode
         ? new THREE.MeshBasicMaterial({ color: 0x121212 }) // flat grey
-        : new THREE.MeshStandardMaterial({
-            map: rimTex,
-            color: 0x2a2520,
-            roughness: 0.75,
-            metalness: 0.7
-        });
+        : (balancedPerformance
+            ? new THREE.MeshLambertMaterial({ map: rimTex || undefined, color: 0x2a2520 })
+            : new THREE.MeshStandardMaterial({
+                map: rimTex || undefined,
+                color: 0x2a2520,
+                roughness: 0.75,
+                metalness: 0.7
+            }));
 
     // Thicker industrial rim
     const rimHeight = 1.2;
@@ -1351,23 +1370,23 @@ export const createTable = (scene: THREE.Scene, ultraPerformance: boolean = fals
     // Front/Back rims - shorter width (19)
     const rimF = new THREE.Mesh(new THREE.BoxGeometry(19, rimHeight, rimThickness), rimMat);
     rimF.position.set(0, -0.6, 7.4); // Adjusted Z
-    rimF.castShadow = !ultraPerformance;
+    rimF.castShadow = !ultraPerformanceMode && !balancedPerformance;
     tableGroup.add(rimF);
 
     const rimB = new THREE.Mesh(new THREE.BoxGeometry(19, rimHeight, rimThickness), rimMat);
     rimB.position.set(0, -0.6, -7.4); // Adjusted Z
-    rimB.castShadow = !ultraPerformance;
+    rimB.castShadow = !ultraPerformanceMode && !balancedPerformance;
     tableGroup.add(rimB);
 
     // Left/Right rims - shorter length (14)
     const rimL = new THREE.Mesh(new THREE.BoxGeometry(rimThickness, rimHeight, 14), rimMat);
     rimL.position.set(-9.4, -0.6, 0); // Adjusted X
-    rimL.castShadow = !ultraPerformance;
+    rimL.castShadow = !ultraPerformanceMode && !balancedPerformance;
     tableGroup.add(rimL);
 
     const rimR = new THREE.Mesh(new THREE.BoxGeometry(rimThickness, rimHeight, 14), rimMat);
     rimR.position.set(9.4, -0.6, 0); // Adjusted X
-    rimR.castShadow = !ultraPerformance;
+    rimR.castShadow = !ultraPerformanceMode && !balancedPerformance;
     tableGroup.add(rimR);
 
     // ═══════════════════════════════════════════════════════════════

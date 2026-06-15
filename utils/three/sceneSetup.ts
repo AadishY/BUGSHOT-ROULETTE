@@ -90,7 +90,7 @@ export const initThreeScene = (container: HTMLElement, props: any): SceneContext
     const pixelRatio = window.devicePixelRatio || 1;
 
     // Aggressive Low-End Check
-    const isLowEndDevice = (isMobile && (isAndroid || width < 600 || pixelRatio < 2 || navigator.hardwareConcurrency < 6)) || !!props.settings.ultraPerformance;
+    const isLowEndDevice = (isMobile && (isAndroid || width < 600 || pixelRatio < 2 || navigator.hardwareConcurrency < 6)) || !!props.settings.ultraPerformance || !!props.settings.balancedPerformance;
 
     const renderer = new THREE.WebGLRenderer({
         antialias: false,
@@ -104,13 +104,13 @@ export const initThreeScene = (container: HTMLElement, props: any): SceneContext
     // Mobile Optimization: Aggressive resolution scaling
     let mobilePixelScale = 2; // Default mobile
     if (isMobile) {
-        mobilePixelScale = props.settings.ultraPerformance ? 5.5 : (isLowEndDevice ? 4.5 : 3.5);
+        mobilePixelScale = props.settings.ultraPerformance ? 5.5 : (props.settings.balancedPerformance ? 4.5 : (isLowEndDevice ? 4.5 : 3.5));
     } else if (isTablet) {
-        mobilePixelScale = props.settings.ultraPerformance ? 4.0 : 2.2;
+        mobilePixelScale = props.settings.ultraPerformance ? 4.0 : (props.settings.balancedPerformance ? 3.0 : 2.2);
     }
 
     // Desktop: default to 3 or user setting. Mobile: strictly optimized.
-    const pixelScale = (isMobile || isTablet) ? mobilePixelScale : (props.settings.ultraPerformance ? 5.0 : (props.settings.pixelScale || 3));
+    const pixelScale = (isMobile || isTablet) ? mobilePixelScale : (props.settings.ultraPerformance ? 5.0 : (props.settings.balancedPerformance ? 4.0 : (props.settings.pixelScale || 3)));
 
     const maxPixelRatio = (isMobile || props.settings.ultraPerformance) ? 1.0 : (isTablet ? 1.2 : Math.min(window.devicePixelRatio, 2)); // Cap at 2x for desktop
     renderer.setPixelRatio(maxPixelRatio);
@@ -119,8 +119,8 @@ export const initThreeScene = (container: HTMLElement, props: any): SceneContext
     renderer.domElement.style.height = '100%';
     renderer.domElement.style.imageRendering = 'pixelated'; // Essential for the look
 
-    // Disable shadows completely on ALL mobile/tablet devices or when ultraPerformance is active
-    renderer.shadowMap.enabled = (device === 'pc') && !props.settings.ultraPerformance;
+    // Disable shadows completely on ALL mobile/tablet devices or when ultraPerformance/balancedPerformance is active
+    renderer.shadowMap.enabled = (device === 'pc') && !props.settings.ultraPerformance && !props.settings.balancedPerformance;
     renderer.shadowMap.type = (device === 'pc') ? THREE.PCFSoftShadowMap : THREE.BasicShadowMap;
 
     // Tone mapping
@@ -130,6 +130,7 @@ export const initThreeScene = (container: HTMLElement, props: any): SceneContext
     scene.userData.isMobile = isMobile;
     scene.userData.isAndroid = isAndroid;
     scene.userData.isLowEndDevice = isLowEndDevice;
+    scene.userData.settings = props.settings; // Make settings accessible to other scripts
 
     container.appendChild(renderer.domElement);
 

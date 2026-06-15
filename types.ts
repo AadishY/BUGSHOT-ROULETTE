@@ -113,6 +113,7 @@ export interface GameSettings {
   sfxVolume: number;
   debugMode?: boolean;
   ultraPerformance?: boolean;
+  balancedPerformance?: boolean;
 }
 
 export interface SceneContext {

@@ -8,14 +8,17 @@ export const setupLighting = (scene: THREE.Scene, settings?: GameSettings) => {
     // ═══════════════════════════════════════════════════════════════
 
     const device = getDeviceType();
-    const isMobile = device === 'mobile' || !!settings?.ultraPerformance;
+    const isMobile = device === 'mobile' || !!settings?.ultraPerformance || !!settings?.balancedPerformance;
     const isTablet = device === 'tablet';
 
     // Slight fog for depth - bit thicker for atmosphere
     scene.fog = new THREE.FogExp2(0x0a0a0a, 0.025);
 
-    // Reduced ambient for high contrast
-    const ambient = new THREE.AmbientLight(0x221111, isMobile ? 0.25 : 0.15);
+    // Reduced ambient for high contrast - boost ambient slightly in Potato mode to prevent pitch blackness
+    const ambientIntensity = settings?.ultraPerformance 
+        ? 0.45 
+        : (isMobile ? 0.25 : 0.15);
+    const ambient = new THREE.AmbientLight(0x221111, ambientIntensity);
     scene.add(ambient);
 
     // ═══════════════════════════════════════════════════════════════
@@ -29,12 +32,12 @@ export const setupLighting = (scene: THREE.Scene, settings?: GameSettings) => {
     mainSpotlight.decay = 2.5;
     mainSpotlight.distance = 60;
     
-    // Shadows: Only on PC and optionally Tablet
-    mainSpotlight.castShadow = !isMobile;
-    mainSpotlight.shadow.mapSize.width = (device === 'pc') ? 2048 : (isTablet ? 512 : 1024);
-    mainSpotlight.shadow.mapSize.height = (device === 'pc') ? 2048 : (isTablet ? 512 : 1024);
+    // Shadows: Only on PC (and not in balanced or ultra mode)
+    mainSpotlight.castShadow = (device === 'pc') && !settings?.ultraPerformance && !settings?.balancedPerformance;
+    mainSpotlight.shadow.mapSize.width = (settings?.balancedPerformance) ? 512 : 1024;
+    mainSpotlight.shadow.mapSize.height = (settings?.balancedPerformance) ? 512 : 1024;
     mainSpotlight.shadow.bias = -0.0004;
-    mainSpotlight.shadow.radius = isTablet ? 1.5 : 2.5;
+    mainSpotlight.shadow.radius = 2.0;
 
     scene.add(mainSpotlight);
     scene.add(mainSpotlight.target);
@@ -45,10 +48,10 @@ export const setupLighting = (scene: THREE.Scene, settings?: GameSettings) => {
     gunSpot.target.position.set(0, 0, 2);
     gunSpot.angle = 0.45;
     gunSpot.penumbra = 0.6;
-    gunSpot.castShadow = (device === 'pc') && !settings?.ultraPerformance;
-    if (device === 'pc' && !settings?.ultraPerformance) {
-        gunSpot.shadow.mapSize.width = 1024;
-        gunSpot.shadow.mapSize.height = 1024;
+    gunSpot.castShadow = (device === 'pc') && !settings?.ultraPerformance && !settings?.balancedPerformance;
+    if (device === 'pc' && !settings?.ultraPerformance && !settings?.balancedPerformance) {
+        gunSpot.shadow.mapSize.width = 512;
+        gunSpot.shadow.mapSize.height = 512;
     }
     scene.add(gunSpot);
     scene.add(gunSpot.target);
@@ -56,12 +59,12 @@ export const setupLighting = (scene: THREE.Scene, settings?: GameSettings) => {
     // Bulb - High Intensity Point
     const bulbLight = new THREE.PointLight(0xffaa44, isMobile ? 30.0 : 45.0, 50);
     bulbLight.position.set(0, 8, 0);
-    bulbLight.castShadow = (device === 'pc') && !settings?.ultraPerformance;
-    if (device === 'pc' && !settings?.ultraPerformance) {
-        bulbLight.shadow.mapSize.width = 1024;
-        bulbLight.shadow.mapSize.height = 1024;
+    bulbLight.castShadow = (device === 'pc') && !settings?.ultraPerformance && !settings?.balancedPerformance;
+    if (device === 'pc' && !settings?.ultraPerformance && !settings?.balancedPerformance) {
+        bulbLight.shadow.mapSize.width = 512;
+        bulbLight.shadow.mapSize.height = 512;
         bulbLight.shadow.bias = -0.0001;
-        bulbLight.shadow.radius = 6;
+        bulbLight.shadow.radius = 4;
     }
     scene.add(bulbLight);
 
@@ -178,7 +181,7 @@ export const setupLighting = (scene: THREE.Scene, settings?: GameSettings) => {
     }
 
     // --- HEAVY LIGHTS (Desktop Only) ---
-    if (device === 'pc' && !settings?.ultraPerformance) {
+    if (device === 'pc' && !settings?.ultraPerformance && !settings?.balancedPerformance) {
         // Table Accents
         const tableAccent1 = new THREE.PointLight(0x44ff44, 1.5, 8);
         tableAccent1.position.set(-10, -0.5, 0);

@@ -58,16 +58,20 @@ export const BootScreen: React.FC<BootScreenProps> = ({ onContinue }) => {
     // Boot sequence screen
     return (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col justify-between p-4 md:p-12 font-mono select-none transform translate3d(0,0,0)">
-            <div className="flex justify-between items-start text-stone-600 text-[10px] sm:text-xs">
+            <div className="flex justify-between items-start text-stone-600 text-[9px] sm:text-xs">
                 <span>AADISH_OS v1.0.0</span>
                 <span>MEM: 65536KB OK</span>
             </div>
-            <div className="flex-1 flex flex-col justify-center max-w-lg mx-auto w-full gap-3 sm:gap-4 my-auto">
-                <div className="text-green-500 text-[11px] sm:text-sm space-y-1 h-[30vh] max-h-[10rem] sm:max-h-[12rem] overflow-hidden flex flex-col justify-end">
-                    {bootLines.map((line, i) => <div key={i} className="typewriter truncate text-green-400 drop-shadow-[0_0_6px_rgba(74,222,128,0.5)]">{`> ${line}`}</div>)}
-                    <div className="text-green-400 animate-pulse drop-shadow-[0_0_6px_rgba(74,222,128,0.5)]">_</div>
+            <div className="flex-1 flex flex-col justify-center max-w-lg mx-auto w-full gap-2 sm:gap-4 my-auto">
+                <div className="text-green-500 text-[9px] sm:text-xs md:text-sm space-y-1.5 h-[35vh] max-h-[10rem] sm:max-h-[12rem] overflow-hidden flex flex-col justify-end">
+                    {bootLines.map((line, i) => (
+                        <div key={i} className="typewriter truncate text-green-400 drop-shadow-[0_0_4px_rgba(74,222,128,0.4)] shrink-0 leading-normal tracking-wider">
+                            {`> ${line}`}
+                        </div>
+                    ))}
+                    <div className="text-green-400 animate-pulse drop-shadow-[0_0_4px_rgba(74,222,128,0.4)] shrink-0 leading-normal tracking-wider">_</div>
                 </div>
-                <div className="w-full h-3 sm:h-4 bg-stone-900 border border-stone-850 p-0.5 relative rounded-sm overflow-hidden shadow-inner">
+                <div className="w-full h-2 bg-stone-900 border border-stone-850 p-0.5 relative rounded-sm overflow-hidden shadow-inner">
                     <div 
                         className="h-full bg-green-700 relative overflow-hidden transition-all duration-100 ease-out will-change-[width] rounded-sm" 
                         style={{ width: `${Math.min(100, loadingProgress)}%`, transform: 'translate3d(0,0,0)' }} 

@@ -34,7 +34,8 @@ const getInitialSettings = (): GameSettings => {
       musicVolume: 0.5,
       sfxVolume: 0.5,
       debugMode: false,
-      ultraPerformance: false
+      ultraPerformance: false,
+      balancedPerformance: false
     };
   } else {
     // PC
@@ -46,12 +47,13 @@ const getInitialSettings = (): GameSettings => {
       musicVolume: 0.5,
       sfxVolume: 1.0,
       debugMode: false,
-      ultraPerformance: false
+      ultraPerformance: false,
+      balancedPerformance: false
     };
   }
 };
 
 export const DEFAULT_SETTINGS: GameSettings = getInitialSettings();
 
-export const GAME_VERSION = '1.1.2';
+export const GAME_VERSION = '1.1.3';
 

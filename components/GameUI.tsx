@@ -462,7 +462,7 @@ export const GameUI: React.FC<GameUIProps> = ({
 
                 {/* Main HUD */}
                 {gameState.phase !== 'INTRO' && gameState.phase !== 'BOOT' && gameState.phase !== 'GAME_OVER' && !showLootOverlay && (
-                    <div className="absolute inset-0 z-20 p-2 md:p-8 flex flex-col justify-between pointer-events-none">
+                    <div className="absolute inset-0 z-20 p-2 pb-0 md:p-8 md:pb-0 flex flex-col justify-between pointer-events-none">
 
                         {/* Top Bar */}
                         <div className="flex justify-between items-start gap-2">
@@ -476,7 +476,7 @@ export const GameUI: React.FC<GameUIProps> = ({
                         </div>
 
                         {/* Bottom UI Area - Vertically stacked Controls & Inventory */}
-                        <div className="mt-auto w-full flex flex-col items-center gap-2 md:gap-4 pointer-events-none pb-2 md:pb-6 z-30">
+                        <div className="mt-auto w-full flex flex-col items-center gap-2 md:gap-4 pointer-events-none pb-0 md:pb-0 z-30">
                             {/* Controls */}
                             {gameState.phase !== 'STEALING' && isMyTurn && !showLootOverlay && (
                                 <div className="pointer-events-auto">

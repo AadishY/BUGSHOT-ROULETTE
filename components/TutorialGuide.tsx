@@ -20,15 +20,15 @@ const ItemCard: React.FC<{
     color: string;
     effect?: string;
 }> = ({ icon, name, description, color, effect }) => (
-    <div className="bg-gradient-to-r from-stone-900/90 to-stone-800/50 border border-stone-700/50 p-2 md:p-3 flex gap-2 md:gap-3 items-start hover:border-stone-500 transition-all hover:shadow-lg hover:shadow-black/20 rounded-sm">
-        <div className={`w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-stone-900 border border-stone-600 shrink-0 ${color} rounded-sm shadow-inner`}>
-            {icon}
+    <div className="bg-gradient-to-r from-stone-900/90 to-stone-800/50 border border-stone-700/50 p-1.5 md:p-2 flex gap-2 md:gap-2.5 items-start hover:border-stone-500 transition-all hover:shadow-lg hover:shadow-black/20 rounded-sm">
+        <div className={`w-6 h-6 md:w-8 md:h-8 flex items-center justify-center bg-stone-900 border border-stone-600 shrink-0 ${color} rounded-sm shadow-inner`}>
+            {React.cloneElement(icon as React.ReactElement, { size: 14 })}
         </div>
         <div className="flex-1 min-w-0">
-            <h4 className="font-black text-stone-100 tracking-wider mb-0.5 text-xs md:text-sm">{name}</h4>
-            <p className="text-stone-400 text-[10px] md:text-xs leading-tight">{description}</p>
+            <h4 className="font-black text-stone-100 tracking-wider mb-0.5 text-[10px] md:text-xs">{name}</h4>
+            <p className="text-stone-400 text-[9px] md:text-[10px] leading-tight">{description}</p>
             {effect && (
-                <div className="mt-1 text-[10px] font-bold text-amber-500 bg-amber-950/30 px-1.5 py-0.5 inline-block rounded-sm">
+                <div className="mt-1 text-[8px] font-bold text-amber-500 bg-amber-950/30 px-1.5 py-0.5 inline-block rounded-sm">
                     {effect}
                 </div>
             )}
@@ -42,13 +42,13 @@ const InfoCard: React.FC<{
     children: React.ReactNode;
     color: string;
 }> = ({ icon, title, children, color }) => (
-    <div className={`bg-stone-900/60 border-l-4 ${color} p-3 md:p-4 rounded-r-sm`}>
-        <h3 className={`font-black mb-2 flex items-center gap-2 text-sm md:text-base ${color.replace('border-', 'text-').replace('-500', '-400').replace('-600', '-500')}`}>
-            {icon} {title}
+    <div className={`bg-stone-900/60 border-l-4 ${color} p-2 md:p-2.5 rounded-r-sm`}>
+        <h3 className={`font-black mb-1 flex items-center gap-1.5 text-xs md:text-sm ${color.replace('border-', 'text-').replace('-500', '-400').replace('-600', '-500')}`}>
+            {React.cloneElement(icon as React.ReactElement, { size: 14 })} {title}
         </h3>
-        <p className="text-stone-300 text-xs md:text-sm leading-relaxed">
+        <div className="text-stone-300 text-[10px] md:text-xs leading-relaxed">
             {children}
-        </p>
+        </div>
     </div>
 );
 
@@ -57,20 +57,27 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
     const [scale, setScale] = useState(1);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
-            const targetWidth = 1000; // Reference width - Wide for grid, but can be scaled
-            const targetHeight = 420; // Reference height - EVEN LOWER to aggressively scale up on short screens
+            const mob = window.innerWidth < 768;
+            setIsMobile(mob);
+
+            if (mob) {
+                // On mobile, skip CSS scale entirely — use natural responsive layout
+                setScale(1);
+                return;
+            }
+
+            const targetWidth = 1000;
+            const targetHeight = 420;
 
             const wScale = Math.min(1, (window.innerWidth - 20) / targetWidth);
             const hScale = Math.min(1, (window.innerHeight - 20) / targetHeight);
 
             let newScale = Math.min(wScale, hScale);
-
             if (newScale < 0.6) newScale = 0.6;
-
-            // Removed complex tightHeightScale logic as simply lowering targetHeight is more effective for this case
 
             setScale(newScale);
         };
@@ -479,10 +486,9 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
     }, [currentPage]);
 
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-2 md:p-4">
+        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md p-2 sm:p-4 overflow-y-auto custom-scrollbar">
             <div
-                className="w-full max-w-5xl bg-stone-950/40 backdrop-blur-2xl border border-stone-800/50 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative flex flex-col h-[95vh] md:h-[85vh] rounded-2xl overflow-hidden origin-center transition-all duration-300 ring-1 ring-white/5"
-                style={{ transform: `scale(${scale})` }}
+                className="w-[85vw] h-[85vh] max-w-[85vw] max-h-[85vh] bg-stone-950/45 backdrop-blur-2xl border border-stone-850 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative flex flex-col overflow-hidden rounded-2xl ring-1 ring-white/5 my-auto"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
@@ -491,57 +497,57 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-500/10 to-transparent" />
 
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-stone-800/50 bg-stone-950/20 shrink-0">
-                    <div className="flex items-center gap-4">
-                        <div className="p-2 bg-stone-900/60 rounded-xl border border-stone-800 flex items-center justify-center text-red-500">
+                <div className="flex justify-between items-center p-4 border-b border-stone-800/50 bg-stone-950/20 shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="p-1.5 bg-stone-900/60 rounded-xl border border-stone-800 flex items-center justify-center text-red-500">
                             {pages[currentPage].icon}
                         </div>
                         <div>
-                            <h2 className="text-xl font-black text-white tracking-[0.2em] uppercase leading-tight">
+                            <h2 className="text-base sm:text-lg font-black text-white tracking-[0.2em] uppercase leading-tight">
                                 {pages[currentPage].title}
                             </h2>
-                            <p className="text-[10px] text-stone-500 font-bold tracking-[0.4em] uppercase">Tactical Manual 1.0</p>
+                            <p className="text-[8px] sm:text-[9px] text-stone-500 font-bold tracking-[0.4em] uppercase">Tactical Manual 1.0</p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 text-stone-500 hover:text-white hover:bg-white/5 rounded-full transition-all active:scale-95"
+                        className="p-1.5 text-stone-500 hover:text-white hover:bg-white/5 rounded-full transition-all active:scale-95 cursor-pointer"
                         aria-label="Close guide"
                     >
-                        <X size={24} />
+                        <X size={20} />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-8 overscroll-contain custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 overscroll-contain custom-scrollbar">
                     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {pages[currentPage].content}
                     </div>
                 </div>
 
                 {/* Footer - Navigation */}
-                <div className="shrink-0 p-4 border-t border-stone-800/50 bg-stone-950/40 backdrop-blur-xl">
+                <div className="shrink-0 p-3 border-t border-stone-800/50 bg-stone-950/40 backdrop-blur-xl">
                     <div className="max-w-4xl mx-auto flex items-center justify-between">
                         <button
                             onClick={prevPage}
                             disabled={currentPage === 0}
-                            className={`flex items-center gap-2 px-6 py-3 font-black tracking-[0.2em] transition-all text-[10px] rounded-xl border ${currentPage === 0
+                            className={`flex items-center gap-1.5 px-4 py-2 font-black tracking-[0.2em] transition-all text-[8px] sm:text-[9px] rounded-xl border ${currentPage === 0
                                 ? 'border-transparent text-transparent pointer-events-none'
                                 : 'border-stone-800 text-stone-400 hover:text-white hover:bg-white/5 hover:border-stone-600'
                                 }`}
                         >
-                            <ChevronLeft size={16} />
+                            <ChevronLeft size={14} />
                             BACK
                         </button>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                             {pages.map((_, index) => (
                                 <button
                                     key={index}
                                     onClick={() => goToPage(index)}
-                                    className={`h-1.5 rounded-full transition-all ${index === currentPage
-                                        ? 'w-8 bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.5)]'
-                                        : 'w-2 bg-stone-800 hover:bg-stone-700'
+                                    className={`h-1 rounded-full transition-all ${index === currentPage
+                                        ? 'w-6 bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.5)]'
+                                        : 'w-1.5 bg-stone-800 hover:bg-stone-700'
                                         }`}
                                 />
                             ))}
@@ -550,13 +556,13 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
                         <button
                             onClick={nextPage}
                             disabled={currentPage === pages.length - 1}
-                            className={`flex items-center gap-2 px-6 py-3 font-black tracking-[0.2em] transition-all text-[10px] rounded-xl border ${currentPage === pages.length - 1
+                            className={`flex items-center gap-1.5 px-4 py-2 font-black tracking-[0.2em] transition-all text-[8px] sm:text-[9px] rounded-xl border ${currentPage === pages.length - 1
                                 ? 'border-transparent text-transparent pointer-events-none'
                                 : 'bg-white text-black hover:bg-stone-200 border-white'
                                 }`}
                         >
                             NEXT
-                            <ChevronRight size={16} />
+                            <ChevronRight size={14} />
                         </button>
                     </div>
                 </div>

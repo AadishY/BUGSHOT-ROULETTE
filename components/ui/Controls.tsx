@@ -2,7 +2,18 @@ import React from 'react';
 import { AimTarget, TurnOwner } from '../../types';
 import { Hand, Target, User } from 'lucide-react';
 import { audioManager } from '../../utils/audioManager';
-import { GameStateData } from '../../hooks/useSocket';
+
+export interface GameStateData {
+    players: Record<string, {
+        id: string;
+        name: string;
+        isAlive?: boolean;
+    }> | Array<{
+        id: string;
+        name: string;
+        isAlive?: boolean;
+    }>;
+}
 
 interface ControlsProps {
     isGunHeld: boolean;
@@ -58,7 +69,7 @@ const ControlsComponent: React.FC<ControlsProps> = ({
                             }
                         }}
                         disabled={isProcessing || isRecovering}
-                        className={`bg-black/90 border px-6 py-4 lg:px-10 lg:py-6 font-black text-xs lg:text-xl transition-all active:scale-95 shadow-lg tracking-wider flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${isRecovering
+                        className={`bg-black/90 border px-6 py-4 lg:px-10 lg:py-6 font-black text-xs lg:text-xl transition-all active:scale-95 shadow-lg tracking-wider flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed translate-y-4 sm:translate-y-0 ${isRecovering
                             ? 'border-red-800 text-red-500 disabled:animate-none'
                             : 'border-stone-500 text-stone-200 hover:bg-stone-800 hover:text-white hover:border-white animate-pulse'
                             }`}

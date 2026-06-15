@@ -3,6 +3,27 @@ import { X, Trophy, Activity, Target, Zap, Skull, Swords } from 'lucide-react';
 import { GameStats, getStoredStats } from '../../utils/statsManager';
 import { audioManager } from '../../utils/audioManager';
 
+// Thematic codename pools for match history display
+const NORMAL_CODENAMES = [
+    'VIPER', 'BLACKOUT', 'WRAITH', 'KINGPIN', 'PHANTOM',
+    'SHADOW OPS', 'NIGHTFALL', 'DEADLOCK', 'SERPENT', 'CRIMSON TIDE',
+    'IRON WOLF', 'GHOST WIRE', 'COLD FRONT', 'REAPER', 'OBSIDIAN',
+    'THUNDERCLAP', 'DARK PULSE', 'STEEL RAIN', 'VOID WALKER', 'ECLIPSE'
+];
+
+const HARD_CODENAMES = [
+    'IRON FANG', 'DARK HARVEST', 'SCORCHED EARTH', 'BLOOD MERIDIAN',
+    'DEAD RECKONING', 'HELLFIRE', 'OMEGA PURGE', 'SKULL CIRCUIT',
+    'DEATH WARRANT', 'BLACK HORIZON', 'ENDGAME', 'FINAL PROTOCOL',
+    'LAST RITES', 'EXTINCTION', 'DOOMSDAY ARC', 'VOID COLLAPSE',
+    'INFERNO GATE', 'CARNAGE PRIME', 'ANNIHILATION', 'TERMINUS'
+];
+
+const getMatchCodename = (index: number, isHardMode: boolean): string => {
+    const pool = isHardMode ? HARD_CODENAMES : NORMAL_CODENAMES;
+    return pool[index % pool.length];
+};
+
 interface ScoreboardProps {
     onClose: () => void;
 }
@@ -124,7 +145,7 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ onClose }) => {
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xs font-black text-stone-300 tracking-wider">
-                                                        {match.isHardMode ? 'STRIKE FORCE' : 'MISSION'} {i + 1}
+                                                        {match.isHardMode ? `DIR. ${getMatchCodename(i, true)}` : `OP. ${getMatchCodename(i, false)}`} #{i + 1}
                                                     </span>
                                                     {match.isHardMode && (
                                                         <span className="text-[7px] bg-red-950/50 text-red-500 border border-red-900/30 px-1.5 py-0.5 rounded font-black tracking-widest uppercase">Elite</span>

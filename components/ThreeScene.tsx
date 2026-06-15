@@ -38,16 +38,16 @@ const calculatePixelScale = (settings: GameSettings, width: number) => {
         isMob = true;
     }
 
-    const isLowEndDevice = (isMob && (isAndroid || pixelRatio < 2 || navigator.hardwareConcurrency < 6)) || !!settings.ultraPerformance;
+    const isLowEndDevice = (isMob && (isAndroid || pixelRatio < 2 || navigator.hardwareConcurrency < 6)) || !!settings.ultraPerformance || !!settings.balancedPerformance;
 
     let mobilePixelScale = 2;
     if (isMob) {
-        mobilePixelScale = settings.ultraPerformance ? 5.5 : (isLowEndDevice ? 4.5 : 3.5);
+        mobilePixelScale = settings.ultraPerformance ? 5.5 : (settings.balancedPerformance ? 4.5 : (isLowEndDevice ? 4.5 : 3.5));
     } else if (isTab) {
-        mobilePixelScale = settings.ultraPerformance ? 4.0 : 2.2;
+        mobilePixelScale = settings.ultraPerformance ? 4.0 : (settings.balancedPerformance ? 3.0 : 2.2);
     }
 
-    return (isMob || isTab) ? mobilePixelScale : (settings.ultraPerformance ? 5.0 : (settings.pixelScale || 3));
+    return (isMob || isTab) ? mobilePixelScale : (settings.ultraPerformance ? 5.0 : (settings.balancedPerformance ? 4.0 : (settings.pixelScale || 3)));
 };
 
 export const ThreeScene: React.FC<ThreeSceneProps> = ({
@@ -313,7 +313,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
         };
 
         updateRes();
-    }, [settings.pixelScale, settings.ultraPerformance]);
+    }, [settings.pixelScale, settings.ultraPerformance, settings.balancedPerformance]);
 
     // --- SYNC EFFECTS ---
     useEffect(() => {

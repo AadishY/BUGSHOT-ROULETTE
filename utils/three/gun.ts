@@ -5,11 +5,39 @@ export const createGunModel = (scene: THREE.Scene) => {
     const isMobile = scene.userData.isMobile || false;
     const shouldCastShadow = !isMobile;
 
-    const metalMat = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.9, roughness: 0.15, envMapIntensity: 1 });
-    const woodMat = new THREE.MeshStandardMaterial({ color: 0x4a3228, roughness: 0.8 });
-    const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.8, roughness: 0.4 });
-    const chokeMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.7, roughness: 0.7 });
-    const sawCutMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 1.0, roughness: 0.1 });
+    const settings = scene.userData.settings || {};
+    const ultraPerformance = !!settings.ultraPerformance;
+    const balancedPerformance = !!settings.balancedPerformance;
+
+    const metalMat = ultraPerformance 
+        ? new THREE.MeshBasicMaterial({ color: 0x999999 })
+        : (balancedPerformance 
+            ? new THREE.MeshLambertMaterial({ color: 0x999999 }) 
+            : new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.9, roughness: 0.15, envMapIntensity: 1 }));
+            
+    const woodMat = ultraPerformance 
+        ? new THREE.MeshBasicMaterial({ color: 0x4a3228 })
+        : (balancedPerformance 
+            ? new THREE.MeshLambertMaterial({ color: 0x4a3228 }) 
+            : new THREE.MeshStandardMaterial({ color: 0x4a3228, roughness: 0.8 }));
+            
+    const darkMetalMat = ultraPerformance 
+        ? new THREE.MeshBasicMaterial({ color: 0x1a1a1a })
+        : (balancedPerformance 
+            ? new THREE.MeshLambertMaterial({ color: 0x1a1a1a }) 
+            : new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.8, roughness: 0.4 }));
+            
+    const chokeMat = ultraPerformance 
+        ? new THREE.MeshBasicMaterial({ color: 0x111111 })
+        : (balancedPerformance 
+            ? new THREE.MeshLambertMaterial({ color: 0x111111 }) 
+            : new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.7, roughness: 0.7 }));
+            
+    const sawCutMat = ultraPerformance 
+        ? new THREE.MeshBasicMaterial({ color: 0xcccccc })
+        : (balancedPerformance 
+            ? new THREE.MeshLambertMaterial({ color: 0xcccccc }) 
+            : new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 1.0, roughness: 0.1 }));
 
     const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.2, 3.2), metalMat);
     receiver.castShadow = shouldCastShadow;

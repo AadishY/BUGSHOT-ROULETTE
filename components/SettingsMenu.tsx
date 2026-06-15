@@ -57,11 +57,11 @@ const CustomSlider: React.FC<{
 
     return (
         <div
-            className="relative w-full h-8 flex items-center touch-none select-none"
+            className="relative w-full h-6 flex items-center touch-none select-none"
             ref={trackRef}
         >
             {/* Track Background */}
-            <div className="absolute w-full h-2 bg-stone-800 rounded-full overflow-hidden">
+            <div className="absolute w-full h-1.5 bg-stone-800 rounded-full overflow-hidden">
                 {/* Fill */}
                 <div
                     className="h-full bg-stone-600"
@@ -71,8 +71,8 @@ const CustomSlider: React.FC<{
 
             {/* Thumb - The Red Dot */}
             <div
-                className="absolute w-6 h-6 bg-red-600 rounded-full border-2 border-stone-200 cursor-grab active:cursor-grabbing shadow-lg shadow-black/50 z-10 hover:scale-110 transition-transform"
-                style={{ left: `calc(${percent}% - 12px)` }}
+                className="absolute w-5 h-5 bg-red-600 rounded-full border-2 border-stone-200 cursor-grab active:cursor-grabbing shadow-lg shadow-black/50 z-10 hover:scale-110 transition-transform"
+                style={{ left: `calc(${percent}% - 10px)` }}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
@@ -83,72 +83,49 @@ const CustomSlider: React.FC<{
 };
 
 export const SettingsMenu: React.FC<SettingsMenuProps> = ({ settings, onUpdateSettings, onClose, onResetDefaults, onExitToMenu, showExitToMenu }) => {
-    const [scale, setScale] = useState(1);
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const handleResize = () => {
-            const width = window.innerWidth;
-            const isMob = width < 768;
-            setIsMobile(isMob);
-
-            const targetWidth = 720;
-            const targetHeight = 680;
-            const wScale = Math.min(1, (width - 40) / targetWidth);
-            const hScale = Math.min(1, (window.innerHeight - 40) / targetHeight);
-            let newScale = Math.min(wScale, hScale);
-            if (newScale < 0.6) newScale = 0.6;
-            setScale(newScale);
-        };
-        window.addEventListener('resize', handleResize);
-        handleResize();
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
     const handleChange = (key: keyof GameSettings, value: number | boolean) => {
         onUpdateSettings({ ...settings, [key]: value });
     };
 
     return (
-        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-md p-0 md:p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[250] flex flex-col items-center justify-center bg-black/60 backdrop-blur-md p-2 sm:p-4 overflow-y-auto custom-scrollbar">
             <div
-                className={`w-full bg-stone-950/40 backdrop-blur-2xl border-0 md:border border-stone-800/50 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative flex flex-col overflow-hidden ${isMobile ? 'h-full max-h-full rounded-none' : 'max-w-2xl max-h-[90vh] rounded-2xl ring-1 ring-white/5'}`}
-                style={!isMobile ? { transform: `scale(${scale})`, transformOrigin: 'center center' } : {}}
+                className="w-[85vw] h-[85vh] max-w-[85vw] max-h-[85vh] bg-stone-950/45 backdrop-blur-2xl border border-stone-850 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative flex flex-col overflow-hidden rounded-2xl ring-1 ring-white/5 my-auto"
             >
                 {/* Decorative */}
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-stone-500/20 to-transparent" />
 
                 {/* Header */}
-                <div className="p-4 md:p-5 border-b border-stone-800/50 flex justify-between items-center bg-stone-950/20">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-stone-900/60 rounded-xl border border-stone-800 flex items-center justify-center text-stone-400">
-                            <Monitor size={20} />
+                <div className="p-3 sm:p-4 border-b border-stone-800/50 flex justify-between items-center bg-stone-950/20">
+                    <div className="flex items-center gap-2.5">
+                        <div className="p-1.5 bg-stone-900/60 rounded-xl border border-stone-800 flex items-center justify-center text-stone-400">
+                            <Monitor size={18} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black text-white tracking-[0.2em] uppercase leading-tight">SETTINGS</h2>
-                            <p className="text-[10px] text-stone-500 font-bold tracking-[0.4em] uppercase">Display & Audio</p>
+                            <h2 className="text-sm sm:text-base font-black text-white tracking-[0.2em] uppercase leading-tight">SETTINGS</h2>
+                            <p className="text-[8px] sm:text-[9px] text-stone-500 font-bold tracking-[0.4em] uppercase">Display & Audio</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 text-stone-500 hover:text-white hover:bg-white/5 rounded-full transition-all active:scale-95">
-                        <X size={24} />
+                    <button onClick={onClose} className="p-1.5 text-stone-500 hover:text-white hover:bg-white/5 rounded-full transition-all active:scale-95 cursor-pointer">
+                        <X size={20} />
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5 md:space-y-6 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 custom-scrollbar">
 
                     {/* Visuals Group */}
-                    <div className="space-y-4 md:space-y-5">
+                    <div className="space-y-3 sm:space-y-4">
                         <div className="flex items-center gap-2">
-                            <h3 className="text-stone-500 font-extrabold tracking-[0.2em] uppercase text-[10px]">Graphics</h3>
+                            <h3 className="text-stone-500 font-extrabold tracking-[0.2em] uppercase text-[9px] sm:text-[10px]">Graphics</h3>
                             <div className="h-[1px] flex-1 bg-stone-800/30" />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 md:gap-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 sm:gap-y-4">
                             {/* Pixelation */}
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-stone-300 font-bold tracking-widest text-[10px] uppercase">Resolution</span>
-                                    <span className="text-white font-black text-xs tabular-nums bg-stone-900 px-2 py-0.5 rounded border border-white/5">{settings.pixelScale.toFixed(1)}x</span>
+                                    <span className="text-stone-300 font-bold tracking-widest text-[9px] sm:text-[10px] uppercase">Resolution</span>
+                                    <span className="text-white font-black text-[10px] tabular-nums bg-stone-900 px-1.5 py-0.5 rounded border border-white/5">{settings.pixelScale.toFixed(1)}x</span>
                                 </div>
                                 <CustomSlider
                                     min={1} max={6} step={0.5}
@@ -158,10 +135,10 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ settings, onUpdateSe
                             </div>
 
                             {/* Brightness */}
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-stone-300 font-bold tracking-widest text-[10px] uppercase">Brightness</span>
-                                    <span className="text-white font-black text-xs tabular-nums bg-stone-900 px-2 py-0.5 rounded border border-white/5">{(settings.brightness * 100).toFixed(0)}%</span>
+                                    <span className="text-stone-300 font-bold tracking-widest text-[9px] sm:text-[10px] uppercase">Brightness</span>
+                                    <span className="text-white font-black text-[10px] tabular-nums bg-stone-900 px-1.5 py-0.5 rounded border border-white/5">{(settings.brightness * 100).toFixed(0)}%</span>
                                 </div>
                                 <CustomSlider
                                     min={0.1} max={2.0} step={0.1}
@@ -171,10 +148,10 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ settings, onUpdateSe
                             </div>
 
                             {/* HUD Scale */}
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-stone-300 font-bold tracking-widest text-[10px] uppercase">HUD Scale</span>
-                                    <span className="text-white font-black text-xs tabular-nums bg-stone-900 px-2 py-0.5 rounded border border-white/5">{settings.uiScale.toFixed(2)}x</span>
+                                    <span className="text-stone-300 font-bold tracking-widest text-[9px] sm:text-[10px] uppercase">HUD Scale</span>
+                                    <span className="text-white font-black text-[10px] tabular-nums bg-stone-900 px-1.5 py-0.5 rounded border border-white/5">{settings.uiScale.toFixed(2)}x</span>
                                 </div>
                                 <CustomSlider
                                     min={0.6} max={1.4} step={0.1}
@@ -184,10 +161,10 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ settings, onUpdateSe
                             </div>
 
                             {/* FOV */}
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-stone-300 font-bold tracking-widest text-[10px] uppercase">Field of View</span>
-                                    <span className="text-white font-black text-xs tabular-nums bg-stone-900 px-2 py-0.5 rounded border border-white/5">{settings.fov || 85}°</span>
+                                    <span className="text-stone-300 font-bold tracking-widest text-[9px] sm:text-[10px] uppercase">Field of View</span>
+                                    <span className="text-white font-black text-[10px] tabular-nums bg-stone-900 px-1.5 py-0.5 rounded border border-white/5">{settings.fov || 85}°</span>
                                 </div>
                                 <CustomSlider
                                     min={60} max={110} step={1}
@@ -195,37 +172,76 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ settings, onUpdateSe
                                     onChange={(val) => handleChange('fov', val)}
                                 />
                             </div>
-
                         </div>
 
-                        {/* Ultra Performance Toggle */}
-                        <div className="flex items-center justify-between p-4 bg-amber-950/15 border border-amber-900/35 rounded-xl mt-3">
+                        {/* Graphics Quality Profile Selector */}
+                        <div className="p-3 bg-stone-950/65 border border-stone-850 rounded-xl space-y-2">
                             <div>
-                                <span className="text-stone-300 font-bold tracking-widest text-[10px] uppercase block">Ultra Performance Mode</span>
-                                <span className="text-[9px] text-stone-500 font-bold uppercase tracking-wider block mt-1">Disables heavy shaders, scanlines, glows, particles, and details for ultra 60FPS on low-end devices.</span>
+                                <span className="text-stone-300 font-bold tracking-widest text-[9px] sm:text-[10px] uppercase block">Graphics Quality Profile</span>
+                                <span className="text-[8px] sm:text-[9px] text-stone-500 font-bold uppercase tracking-wider block mt-0.5">Select performance layout optimized for your device hardware.</span>
                             </div>
-                            <button
-                                onClick={() => handleChange('ultraPerformance', !settings.ultraPerformance)}
-                                className={`px-4 py-2 text-[10px] font-black tracking-widest uppercase transition-all rounded-lg border active:scale-95 ${settings.ultraPerformance ? 'bg-amber-600 hover:bg-amber-500 text-white border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'bg-transparent hover:bg-stone-900 text-stone-400 border-stone-850'}`}
-                            >
-                                {settings.ultraPerformance ? 'Active' : 'Inactive'}
-                            </button>
+                            <div className="grid grid-cols-3 gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onUpdateSettings({
+                                            ...settings,
+                                            ultraPerformance: false,
+                                            balancedPerformance: false
+                                        });
+                                    }}
+                                    className={`py-2 text-[9px] sm:text-[10px] font-black tracking-widest uppercase transition-all rounded-lg border active:scale-95 cursor-pointer ${(!settings.ultraPerformance && !settings.balancedPerformance) ? 'bg-red-950/20 text-red-400 border-red-800/50 shadow-[0_0_12px_rgba(220,38,38,0.2)]' : 'bg-transparent text-stone-400 border-stone-850 hover:bg-stone-900/60'}`}
+                                >
+                                    High Quality
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onUpdateSettings({
+                                            ...settings,
+                                            ultraPerformance: false,
+                                            balancedPerformance: true
+                                        });
+                                    }}
+                                    className={`py-2 text-[9px] sm:text-[10px] font-black tracking-widest uppercase transition-all rounded-lg border active:scale-95 cursor-pointer ${(settings.balancedPerformance) ? 'bg-amber-955/20 text-amber-400 border-amber-800/50 shadow-[0_0_12px_rgba(245,158,11,0.2)]' : 'bg-transparent text-stone-400 border-stone-850 hover:bg-stone-900/60'}`}
+                                >
+                                    Balanced
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onUpdateSettings({
+                                            ...settings,
+                                            ultraPerformance: true,
+                                            balancedPerformance: false
+                                        });
+                                    }}
+                                    className={`py-2 text-[9px] sm:text-[10px] font-black tracking-widest uppercase transition-all rounded-lg border active:scale-95 cursor-pointer ${(settings.ultraPerformance) ? 'bg-orange-955/20 text-orange-400 border-orange-800/50 shadow-[0_0_12px_rgba(249,115,22,0.2)]' : 'bg-transparent text-stone-400 border-stone-850 hover:bg-stone-900/60'}`}
+                                >
+                                    Potato (Ultra)
+                                </button>
+                            </div>
+                            <p className="text-[7.5px] sm:text-[8px] text-stone-500 uppercase tracking-widest leading-relaxed">
+                                {(!settings.ultraPerformance && !settings.balancedPerformance) && "• High Quality: Full dynamic PBR shaders, detailed texture maps, soft shadows, volumetric lighting."}
+                                {(settings.balancedPerformance) && "• Balanced: Medium pixelation, textures active, no shadow rendering overhead. Optimized for most mid-range systems."}
+                                {(settings.ultraPerformance) && "• Potato (Ultra): Low-poly unshaded flat materials, disabled post-processing, low resolution. Built for 60FPS on low-end hardware."}
+                            </p>
                         </div>
                     </div>
 
                     {/* Audio Group */}
-                    <div className="space-y-4 md:space-y-5">
+                    <div className="space-y-3 sm:space-y-4">
                         <div className="flex items-center gap-2">
-                            <h3 className="text-stone-500 font-extrabold tracking-[0.2em] uppercase text-[10px]">Sound</h3>
+                            <h3 className="text-stone-500 font-extrabold tracking-[0.2em] uppercase text-[9px] sm:text-[10px]">Sound</h3>
                             <div className="h-[1px] flex-1 bg-stone-800/30" />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 md:gap-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 sm:gap-y-4">
                             {/* Music Volume */}
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-stone-300 font-bold tracking-widest text-[10px] uppercase">Music</span>
-                                    <span className="text-white font-black text-xs tabular-nums bg-stone-900 px-2 py-0.5 rounded border border-white/5">{Math.round((settings.musicVolume ?? 0.5) * 100)}%</span>
+                                    <span className="text-stone-300 font-bold tracking-widest text-[9px] sm:text-[10px] uppercase">Music</span>
+                                    <span className="text-white font-black text-[10px] tabular-nums bg-stone-900 px-1.5 py-0.5 rounded border border-white/5">{Math.round((settings.musicVolume ?? 0.5) * 100)}%</span>
                                 </div>
                                 <CustomSlider
                                     min={0} max={1} step={0.1}
@@ -235,10 +251,10 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ settings, onUpdateSe
                             </div>
 
                             {/* SFX Volume */}
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-stone-300 font-bold tracking-widest text-[10px] uppercase">Effects</span>
-                                    <span className="text-white font-black text-xs tabular-nums bg-stone-900 px-2 py-0.5 rounded border border-white/5">{Math.round((settings.sfxVolume ?? 0.7) * 100)}%</span>
+                                    <span className="text-stone-300 font-bold tracking-widest text-[9px] sm:text-[10px] uppercase">Effects</span>
+                                    <span className="text-white font-black text-[10px] tabular-nums bg-stone-900 px-1.5 py-0.5 rounded border border-white/5">{Math.round((settings.sfxVolume ?? 0.7) * 100)}%</span>
                                 </div>
                                 <CustomSlider
                                     min={0} max={1} step={0.1}
@@ -250,16 +266,16 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ settings, onUpdateSe
                     </div>
 
                     {/* Debug Group */}
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                            <h3 className="text-red-500 font-extrabold tracking-[0.2em] uppercase text-[10px]">Developer</h3>
+                            <h3 className="text-red-500 font-extrabold tracking-[0.2em] uppercase text-[9px] sm:text-[10px]">Developer</h3>
                             <div className="h-[1px] flex-1 bg-red-950/30" />
                         </div>
 
-                        <div className="flex items-center justify-between p-4 bg-red-950/10 border border-red-900/30 rounded-xl">
+                        <div className="flex items-center justify-between p-3 bg-red-950/10 border border-red-900/30 rounded-xl">
                             <div>
-                                <span className="text-stone-300 font-bold tracking-widest text-[10px] uppercase block">Debug Overlay</span>
-                                <span className="text-[9px] text-stone-500 font-bold uppercase tracking-wider block mt-1">Enables cheats, item management, and chamber editor</span>
+                                <span className="text-stone-300 font-bold tracking-widest text-[9px] sm:text-[10px] uppercase block">Debug Overlay</span>
+                                <span className="text-[8px] sm:text-[9px] text-stone-500 font-bold uppercase tracking-wider block mt-0.5">Enables cheats, item management, and chamber editor</span>
                                 {(() => {
                                     const loggedInUser = localStorage.getItem('aadish_roulette_logged_in_user');
                                     let isDev = false;
@@ -270,11 +286,11 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ settings, onUpdateSe
                                         } catch(e) {}
                                     }
                                     return isDev ? (
-                                        <span className="text-[9px] text-green-500 font-extrabold uppercase tracking-wider block mt-1.5">
+                                        <span className="text-[8px] text-green-500 font-extrabold uppercase tracking-wider block mt-1">
                                             ✓ DEVELOPER: STATS WILL BE SAVED
                                         </span>
                                     ) : (
-                                        <span className="text-[9px] text-red-500 font-extrabold uppercase tracking-wider block mt-1.5 animate-pulse">
+                                        <span className="text-[8px] text-red-500 font-extrabold uppercase tracking-wider block mt-1 animate-pulse">
                                             ⚠ WARNING: STATS WILL NOT BE SAVED IN THIS MATCH
                                         </span>
                                     );
@@ -282,7 +298,7 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ settings, onUpdateSe
                             </div>
                             <button
                                 onClick={() => handleChange('debugMode', !settings.debugMode)}
-                                className={`px-4 py-2 text-[10px] font-black tracking-widest uppercase transition-all rounded-lg border active:scale-95 ${settings.debugMode ? 'bg-red-600 hover:bg-red-500 text-white border-red-500' : 'bg-transparent hover:bg-stone-900 text-stone-400 border-stone-800'}`}
+                                className={`px-3 py-1.5 text-[9px] sm:text-[10px] font-black tracking-widest uppercase transition-all rounded-lg border active:scale-95 cursor-pointer ${settings.debugMode ? 'bg-red-600 hover:bg-red-500 text-white border-red-500' : 'bg-transparent hover:bg-stone-900 text-stone-400 border-stone-800'}`}
                             >
                                 {settings.debugMode ? 'Enabled' : 'Disabled'}
                             </button>
@@ -290,16 +306,16 @@ export const SettingsMenu: React.FC<SettingsMenuProps> = ({ settings, onUpdateSe
                     </div>
                 </div>
 
-                <div className="p-4 md:p-5 border-t border-stone-800/50 bg-stone-950/40 backdrop-blur-xl flex flex-row gap-3 md:gap-4">
-                    <button onClick={onResetDefaults} className="flex-1 h-12 border border-stone-800 text-stone-500 hover:text-white hover:bg-white/5 px-4 font-black tracking-[0.2em] flex items-center justify-center gap-2 transition-all rounded-xl text-[10px] uppercase cursor-pointer">
-                        <RotateCcw size={14} /> Reset Defaults
+                <div className="p-3 sm:p-4 border-t border-stone-800/50 bg-stone-950/40 backdrop-blur-xl flex flex-row gap-2.5 sm:gap-3 shrink-0">
+                    <button onClick={onResetDefaults} className="flex-1 h-10 border border-stone-800 text-stone-500 hover:text-white hover:bg-white/5 px-3 font-black tracking-[0.2em] flex items-center justify-center gap-1.5 transition-all rounded-xl text-[9px] sm:text-[10px] uppercase cursor-pointer">
+                        <RotateCcw size={12} /> Reset
                     </button>
                     {showExitToMenu && onExitToMenu && (
-                        <button onClick={onExitToMenu} className="flex-1 h-12 border border-red-900/50 bg-red-950/20 text-red-500 hover:text-red-400 hover:bg-red-950/40 hover:border-red-700/50 px-4 font-black tracking-[0.2em] flex items-center justify-center gap-2 transition-all rounded-xl text-[10px] uppercase cursor-pointer">
-                            <LogOut size={14} /> Exit to Menu
+                        <button onClick={onExitToMenu} className="flex-1 h-10 border border-red-900/50 bg-red-950/20 text-red-500 hover:text-red-400 hover:bg-red-950/40 hover:border-red-770/50 px-3 font-black tracking-[0.2em] flex items-center justify-center gap-1.5 transition-all rounded-xl text-[9px] sm:text-[10px] uppercase cursor-pointer">
+                            <LogOut size={12} /> Exit
                         </button>
                     )}
-                    <button onClick={onClose} className="flex-[1.5] h-12 bg-white text-black font-black px-6 hover:bg-stone-200 transition-all tracking-[0.3em] rounded-xl text-xs uppercase shadow-xl cursor-pointer">
+                    <button onClick={onClose} className="flex-[1.5] h-10 bg-white text-black font-black px-4 hover:bg-stone-200 transition-all tracking-[0.25em] rounded-xl text-[10px] sm:text-xs uppercase shadow-xl cursor-pointer">
                         Return to Game
                     </button>
                 </div>

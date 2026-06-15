@@ -8,16 +8,21 @@ export const createDealerModel = (scene: THREE.Scene) => {
     const dealerGroup = new THREE.Group();
     dealerGroup.name = 'DEALER';
 
+    const settings = scene.userData.settings || {};
+    const ultraPerformance = !!settings.ultraPerformance;
+    const balancedPerformance = !!settings.balancedPerformance;
+
     // Materials
     const voidMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const teethMat = new THREE.MeshStandardMaterial({
-        color: 0xffffcc, // Yellowed
-        roughness: 0.4,
-        metalness: 0.1
-    });
+    const teethMat = ultraPerformance 
+        ? new THREE.MeshBasicMaterial({ color: 0xffffcc }) 
+        : (balancedPerformance 
+            ? new THREE.MeshLambertMaterial({ color: 0xffffcc }) 
+            : new THREE.MeshStandardMaterial({ color: 0xffffcc, roughness: 0.4, metalness: 0.1 }));
 
     // Creates a gruesome skin texture with blood/grime
     const createDirtySkinTexture = () => {
+        if (ultraPerformance) return null;
         const canvas = document.createElement('canvas');
         canvas.width = 512; canvas.height = 512;
         const ctx = canvas.getContext('2d');
@@ -56,12 +61,12 @@ export const createDealerModel = (scene: THREE.Scene) => {
         return tex;
     };
 
-    const skullMat = new THREE.MeshStandardMaterial({
-        map: createDirtySkinTexture(),
-        color: 0xffddcc,
-        roughness: 0.6,
-        metalness: 0.1
-    });
+    const dirtySkinTex = createDirtySkinTexture();
+    const skullMat = ultraPerformance 
+        ? new THREE.MeshBasicMaterial({ color: 0xffddcc }) 
+        : (balancedPerformance 
+            ? new THREE.MeshLambertMaterial({ map: dirtySkinTex || undefined, color: 0xffddcc }) 
+            : new THREE.MeshStandardMaterial({ map: dirtySkinTex || undefined, color: 0xffddcc, roughness: 0.6, metalness: 0.1 }));
 
     // === HEAD ===
     const headGroup = new THREE.Group();
@@ -164,8 +169,11 @@ export const createDealerModel = (scene: THREE.Scene) => {
     headGroup.add(mouthVoid);
 
     // === TEETH ===
-    // Blood gum mat
-    const gumMat = new THREE.MeshStandardMaterial({ color: 0x220000, roughness: 0.3 });
+    const gumMat = ultraPerformance 
+        ? new THREE.MeshBasicMaterial({ color: 0x220000 }) 
+        : (balancedPerformance 
+            ? new THREE.MeshLambertMaterial({ color: 0x220000 }) 
+            : new THREE.MeshStandardMaterial({ color: 0x220000, roughness: 0.3 }));
     const gum = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.3, 0.6), gumMat);
     gum.position.set(0, -1.4, 1.6);
     headGroup.add(gum);
@@ -194,13 +202,17 @@ export const createDealerModel = (scene: THREE.Scene) => {
 
     // === BODY ===
     // Dark, ill-fitting suit - Buckshot style (Black/Dark Grey)
-    const suitMat = new THREE.MeshStandardMaterial({
-        color: 0x080808, // Almost black
-        roughness: 0.5,  // Worn fabric (Reduced for highlights)
-        metalness: 0.1,
-        emissive: 0x000000,
-        emissiveIntensity: 0
-    });
+    const suitMat = ultraPerformance 
+        ? new THREE.MeshBasicMaterial({ color: 0x080808 }) 
+        : (balancedPerformance 
+            ? new THREE.MeshLambertMaterial({ color: 0x080808 }) 
+            : new THREE.MeshStandardMaterial({
+                color: 0x080808, // Almost black
+                roughness: 0.5,  // Worn fabric (Reduced for highlights)
+                metalness: 0.1,
+                emissive: 0x000000,
+                emissiveIntensity: 0
+            }));
 
     // Neck - thicker
     const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.9, 1.0), skullMat);
