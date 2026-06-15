@@ -57,18 +57,21 @@ export const BootScreen: React.FC<BootScreenProps> = ({ onContinue }) => {
 
     // Boot sequence screen
     return (
-        <div className="fixed inset-0 z-[100] bg-black flex flex-col justify-between p-6 md:p-12 font-mono select-none">
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col justify-between p-4 md:p-12 font-mono select-none transform translate3d(0,0,0)">
             <div className="flex justify-between items-start text-stone-600 text-[10px] sm:text-xs">
                 <span>AADISH_OS v1.0.0</span>
                 <span>MEM: 65536KB OK</span>
             </div>
-            <div className="flex-1 flex flex-col justify-center max-w-lg mx-auto w-full gap-4">
-                <div className="text-green-500 text-xs sm:text-sm space-y-1 h-48 overflow-hidden flex flex-col justify-end">
-                    {bootLines.map((line, i) => <div key={i} className="typewriter">{`> ${line}`}</div>)}
+            <div className="flex-1 flex flex-col justify-center max-w-lg mx-auto w-full gap-3 sm:gap-4 my-auto">
+                <div className="text-green-500 text-[11px] sm:text-sm space-y-1 h-[30vh] max-h-[10rem] sm:max-h-[12rem] overflow-hidden flex flex-col justify-end">
+                    {bootLines.map((line, i) => <div key={i} className="typewriter truncate">{`> ${line}`}</div>)}
                     <div className="text-green-500 animate-pulse">_</div>
                 </div>
-                <div className="w-full h-4 bg-stone-900 border border-stone-800 p-0.5 relative">
-                    <div className="h-full bg-green-700 relative overflow-hidden transition-all duration-70 ease-linear" style={{ width: `${Math.min(100, loadingProgress)}%` }} />
+                <div className="w-full h-3 sm:h-4 bg-stone-900 border border-stone-850 p-0.5 relative rounded-sm overflow-hidden shadow-inner">
+                    <div 
+                        className="h-full bg-green-700 relative overflow-hidden transition-all duration-100 ease-out will-change-[width] rounded-sm" 
+                        style={{ width: `${Math.min(100, loadingProgress)}%`, transform: 'translate3d(0,0,0)' }} 
+                    />
                 </div>
             </div>
         </div>

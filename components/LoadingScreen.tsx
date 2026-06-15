@@ -94,7 +94,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#052e16_1px,transparent_1px),linear-gradient(to_bottom,#052e16_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-25 pointer-events-none" />
 
             {/* Background Terminal Feed */}
-            <div className="absolute inset-0 opacity-15 pointer-events-none p-6 font-mono text-[10px] md:text-xs leading-relaxed max-w-3xl mx-auto flex flex-col justify-start h-2/3 mt-8">
+            <div className="absolute inset-0 opacity-15 pointer-events-none p-4 font-mono text-[9px] sm:text-xs leading-relaxed max-w-2xl mx-auto hidden sm:flex flex-col justify-start h-2/3 mt-6">
                 {terminalLines.map((line, i) => (
                     <div key={i} className="mb-1 tracking-wider font-semibold animate-in fade-in slide-in-from-left duration-200">
                         {line}
@@ -106,22 +106,22 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
             <div className="scan-line !opacity-[0.12] pointer-events-none" />
 
             {/* Main Center Console Loading UI */}
-            <div className={`relative z-10 flex flex-col items-center max-w-xl w-full p-8 rounded-2xl border border-green-950/40 bg-black/60 backdrop-blur-md transition-all duration-500 ${error ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 scale-100'}`}>
+            <div className={`relative z-10 flex flex-col items-center w-[90vw] max-w-md p-5 sm:p-8 rounded-2xl border border-green-950/40 bg-black/70 backdrop-blur-md transition-all duration-500 transform translate3d(0,0,0) will-change-transform ${error ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 scale-100'}`}>
                 {/* Visual Accent Ticks */}
-                <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-green-700/40" />
-                <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-green-700/40" />
-                <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-green-700/40" />
-                <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-green-700/40" />
+                <div className="absolute top-4 left-4 w-3 h-3 border-t-2 border-l-2 border-green-700/40" />
+                <div className="absolute top-4 right-4 w-3 h-3 border-t-2 border-r-2 border-green-700/40" />
+                <div className="absolute bottom-4 left-4 w-3 h-3 border-b-2 border-l-2 border-green-700/40" />
+                <div className="absolute bottom-4 right-4 w-3 h-3 border-b-2 border-r-2 border-green-700/40" />
 
-                <div className="text-2xl md:text-4xl font-black tracking-[0.25em] mb-10 text-center uppercase text-green-400 drop-shadow-[0_0_12px_rgba(74,222,128,0.3)]">
+                <div className="text-lg sm:text-3xl font-black tracking-[0.2em] mb-6 sm:mb-8 text-center uppercase text-green-400 drop-shadow-[0_0_12px_rgba(74,222,128,0.3)]">
                     {initialText}
                 </div>
 
                 {/* Progress Bar Frame */}
-                <div className="w-full max-w-md h-6 border-2 border-green-800 bg-stone-950 p-0.5 relative rounded-sm overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
+                <div className="w-full max-w-xs sm:max-w-md h-5 sm:h-6 border-2 border-green-800 bg-stone-950 p-0.5 relative rounded-sm overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
                     <div
-                        className="h-full bg-gradient-to-r from-green-600 to-green-400 shadow-[0_0_20px_rgba(34,197,94,0.7)] transition-all duration-75 ease-out rounded-sm relative"
-                        style={{ width: `${progress}%` }}
+                        className="h-full bg-gradient-to-r from-green-600 to-green-400 shadow-[0_0_20px_rgba(34,197,94,0.7)] transition-all duration-75 ease-out rounded-sm relative will-change-[width]"
+                        style={{ width: `${progress}%`, transform: 'translate3d(0,0,0)' }}
                     >
                         {/* Segment Stripes for Premium Feel */}
                         <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_50%,rgba(0,0,0,0.4)_50%)] bg-[size:8px_100%]" />
@@ -131,13 +131,13 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
                 </div>
 
                 {/* Performance Matrix Readout */}
-                <div className="mt-6 flex items-baseline gap-2 font-black text-xl md:text-3xl tracking-[0.1em]">
-                    <span className="text-green-600 text-sm font-bold">SYS_LOAD:</span>
+                <div className="mt-4 sm:mt-6 flex items-baseline gap-1.5 font-black text-lg sm:text-2xl tracking-[0.1em]">
+                    <span className="text-green-600 text-xs font-bold">SYS_LOAD:</span>
                     <span>{Math.round(progress)}</span>
                     <span className="text-xs text-green-600 font-bold">%</span>
                 </div>
 
-                <div className="mt-8 text-[10px] md:text-xs text-green-700/90 font-black tracking-[0.3em] uppercase text-center max-w-xs leading-relaxed animate-pulse border-t border-green-950/60 pt-4 w-full">
+                <div className="mt-6 sm:mt-8 text-[9px] sm:text-xs text-green-700/90 font-black tracking-[0.2em] uppercase text-center max-w-xs leading-relaxed animate-pulse border-t border-green-950/60 pt-3 w-full">
                     {warningText}
                 </div>
             </div>

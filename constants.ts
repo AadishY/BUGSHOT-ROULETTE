@@ -20,15 +20,36 @@ export const ITEM_DESCRIPTIONS: Record<ItemType, string> = {
   'CONTRACT': 'SACRIFICE 1HP FOR 2 ITEMS'
 };
 
-export const DEFAULT_SETTINGS: GameSettings = {
-  pixelScale: 3.5,
-  brightness: 1.2,
-  uiScale: 0.8,
-  fov: 60,
-  musicVolume: 0.3,
-  sfxVolume: 1.0,
-  debugMode: false
+const getInitialSettings = (): GameSettings => {
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
+  const isAndroid = ua.includes('android');
+  const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
+  
+  if (isAndroid || isMobile) {
+    return {
+      pixelScale: 3.5,
+      brightness: 1.2,
+      uiScale: 0.60,
+      fov: 60,
+      musicVolume: 0.5,
+      sfxVolume: 0.5,
+      debugMode: false
+    };
+  } else {
+    // PC
+    return {
+      pixelScale: 3.0,
+      brightness: 1.2,
+      uiScale: 0.8,
+      fov: 60,
+      musicVolume: 0.5,
+      sfxVolume: 1.0,
+      debugMode: false
+    };
+  }
 };
+
+export const DEFAULT_SETTINGS: GameSettings = getInitialSettings();
 
 export const GAME_VERSION = '1.1.0';
 

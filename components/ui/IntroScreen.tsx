@@ -115,13 +115,13 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         if (isMobileUA || ios) setIsInstallable(true);
 
         const handleResize = () => {
-            const hScale = Math.min(1, (window.innerHeight - 10) / 600);
+            const hScale = Math.min(1, (window.innerHeight - 10) / 650);
             const wScale = Math.min(1, (window.innerWidth - 10) / 450);
             let newScale = Math.min(hScale, wScale);
             if (window.innerWidth < 500) {
-                newScale = Math.max(0.45, Math.min(0.85, window.innerWidth / 450));
+                newScale = Math.max(0.7, Math.min(0.95, window.innerWidth / 450));
             } else {
-                newScale = Math.max(newScale, 0.4);
+                newScale = Math.max(newScale, 0.6);
             }
             if (newScale > 1.1) newScale = 1.1;
             setScale(newScale);
@@ -289,17 +289,16 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
             </div>
         );
     }
-
-    return (
-        <div className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden pointer-events-auto bg-black/40 backdrop-blur-[2px]">
+     return (
+        <div className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden pointer-events-auto bg-black/40 backdrop-blur-[2px] p-4 select-none">
             
             {/* Top Right User Profile Badge Section */}
-            <div className="absolute top-6 right-6 z-[60] flex items-center gap-3">
+            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[60] flex items-center gap-3">
                 {loggedInUser ? (
-                    <div className="flex items-center gap-3 bg-stone-950/80 border border-green-900/40 p-2 px-4 rounded-xl backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center gap-3 bg-stone-950/80 border border-green-950/40 p-2 px-3 sm:px-4 rounded-xl backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
                         <div className="flex flex-col text-left">
                             <span className="text-[7px] text-stone-500 font-bold uppercase tracking-widest leading-none mb-0.5">Agent Signed In</span>
-                            <span className="text-[11px] text-green-400 font-mono font-black uppercase tracking-wider leading-none">{loggedInUser.username}</span>
+                            <span className="text-[10px] sm:text-[11px] text-green-400 font-mono font-black uppercase tracking-wider leading-none">{loggedInUser.username}</span>
                         </div>
                         <button
                             onClick={handleLogout}
@@ -314,11 +313,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                             audioManager.playSound('click');
                             setShowLoginModal(true);
                         }}
-                        className="group/signin px-5 py-2.5 bg-gradient-to-r from-red-950/60 to-stone-950/80 border border-red-700/50 text-red-400 hover:text-white hover:border-red-500 font-mono font-black text-[10px] tracking-[0.2em] rounded-xl backdrop-blur-md transition-all shadow-[0_0_25px_rgba(220,38,38,0.15)] hover:shadow-[0_0_40px_rgba(220,38,38,0.3)] hover:scale-105 active:scale-95 uppercase flex items-center gap-2.5 cursor-pointer"
+                        className="group/signin px-4 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-red-950/60 to-stone-950/80 border border-red-700/50 text-red-400 hover:text-white hover:border-red-500 font-mono font-black text-[9px] sm:text-[10px] tracking-[0.2em] rounded-xl backdrop-blur-md transition-all shadow-[0_0_25px_rgba(220,38,38,0.15)] hover:shadow-[0_0_40px_rgba(220,38,38,0.3)] hover:scale-105 active:scale-95 uppercase flex items-center gap-2 cursor-pointer"
                     >
-                        <span className="relative flex h-2 w-2">
+                        <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-red-600"></span>
                         </span>
                         Sign In / Register
                     </button>
@@ -326,13 +325,13 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
             </div>
 
             {/* Bottom Right Floating Changelog Button */}
-            <div className="absolute bottom-6 right-6 z-[60]">
+            <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-[60]">
                 <button
                     onClick={() => {
                         audioManager.playSound('click');
                         setShowChangelog(true);
                     }}
-                    className="group/cl p-4 bg-gradient-to-br from-stone-900/90 to-stone-950/90 border border-stone-700/50 text-stone-400 hover:text-amber-400 hover:border-amber-600/50 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 flex items-center justify-center cursor-pointer hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]"
+                    className="group/cl p-3.5 sm:p-4 bg-gradient-to-br from-stone-900/90 to-stone-950/90 border border-stone-700/50 text-stone-400 hover:text-amber-450 hover:border-amber-600/50 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 flex items-center justify-center cursor-pointer hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]"
                     title="System Changelog"
                 >
                     <BookOpen size={20} className="group-hover/cl:rotate-[-8deg] transition-transform duration-300" />
@@ -395,187 +394,132 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
             {showLoginModal && (
                 <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-2xl p-4 animate-in fade-in duration-300 overflow-y-auto">
                     {/* Glowing background circles for ambient depth */}
-                    <div className="absolute w-[500px] h-[500px] bg-red-950/15 rounded-full blur-[120px] pointer-events-none -translate-x-1/4 -translate-y-1/4" />
+                    <div className="absolute w-[450px] h-[450px] bg-red-950/15 rounded-full blur-[120px] pointer-events-none -translate-x-1/4 -translate-y-1/4" />
                     <div className="absolute w-[400px] h-[400px] bg-red-900/10 rounded-full blur-[100px] pointer-events-none translate-x-1/4 translate-y-1/4" />
                     
                     <div
-                        className="relative w-full max-w-2xl bg-stone-950 border border-red-500/20 rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.9),0_0_40px_rgba(239,68,68,0.1)] font-mono text-stone-300 flex flex-col md:flex-row overflow-hidden hover:border-red-500/35 transition-all duration-700"
-                        style={{ transform: `scale(${scale})`, transformOrigin: 'center' }}
+                        className="relative w-full max-w-xl bg-stone-950 border-2 border-red-500/20 rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.95),0_0_40px_rgba(239,68,68,0.15)] font-mono text-stone-300 p-8 sm:p-12 flex flex-col justify-center overflow-hidden hover:border-red-500/40 transition-all duration-700"
                     >
                         {/* CRT Scanline Overlay Effect */}
                         {!isMobile && (
                             <div className="absolute inset-0 pointer-events-none opacity-30 mix-blend-overlay bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_4px,6px_100%]" />
                         )}
                         
-                        {/* Top corner tech ticks */}
-                        <div className="absolute top-3 left-3 w-3 h-3 border-t-2 border-l-2 border-red-600/40 pointer-events-none" />
-                        <div className="absolute top-3 right-3 w-3 h-3 border-t-2 border-r-2 border-red-600/40 pointer-events-none" />
-                        <div className="absolute bottom-3 left-3 w-3 h-3 border-b-2 border-l-2 border-red-600/40 pointer-events-none" />
-                        <div className="absolute bottom-3 right-3 w-3 h-3 border-b-2 border-r-2 border-red-600/40 pointer-events-none" />
+                        {/* Tech ticks */}
+                        <div className="absolute top-4 left-4 w-3 h-3 border-t-2 border-l-2 border-red-650/40 pointer-events-none" />
+                        <div className="absolute top-4 right-4 w-3 h-3 border-t-2 border-r-2 border-red-650/40 pointer-events-none" />
+                        <div className="absolute bottom-4 left-4 w-3 h-3 border-b-2 border-l-2 border-red-650/40 pointer-events-none" />
+                        <div className="absolute bottom-4 right-4 w-3 h-3 border-b-2 border-r-2 border-red-650/40 pointer-events-none" />
 
-                        {/* LEFT SIDEBAR: System Diagnostics (Hidden on tiny screens, beautiful sidebar on desktop) */}
-                        <div className="w-full md:w-5/12 bg-stone-950 border-b md:border-b-0 md:border-r border-stone-900 p-6 md:p-8 flex flex-col justify-between select-none relative overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.05)_0%,transparent_80%)]">
-                            {/* Inner tech lines */}
-                            <div className="absolute right-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-stone-900 via-red-950/20 to-stone-900" />
-                            
-                            <div>
-                                {/* Cyberpunk HUD header */}
-                                <div className="flex items-center gap-2 text-red-500 mb-6">
-                                    <Activity size={18} className="animate-pulse" />
-                                    <span className="text-[10px] font-black tracking-[0.3em] uppercase">LINK_DIAGNOSTICS</span>
-                                </div>
+                        {/* Close button in top-right - Redesigned for high visibility */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                audioManager.playSound('click');
+                                setShowLoginModal(false);
+                                setLoginError('');
+                                setLoginSuccess('');
+                                setLoginPassword('');
+                                setLoginUsername('');
+                            }}
+                            className="absolute top-5 right-5 text-stone-300 hover:text-red-400 bg-stone-900/60 hover:bg-red-950/30 border border-stone-800 hover:border-red-500/45 p-2 rounded-xl z-50 cursor-pointer flex items-center justify-center shadow-lg hover:shadow-[0_0_15px_rgba(239,68,68,0.25)] transition-all"
+                            title="Close Portal"
+                        >
+                            <X size={18} />
+                        </button>
 
-                                {/* Status indicators */}
-                                <div className="space-y-4 font-mono text-[10px] text-stone-500">
-                                    <div className="bg-stone-900/30 border border-stone-900/60 p-3 rounded-lg space-y-2">
-                                        <div className="flex justify-between items-center">
-                                            <span>SYS_STATUS:</span>
-                                            <span className="text-green-500 font-bold flex items-center gap-1.5">
-                                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping" />
-                                                SECURE
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span>GATEWAY:</span>
-                                            <span className="text-stone-300 font-bold">REDIS_SHADOW</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span>CIPHER:</span>
-                                            <span className="text-red-500 font-bold">AES_256_GCM</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Mock server logs block */}
-                                    <div className="space-y-1 text-[8px] leading-relaxed opacity-60">
-                                        <div className="text-red-500/80">&gt; INITIALIZING SECURE HANDSHAKE...</div>
-                                        <div>&gt; AUTH_METHOD: SHADOW_HASH_v2</div>
-                                        <div>&gt; LOCAL_ADDR: 127.0.0.1:25600</div>
-                                        <div>&gt; HEARTBEAT: OK (45ms)</div>
-                                        <div>&gt; DECRYPT_PROTO: ACTIVE</div>
-                                    </div>
-                                </div>
+                        {/* Quote & Header details */}
+                        <div className="text-center mb-6 mt-2 border-b border-stone-900 pb-5">
+                            <div className="text-[10px] text-stone-500 tracking-[0.45em] uppercase mb-2.5 flex items-center justify-center gap-1.5">
+                                <Terminal size={12} className="text-red-600 animate-pulse" />
+                                <span>CON_SECURITY_PORTAL</span>
                             </div>
-
-                            {/* Footer guidelines */}
-                            <div className="mt-8 pt-4 border-t border-stone-900 text-[8px] text-stone-600 leading-normal">
-                                <span className="text-red-900 font-bold block mb-1">CLASSIFIED CONTRACT NOTICE:</span>
-                                Unauthorized attempts to decrypt memory states are tracked. All input data binds with soul state.
-                            </div>
+                            <h3 className="text-2xl sm:text-3xl font-black text-stone-100 tracking-wider uppercase mb-3.5">AGENT AUTHENTICATION</h3>
+                            <p className="text-red-500/80 italic text-xs sm:text-sm tracking-wider max-w-sm mx-auto animate-pulse font-medium">
+                                "The odds are equal, the consequences are not."
+                            </p>
                         </div>
 
-                        {/* RIGHT PANE: The Auth Form */}
-                        <form
-                            onSubmit={handleLoginSubmit}
-                            className="flex-1 p-6 md:p-8 flex flex-col justify-center relative bg-[radial-gradient(circle_at_bottom_right,rgba(239,68,68,0.03)_0%,transparent_70%)]"
-                        >
-                            {/* Close button in top-right */}
+                        {/* Tabs Switcher */}
+                        <div className="grid grid-cols-2 gap-3 mb-8 bg-stone-950 border border-stone-900 p-1.5 rounded-xl">
                             <button
                                 type="button"
                                 onClick={() => {
                                     audioManager.playSound('click');
-                                    setShowLoginModal(false);
+                                    setLoginTab('signin');
                                     setLoginError('');
                                     setLoginSuccess('');
-                                    setLoginPassword('');
-                                    setLoginUsername('');
                                 }}
-                                className="absolute top-4 right-4 text-stone-500 hover:text-red-500 transition-all p-1.5 border border-transparent hover:border-red-900/40 hover:bg-red-950/20 rounded-md z-20 cursor-pointer text-xs flex items-center justify-center gap-1 font-bold"
-                                title="Shutdown Terminal"
+                                className={`py-3 text-[11px] font-black tracking-widest uppercase transition-all duration-300 cursor-pointer rounded-lg border ${loginTab === 'signin' ? 'text-green-400 bg-green-950/15 border-green-800/45 shadow-[0_0_15px_rgba(34,197,94,0.08)]' : 'text-stone-550 border-transparent hover:text-stone-300 hover:bg-stone-900/40'}`}
                             >
-                                <span className="text-[9px] tracking-wider uppercase opacity-0 hover:opacity-100 transition-opacity">CLOSE</span>
-                                <X size={16} />
+                                [ SIGN_IN ]
                             </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    audioManager.playSound('click');
+                                    setLoginTab('register');
+                                    setLoginError('');
+                                    setLoginSuccess('');
+                                }}
+                                className={`py-3 text-[11px] font-black tracking-widest uppercase transition-all duration-300 cursor-pointer rounded-lg border ${loginTab === 'register' ? 'text-red-400 bg-red-950/15 border-red-800/45 shadow-[0_0_15px_rgba(220,38,38,0.08)]' : 'text-stone-550 border-transparent hover:text-stone-300 hover:bg-stone-900/40'}`}
+                            >
+                                [ REGISTER ]
+                            </button>
+                        </div>
 
-                            {/* Header details */}
-                            <div className="mb-6 mt-2">
-                                <div className="text-[9px] text-stone-500 tracking-[0.45em] uppercase mb-1 flex items-center gap-1.5">
-                                    <Terminal size={12} className="text-red-600 animate-pulse" />
-                                    <span>CON_SECURITY_PORTAL</span>
+                        {/* Form */}
+                        <form onSubmit={handleLoginSubmit} className="space-y-6">
+                            {/* Username Input */}
+                            <div>
+                                <div className="flex justify-between items-center mb-2 px-1">
+                                    <span className="text-[10px] text-stone-550 font-bold tracking-widest uppercase flex items-center gap-1.5">
+                                        <User size={12} className="text-red-650" />
+                                        CODENAME_INPUT
+                                    </span>
+                                    <span className="text-[8px] text-stone-600 font-mono tracking-widest uppercase">REQ: 1-12 CHARS</span>
                                 </div>
-                                <h3 className="text-lg font-black text-stone-100 tracking-wider uppercase">AGENT AUTHENTICATION</h3>
+                                <div className="relative flex items-center group/input">
+                                    <span className="absolute left-4 text-stone-600 group-focus-within/input:text-red-500 transition-colors font-bold text-sm pointer-events-none">[</span>
+                                    <input
+                                        type="text"
+                                        value={loginUsername}
+                                        onChange={(e) => setLoginUsername(e.target.value)}
+                                        placeholder="ENTER AGENT IDENTITY"
+                                        maxLength={12}
+                                        className="w-full bg-stone-950 border-2 border-stone-850 hover:border-stone-750 focus:border-red-500/50 px-8 py-4 text-sm font-mono font-bold text-stone-200 outline-none transition-all tracking-[0.15em] uppercase rounded-xl placeholder-stone-850 focus:shadow-[0_0_20px_rgba(220,38,38,0.06)]"
+                                        required
+                                    />
+                                    <span className="absolute right-4 text-stone-650 group-focus-within/input:text-red-500 transition-colors font-bold text-sm pointer-events-none">]</span>
+                                </div>
                             </div>
 
-                            {/* Tabs Switcher: Styled like command flags */}
-                            <div className="grid grid-cols-2 gap-2 mb-6 bg-stone-950 border border-stone-900 p-1 rounded-xl">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        audioManager.playSound('click');
-                                        setLoginTab('signin');
-                                        setLoginError('');
-                                        setLoginSuccess('');
-                                    }}
-                                    className={`py-2 text-[9px] font-black tracking-widest uppercase transition-all duration-300 cursor-pointer rounded-lg border ${loginTab === 'signin' ? 'text-green-400 bg-green-950/10 border-green-800/40 shadow-[0_0_10px_rgba(34,197,94,0.05)]' : 'text-stone-500 border-transparent hover:text-stone-300 hover:bg-stone-900/40'}`}
-                                >
-                                    [ SIGN_IN ]
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        audioManager.playSound('click');
-                                        setLoginTab('register');
-                                        setLoginError('');
-                                        setLoginSuccess('');
-                                    }}
-                                    className={`py-2 text-[9px] font-black tracking-widest uppercase transition-all duration-300 cursor-pointer rounded-lg border ${loginTab === 'register' ? 'text-red-400 bg-red-950/10 border-red-800/40 shadow-[0_0_10px_rgba(220,38,38,0.05)]' : 'text-stone-500 border-transparent hover:text-stone-300 hover:bg-stone-900/40'}`}
-                                >
-                                    [ REGISTER ]
-                                </button>
-                            </div>
-
-                            {/* Form Input Fields */}
-                            <div className="space-y-5">
-                                {/* Username Input */}
-                                <div>
-                                    <div className="flex justify-between items-center mb-1.5 px-1">
-                                        <span className="text-[8px] text-stone-500 font-bold tracking-widest uppercase flex items-center gap-1">
-                                            <User size={10} className="text-red-600" />
-                                            CODENAME_INPUT
-                                        </span>
-                                        <span className="text-[7px] text-stone-600 font-mono tracking-widest uppercase">REQ: 1-12 CHARS</span>
-                                    </div>
-                                    <div className="relative flex items-center group/input">
-                                        <span className="absolute left-3.5 text-stone-600 group-focus-within/input:text-red-500 transition-colors font-bold text-xs pointer-events-none">[</span>
-                                        <input
-                                            type="text"
-                                            value={loginUsername}
-                                            onChange={(e) => setLoginUsername(e.target.value)}
-                                            placeholder="ENTER AGENT IDENTITY"
-                                            maxLength={12}
-                                            className="w-full bg-stone-950 border border-stone-850 focus:border-red-600/45 px-7 py-3 text-xs font-mono font-bold text-stone-200 outline-none transition-all tracking-[0.15em] uppercase rounded-lg placeholder-stone-800 focus:shadow-[0_0_20px_rgba(220,38,38,0.03)]"
-                                            required
-                                        />
-                                        <span className="absolute right-3.5 text-stone-600 group-focus-within/input:text-red-500 transition-colors font-bold text-xs pointer-events-none">]</span>
-                                    </div>
+                            {/* Password Input */}
+                            <div>
+                                <div className="flex justify-between items-center mb-2 px-1">
+                                    <span className="text-[10px] text-stone-550 font-bold tracking-widest uppercase flex items-center gap-1.5">
+                                        <Lock size={12} className="text-red-650" />
+                                        ENCRYPTED_KEY_PASS
+                                    </span>
+                                    <span className="text-[8px] text-stone-600 font-mono tracking-widest uppercase">SECURE VAULT</span>
                                 </div>
-
-                                {/* Password Input */}
-                                <div>
-                                    <div className="flex justify-between items-center mb-1.5 px-1">
-                                        <span className="text-[8px] text-stone-500 font-bold tracking-widest uppercase flex items-center gap-1">
-                                            <Lock size={10} className="text-red-600" />
-                                            ENCRYPTED_KEY_PASS
-                                        </span>
-                                        <span className="text-[7px] text-stone-600 font-mono tracking-widest uppercase">SECURE VAULT</span>
-                                    </div>
-                                    <div className="relative flex items-center group/input">
-                                        <span className="absolute left-3.5 text-stone-600 group-focus-within/input:text-red-500 transition-colors font-bold text-xs pointer-events-none">[</span>
-                                        <input
-                                            type="password"
-                                            value={loginPassword}
-                                            onChange={(e) => setLoginPassword(e.target.value)}
-                                            placeholder="••••••••••••••"
-                                            className="w-full bg-stone-950 border border-stone-850 focus:border-red-600/45 px-7 py-3 text-xs font-mono font-bold text-stone-200 outline-none transition-all tracking-[0.15em] uppercase rounded-lg placeholder-stone-800 focus:shadow-[0_0_20px_rgba(220,38,38,0.03)]"
-                                            required
-                                        />
-                                        <span className="absolute right-3.5 text-stone-600 group-focus-within/input:text-red-500 transition-colors font-bold text-xs pointer-events-none">]</span>
-                                    </div>
+                                <div className="relative flex items-center group/input">
+                                    <span className="absolute left-4 text-stone-655 group-focus-within/input:text-red-500 transition-colors font-bold text-sm pointer-events-none">[</span>
+                                    <input
+                                        type="password"
+                                        value={loginPassword}
+                                        onChange={(e) => setLoginPassword(e.target.value)}
+                                        placeholder="••••••••••••••"
+                                        className="w-full bg-stone-950 border-2 border-stone-855 hover:border-stone-750 focus:border-red-500/50 px-8 py-4 text-sm font-mono font-bold text-stone-200 outline-none transition-all tracking-[0.15em] uppercase rounded-xl placeholder-stone-855 focus:shadow-[0_0_20px_rgba(220,38,38,0.06)]"
+                                        required
+                                    />
+                                    <span className="absolute right-4 text-stone-655 group-focus-within/input:text-red-500 transition-colors font-bold text-sm pointer-events-none">]</span>
                                 </div>
                             </div>
 
                             {/* Error Readout */}
                             {loginError && (
-                                <div className="mt-5 text-[8.5px] text-red-500 font-bold tracking-wider uppercase border border-red-900/40 bg-red-950/20 p-3 rounded-lg animate-[shake_0.5s_ease-in-out] flex items-center gap-2">
+                                <div className="text-[10px] text-red-550 font-bold tracking-wider uppercase border border-red-900/40 bg-red-950/20 p-3.5 rounded-lg animate-[shake_0.5s_ease-in-out] flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                                     <span>[CRITICAL FAULT: {loginError}]</span>
                                 </div>
@@ -583,20 +527,20 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
                             {/* Success Readout */}
                             {loginSuccess && (
-                                <div className="mt-5 text-[8.5px] text-green-500 font-bold tracking-wider uppercase border border-green-900/40 bg-green-950/20 p-3 rounded-lg animate-pulse flex items-center gap-2">
+                                <div className="text-[10px] text-green-500 font-bold tracking-wider uppercase border border-green-900/40 bg-green-950/20 p-3.5 rounded-lg animate-pulse flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping" />
                                     <span>[SYNC COMPLETE: {loginSuccess}]</span>
                                 </div>
                             )}
 
                             {/* Action Buttons */}
-                            <div className="mt-6 space-y-3">
+                            <div className="pt-2 space-y-4.5">
                                 <button
                                     type="submit"
                                     disabled={isLoadingRedis}
-                                    className="w-full py-3.5 bg-gradient-to-r from-red-950/65 to-red-900/50 hover:from-red-900 hover:to-red-750 text-red-400 hover:text-white font-black text-[10px] tracking-[0.25em] border border-red-900/60 hover:border-red-500 transition-all rounded-xl cursor-pointer shadow-md active:scale-[0.98] disabled:opacity-50 uppercase flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(220,38,38,0.25)]"
+                                    className="w-full py-5 bg-gradient-to-r from-red-950/80 to-red-900/60 hover:from-red-900 hover:to-red-750 text-red-400 hover:text-white font-black text-xs tracking-[0.3em] border-2 border-red-900/60 hover:border-red-500 transition-all rounded-xl cursor-pointer shadow-lg active:scale-[0.98] disabled:opacity-50 uppercase flex items-center justify-center gap-2 hover:shadow-[0_0_35px_rgba(220,38,38,0.4)]"
                                 >
-                                    {isLoadingRedis && <div className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />}
+                                    {isLoadingRedis && <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />}
                                     <span>
                                         {isLoadingRedis 
                                             ? 'ESTABLISHING SECURE NET_LINK...' 
@@ -615,9 +559,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                         setLoginPassword('');
                                         setLoginUsername('');
                                     }}
-                                    className="w-full py-1.5 bg-transparent text-stone-600 hover:text-stone-400 font-bold text-[8px] tracking-[0.3em] uppercase transition-colors cursor-pointer text-center"
+                                    className="w-full py-2 bg-transparent text-stone-600 hover:text-stone-400 font-bold text-[9px] tracking-[0.3em] uppercase transition-colors cursor-pointer text-center"
                                 >
-                                    — SHUTDOWN NET_LINK —
+                                    — SHUTDOWN PORTAL —
                                 </button>
                             </div>
                         </form>
@@ -625,62 +569,74 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                 </div>
             )}
 
-            {/* Changelog Modal */}
+            {/* Redesigned, Scaled-Up System Changelog Modal */}
             {showChangelog && (
-                <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-                    <div className="relative w-full max-w-md bg-stone-950/90 border-2 border-stone-800/80 p-6 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] font-mono">
-                        <div className="absolute top-0 left-0 w-full h-[2px] bg-red-600/30 animate-[scan-line-move_4s_linear_infinite]" />
-                        <div className="text-stone-300 font-black border-b border-stone-900 pb-3 mb-4 flex items-center justify-between uppercase tracking-wider text-sm">
+                <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                    <div className="relative w-full max-w-3xl bg-stone-950/95 border-2 border-stone-800/80 p-8 sm:p-10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] font-mono">
+                        {/* Top-right close button */}
+                        <button
+                            onClick={() => {
+                                audioManager.playSound('click');
+                                setShowChangelog(false);
+                            }}
+                            className="absolute top-5 right-5 text-stone-300 hover:text-red-400 bg-stone-900/60 hover:bg-red-950/30 border border-stone-800 hover:border-red-500/45 p-2 rounded-xl z-50 cursor-pointer flex items-center justify-center shadow-lg hover:shadow-[0_0_15px_rgba(239,68,68,0.25)] transition-all"
+                            title="Close Console"
+                        >
+                            <X size={18} />
+                        </button>
+
+                        <div className="absolute top-0 left-0 w-full h-[2px] bg-red-650/40 animate-[scan-line-move_4s_linear_infinite]" />
+                        <div className="text-stone-350 font-black border-b border-stone-900 pb-4 mb-5 flex items-center justify-between uppercase tracking-wider text-sm sm:text-base">
                             <span className="flex items-center gap-2">
-                                <Terminal size={16} className="text-red-500" />
+                                <Terminal size={18} className="text-red-500" />
                                 System Changelog
                             </span>
-                            <span className="text-red-500/80 animate-pulse flex items-center gap-1.5 text-xs">
+                            <span className="text-red-500/80 animate-pulse flex items-center gap-1.5 text-xs bg-red-950/20 border border-red-900/35 px-3 py-1 rounded-lg mr-10">
                                 <span className="w-1.5 h-1.5 bg-red-600 rounded-full" />
                                 active
                             </span>
                         </div>
                         
-                        <div className="space-y-4 text-left max-h-72 overflow-y-auto pr-1 select-text scrollbar-thin text-xs text-stone-400">
-                            <div className="space-y-2">
-                                <span className="text-stone-300 font-bold block border-b border-stone-900 pb-1">[June 14, 2026 - Polish & Redesign (v1.1.0)]</span>
-                                <ul className="list-none space-y-1.5 pl-1">
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-green-500 font-bold">+</span>
-                                        <span>Redesigned credentials modal with high-fidelity cyberpunk glassmorphism and glowing indicators</span>
+                        <div className="space-y-4.5 text-left max-h-96 overflow-y-auto pr-1.5 select-text scrollbar-thin text-xs sm:text-sm text-stone-400 custom-scrollbar">
+                            <div className="space-y-3 bg-stone-950 border border-stone-900/60 p-5 rounded-xl">
+                                <span className="text-stone-200 font-black block border-b border-stone-900 pb-1.5 text-xs sm:text-sm tracking-wider">[June 15, 2026 - System Calibration & Redesign (v1.1.0)]</span>
+                                <ul className="list-none space-y-3 pl-0.5">
+                                    <li className="flex items-start gap-2.5">
+                                        <span className="px-1.5 py-0.5 bg-green-950/50 border border-green-800/40 text-green-400 text-[8px] font-black rounded-md uppercase tracking-widest shrink-0 select-none">ADDED</span>
+                                        <span className="leading-relaxed">Redesigned credentials portal: scaled single-pane interface, clean cyber typography, and philosophical fate quote banner.</span>
                                     </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-green-500 font-bold">+</span>
-                                        <span>Integrated click-to-bind title screen into IntroScreen for early falling shells animation</span>
+                                    <li className="flex items-start gap-2.5">
+                                        <span className="px-1.5 py-0.5 bg-green-950/50 border border-green-800/40 text-green-400 text-[8px] font-black rounded-md uppercase tracking-widest shrink-0 select-none">ADDED</span>
+                                        <span className="leading-relaxed">Dynamically calibrated default configs on startup/reset (PC resolution 3.0, mobile HUD size 0.60, specific music levels).</span>
                                     </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-green-500 font-bold">+</span>
-                                        <span>Added auto-changelog popup check on first load after new version releases</span>
+                                    <li className="flex items-start gap-2.5">
+                                        <span className="px-1.5 py-0.5 bg-green-950/50 border border-green-800/40 text-green-400 text-[8px] font-black rounded-md uppercase tracking-widest shrink-0 select-none">ADDED</span>
+                                        <span className="leading-relaxed">Responsive vertical viewport scroll wrappers preventing item cutoff on mobile portrait and landscape viewports.</span>
                                     </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-green-500 font-bold">+</span>
-                                        <span>Fixed debug HP adjustments to instantly trigger appropriate Game Over win/loss result</span>
+                                    <li className="flex items-start gap-2.5">
+                                        <span className="px-1.5 py-0.5 bg-amber-950/50 border border-amber-800/40 text-amber-400 text-[8px] font-black rounded-md uppercase tracking-widest shrink-0 select-none">OPTIMIZED</span>
+                                        <span className="leading-relaxed">Expanded Global Leaderboard into detailed grid layouts featuring agent ranks, operational statistics, and podium finishers.</span>
                                     </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-green-500 font-bold">+</span>
-                                        <span>Aligned permanent match records to match debug kemenangan/kematian</span>
+                                    <li className="flex items-start gap-2.5">
+                                        <span className="px-1.5 py-0.5 bg-amber-950/50 border border-amber-800/40 text-amber-400 text-[8px] font-black rounded-md uppercase tracking-widest shrink-0 select-none">OPTIMIZED</span>
+                                        <span className="leading-relaxed">Re-engineered menu buttons: sleek neon glowing borders, smooth hover animations, and modern clean aesthetics.</span>
                                     </li>
                                 </ul>
                             </div>
-                            <div className="space-y-2">
-                                <span className="text-stone-550 font-bold block border-b border-stone-900 pb-1">[Previous Updates]</span>
-                                <ul className="list-none space-y-1.5 pl-1">
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-green-500 font-bold">+</span>
-                                        <span>Implemented device-aware graphics profiles (Mobile, Tablet, PC)</span>
+                            <div className="space-y-3 bg-stone-950 border border-stone-900/60 p-5 rounded-xl opacity-75 hover:opacity-100 transition-opacity">
+                                <span className="text-stone-400 font-black block border-b border-stone-900 pb-1.5 text-[11px] sm:text-xs tracking-wider">[Previous Deployments]</span>
+                                <ul className="list-none space-y-3 pl-0.5">
+                                    <li className="flex items-start gap-2.5">
+                                        <span className="px-1.5 py-0.5 bg-green-950/50 border border-green-800/40 text-green-400 text-[8px] font-black rounded-md uppercase tracking-widest shrink-0 select-none">ADDED</span>
+                                        <span className="leading-relaxed">Implemented device-aware graphics profiles (Mobile, Tablet, PC)</span>
                                     </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-green-500 font-bold">+</span>
-                                        <span>Disabled shadows and heavy lighting routines on Mobile and Tablet to secure smooth 60FPS</span>
+                                    <li className="flex items-start gap-2.5">
+                                        <span className="px-1.5 py-0.5 bg-red-950/50 border border-red-800/40 text-red-400 text-[8px] font-black rounded-md uppercase tracking-widest shrink-0 select-none">FIXED</span>
+                                        <span className="leading-relaxed">Disabled shadows and heavy lighting routines on Mobile and Tablet to secure smooth 60FPS</span>
                                     </li>
-                                    <li className="flex items-start gap-2">
-                                        <span className="text-green-500 font-bold">+</span>
-                                        <span>Implemented duplicate item drop reroll penalty (80% chance to reroll)</span>
+                                    <li className="flex items-start gap-2.5">
+                                        <span className="px-1.5 py-0.5 bg-blue-950/50 border border-blue-800/40 text-blue-400 text-[8px] font-black rounded-md uppercase tracking-widest shrink-0 select-none">SYSTEM</span>
+                                        <span className="leading-relaxed">Implemented duplicate item drop reroll penalty (80% chance to reroll)</span>
                                     </li>
                                 </ul>
                             </div>
@@ -691,7 +647,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                 audioManager.playSound('click');
                                 setShowChangelog(false);
                             }}
-                            className="mt-6 w-full py-3 bg-stone-900 border border-stone-800 hover:border-stone-600 hover:text-white text-stone-400 font-bold text-xs tracking-[0.4em] uppercase transition-all rounded-xl cursor-pointer"
+                            className="mt-6 w-full py-4 bg-stone-900 border border-stone-850 hover:border-stone-600 hover:text-white text-stone-400 font-bold text-xs tracking-[0.4em] uppercase transition-all rounded-xl cursor-pointer active:scale-98 shadow-md"
                         >
                             Close Console
                         </button>
@@ -699,62 +655,113 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                 </div>
             )}
 
-            {/* Global Leaderboard Modal */}
+            {/* Redesigned, Scaled-Up Global Leaderboard Modal */}
             {showLeaderboard && (
                 <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-300">
-                    <div className="relative w-full max-w-lg bg-stone-950/90 border-2 border-stone-800/80 p-6 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] font-mono">
-                        <div className="absolute top-0 left-0 w-full h-[2px] bg-amber-600/30 animate-[scan-line-move_4s_linear_infinite]" />
-                        <div className="text-stone-300 font-black border-b border-stone-900 pb-3 mb-4 flex items-center justify-between uppercase tracking-wider text-sm">
+                    <div className="relative w-full max-w-4xl bg-stone-950/95 border-2 border-stone-850 p-6 sm:p-8 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] font-mono">
+                        {/* Top-right close button */}
+                        <button
+                            onClick={() => {
+                                audioManager.playSound('click');
+                                setShowLeaderboard(false);
+                            }}
+                            className="absolute top-5 right-5 text-stone-350 hover:text-amber-450 bg-stone-900/60 hover:bg-amber-950/30 border border-stone-800 hover:border-amber-500/45 p-2 rounded-xl z-50 cursor-pointer flex items-center justify-center shadow-lg hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] transition-all"
+                            title="Close Leaderboard"
+                        >
+                            <X size={18} />
+                        </button>
+
+                        <div className="absolute top-0 left-0 w-full h-[2px] bg-amber-650/40 animate-[scan-line-move_4s_linear_infinite]" />
+                        
+                        {/* Header Box */}
+                        <div className="text-stone-300 font-black border-b border-stone-900 pb-4 mb-5 flex items-center justify-between uppercase tracking-wider text-sm sm:text-base">
                             <span className="flex items-center gap-2">
-                                <Crown size={16} className="text-amber-500" />
-                                Global Leaderboard
+                                <Crown size={20} className="text-amber-500 animate-pulse animate-duration-1000" />
+                                <span className="text-base sm:text-lg tracking-widest">Global Leaderboard Matrix</span>
                             </span>
-                            <span className="text-amber-500/80 flex items-center gap-1.5 text-xs">
-                                <span className="w-1.5 h-1.5 bg-amber-600 rounded-full animate-pulse" />
-                                {leaderboard.length} agents
+                            <span className="text-amber-500/80 flex items-center gap-1.5 text-xs bg-amber-950/20 border border-amber-900/35 px-3 py-1.5 rounded-lg mr-10">
+                                <span className="w-1.5 h-1.5 bg-amber-600 rounded-full animate-ping" />
+                                {leaderboard.length} verified agents
                             </span>
                         </div>
 
-                        <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1 scrollbar-thin">
+                        {/* Column Table Header */}
+                        {leaderboard.length > 0 && !isLoadingLeaderboard && (
+                            <div className="flex items-center px-5 py-3 text-[10px] sm:text-xs font-black text-stone-500 uppercase tracking-widest border-b border-stone-900/60 mb-2.5">
+                                <span className="w-14 text-center shrink-0">Rank</span>
+                                <span className="flex-1 pl-4 text-left">Agent Codename</span>
+                                <span className="w-32 text-center shrink-0">Victory Feed</span>
+                                <span className="w-24 text-center shrink-0 font-bold">Win Ratio</span>
+                            </div>
+                        )}
+
+                        <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1 select-none scrollbar-thin custom-scrollbar">
                             {isLoadingLeaderboard ? (
-                                <div className="flex flex-col items-center justify-center py-12 gap-3">
-                                    <div className="w-6 h-6 border-2 border-amber-600/40 border-t-amber-500 rounded-full animate-spin" />
-                                    <span className="text-stone-600 text-[10px] font-bold tracking-widest uppercase">Fetching Intel...</span>
+                                <div className="flex flex-col items-center justify-center py-24 gap-3">
+                                    <div className="w-9 h-9 border-2 border-amber-650/30 border-t-amber-500 rounded-full animate-spin" />
+                                    <span className="text-stone-600 text-[10px] sm:text-xs font-bold tracking-widest uppercase">Fetching Classified Intel...</span>
                                 </div>
                             ) : leaderboard.length === 0 ? (
-                                <div className="text-center py-12 text-stone-600 text-xs font-bold tracking-widest uppercase">
-                                    No agents registered
+                                <div className="text-center py-24 text-stone-600 text-xs font-bold tracking-widest uppercase">
+                                    No records filed in database
                                 </div>
                             ) : (
                                 leaderboard.map((entry, idx) => {
-                                    const rankColors = idx === 0 ? 'text-amber-400 bg-amber-500/10 border-amber-600/30' : idx === 1 ? 'text-stone-300 bg-stone-500/5 border-stone-600/20' : idx === 2 ? 'text-orange-400 bg-orange-500/5 border-orange-600/20' : 'text-stone-500 bg-stone-900/20 border-stone-800/30';
-                                    const rankIcon = idx === 0 ? '👑' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
+                                    const winPercentage = Math.round((entry.wins / Math.max(1, entry.wins + entry.losses)) * 100);
+                                    
+                                    // Golden theme for rank 1, Silver for 2, Bronze for 3, Dark for rest
+                                    const cardTheme = idx === 0 
+                                        ? 'border-amber-500/40 bg-amber-950/15 text-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.08)] hover:bg-amber-950/25' 
+                                        : idx === 1 
+                                            ? 'border-stone-400/35 bg-stone-900/30 text-stone-200 hover:bg-stone-900/45' 
+                                            : idx === 2 
+                                                ? 'border-orange-750/35 bg-orange-950/10 text-orange-300 hover:bg-orange-950/20' 
+                                                : 'border-stone-900 bg-stone-950/50 hover:border-stone-800 text-stone-450 hover:bg-stone-900/20';
+                                    
+                                    const rankBadge = idx === 0 
+                                        ? '🥇' 
+                                        : idx === 1 
+                                            ? '🥈' 
+                                            : idx === 2 
+                                                ? '🥉' 
+                                                : `#${idx + 1}`;
+
                                     return (
-                                        <div key={entry.username} className={`border rounded-xl overflow-hidden transition-all duration-300 ${rankColors}`}>
+                                        <div key={entry.username} className={`border rounded-xl overflow-hidden transition-all duration-300 transform hover:scale-[1.005] ${cardTheme}`}>
                                             <button
                                                 onClick={() => {
                                                     audioManager.playSound('click');
                                                     setSelectedCareerUser(entry);
                                                 }}
-                                                className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5 cursor-pointer"
+                                                className="w-full flex items-center px-5 py-4 text-left transition-colors cursor-pointer"
                                             >
-                                                <span className="w-8 text-center font-black text-sm shrink-0">{rankIcon}</span>
-                                                <div className="flex-1 min-w-0">
+                                                {/* Rank Symbol */}
+                                                <span className="w-14 text-center font-black text-sm sm:text-base shrink-0">{rankBadge}</span>
+                                                
+                                                {/* Agent Username */}
+                                                <div className="flex-1 min-w-0 pl-4">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="font-black text-xs uppercase tracking-wider truncate">{entry.username}</span>
+                                                        <span className={`font-black text-xs sm:text-sm uppercase tracking-wider truncate ${idx === 0 ? 'text-amber-400' : 'text-stone-200'}`}>{entry.username}</span>
                                                         {entry.isDeveloper && (
-                                                            <span className="px-1.5 py-0.5 bg-purple-600/30 border border-purple-500/40 text-purple-400 text-[7px] font-black tracking-widest rounded-md uppercase shrink-0">DEV</span>
+                                                            <span className="px-1.5 py-0.5 bg-purple-650/35 border border-purple-500/40 text-purple-400 text-[6.5px] font-black tracking-widest rounded-md uppercase shrink-0">DEV</span>
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-4 text-[10px] font-bold tracking-wider shrink-0">
+                                                
+                                                {/* Win/Loss Stats */}
+                                                <div className="flex items-center gap-3 w-32 justify-center text-xs font-black shrink-0">
                                                     <span className="text-green-500">{entry.wins}W</span>
-                                                    <span className="text-red-600">{entry.losses}L</span>
+                                                    <span className="text-red-500">{entry.losses}L</span>
                                                     {entry.hardModeWins > 0 && (
-                                                        <span className="text-amber-500 flex items-center gap-0.5">
-                                                            <Skull size={10} />{entry.hardModeWins}
+                                                        <span className="text-amber-400 flex items-center gap-0.5 shrink-0" title="Elite Hard Mode Wins">
+                                                            <Skull size={13} className="text-red-500 animate-pulse animate-duration-1000" />{entry.hardModeWins}
                                                         </span>
                                                     )}
+                                                </div>
+                                                
+                                                {/* Win Rate */}
+                                                <div className="w-24 text-center font-black text-xs sm:text-sm text-stone-300 shrink-0">
+                                                    {winPercentage}%
                                                 </div>
                                             </button>
                                         </div>
@@ -768,7 +775,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                 audioManager.playSound('click');
                                 setShowLeaderboard(false);
                             }}
-                            className="mt-5 w-full py-3 bg-stone-900 border border-stone-800 hover:border-stone-600 hover:text-white text-stone-400 font-bold text-xs tracking-[0.4em] uppercase transition-all rounded-xl cursor-pointer"
+                            className="mt-6 w-full py-4 bg-stone-900 border border-stone-850 hover:border-stone-600 hover:text-white text-stone-400 font-bold text-xs tracking-[0.4em] uppercase transition-all rounded-xl cursor-pointer active:scale-98 shadow-md"
                         >
                             Close Terminal
                         </button>
@@ -779,7 +786,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
             {/* TACTICAL PROFILE POPUP MODAL (CAREER LOG) */}
             {selectedCareerUser && (
                 <div className="absolute inset-0 z-[110] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
-                    <div className="relative w-full max-w-xl bg-stone-950/95 border border-stone-850 p-6 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.9)] font-mono text-left max-h-[85vh] overflow-y-auto scrollbar-thin">
+                    <div className="relative w-full max-w-2xl bg-stone-950/95 border-2 border-stone-850 p-8 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.9)] font-mono text-left max-h-[85vh] overflow-y-auto scrollbar-thin">
                         <div className="absolute top-0 left-0 w-full h-[2px] bg-amber-600/30" />
                         
                         {/* Header Box */}
@@ -792,7 +799,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                     <h2 className="text-lg font-black text-stone-200 uppercase tracking-widest flex items-center gap-2">
                                         Career Log: {selectedCareerUser.username}
                                         {selectedCareerUser.isDeveloper && (
-                                            <span className="px-1.5 py-0.5 bg-purple-600/30 border border-purple-500/40 text-purple-400 text-[7px] font-black tracking-widest rounded-md uppercase shrink-0">DEV</span>
+                                            <span className="px-1.5 py-0.5 bg-purple-650/35 border border-purple-500/40 text-purple-400 text-[7px] font-black tracking-widest rounded-md uppercase shrink-0">DEV</span>
                                         )}
                                     </h2>
                                     <p className="text-[9px] text-stone-500 font-bold tracking-widest uppercase mt-0.5">Tactical Performance Data</p>
@@ -803,7 +810,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                     audioManager.playSound('click');
                                     setSelectedCareerUser(null);
                                 }}
-                                className="text-stone-500 hover:text-stone-200 transition-colors p-1 bg-stone-900/40 rounded-lg hover:bg-stone-900 cursor-pointer"
+                                className="text-stone-300 hover:text-red-400 bg-stone-900/60 hover:bg-red-950/30 border border-stone-800 hover:border-red-500/45 p-2 rounded-xl cursor-pointer flex items-center justify-center transition-all"
                             >
                                 <X size={18} />
                             </button>
@@ -909,29 +916,29 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
             {/* Menu Center Frame Area */}
             <div
-                className="relative z-10 text-center max-w-xl w-full p-8 flex flex-col justify-center origin-center transition-all duration-300"
+                className="relative z-10 text-center max-w-xl w-full p-4 sm:p-6 flex flex-col justify-center origin-center transition-all duration-300 my-auto max-h-screen overflow-hidden"
                 style={{ transform: `scale(${scale})` }}
             >
-                <div className="mb-10 relative">
-                    <h1 className="text-7xl sm:text-8xl font-black mb-0 text-white tracking-tighter leading-[0.85] drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                <div className="mb-4 sm:mb-5 relative">
+                    <h1 className="text-3xl sm:text-5xl md:text-6xl font-black mb-0 text-white tracking-tighter leading-[0.85] drop-shadow-[0_0_30px_rgba(255,255,255,0.15)]">
                         AADISH<br />
-                        <span className="text-red-700/90 tracking-[-0.05em] relative">
+                        <span className="text-red-700/95 tracking-[-0.05em] relative">
                             ROULETTE
                             <span className="absolute -inset-1 blur-2xl bg-red-950/20 -z-10" />
                         </span>
                     </h1>
-                    <div className="mt-4 flex items-center justify-center gap-4">
-                        <div className="h-[1px] w-12 bg-stone-800" />
-                        <p className="text-stone-500 font-bold tracking-[0.6em] text-[10px] uppercase">Version {GAME_VERSION}</p>
-                        <div className="h-[1px] w-12 bg-stone-800" />
+                    <div className="mt-2.5 sm:mt-3 flex items-center justify-center gap-3">
+                        <div className="h-[1px] w-8 sm:w-12 bg-stone-850" />
+                        <p className="text-stone-500 font-black tracking-[0.5em] text-[9px] sm:text-[10px] uppercase">Version {GAME_VERSION}</p>
+                        <div className="h-[1px] w-8 sm:w-12 bg-stone-850" />
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-4 max-w-sm mx-auto w-full">
+                <div className="flex flex-col gap-3.5 max-w-sm mx-auto w-full">
                     {/* Identity Section */}
-                    <div className="text-center mb-2">
-                        <p className="text-[10px] text-red-900/40 font-black tracking-[0.5em] uppercase mb-2 animate-pulse">Click to bind soul</p>
-                        <div className="relative group">
+                    <div className="text-center mb-1.5">
+                        <p className="text-[9px] text-red-900/50 font-black tracking-[0.4em] uppercase mb-1.5 animate-pulse">Click to bind soul</p>
+                        <div className="relative group max-w-[260px] mx-auto w-full">
                             <input
                                 ref={nameInputRef}
                                 type="text"
@@ -939,61 +946,91 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                 onChange={(e) => setInputName(e.target.value)}
                                 placeholder="IDENTITY"
                                 maxLength={12}
-                                className="w-full bg-stone-950/40 border-2 border-stone-800/80 p-5 text-2xl font-black text-white outline-none focus:border-red-600/50 focus:bg-stone-900/20 transition-all duration-500 tracking-[0.2em] uppercase text-center placeholder-stone-800/50 backdrop-blur-xl rounded-xl"
+                                className="w-full bg-stone-950/65 border-2 border-stone-850 py-2.5 px-4 sm:py-3 text-xs sm:text-sm font-black text-white outline-none focus:border-red-650/45 focus:bg-stone-900/10 transition-all duration-500 tracking-[0.25em] uppercase text-center placeholder-stone-850/60 backdrop-blur-xl rounded-xl"
                             />
                             <div className="absolute inset-x-0 -bottom-1 h-[2px] bg-gradient-to-r from-transparent via-red-600/50 to-transparent scale-x-0 group-focus-within:scale-x-100 transition-transform duration-700" />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-12 gap-3">
-                        <button onClick={() => {
-                            audioManager.playSound('click');
-                            onStartGame(false);
-                        }} disabled={!inputName.trim()} className="col-span-8 px-4 py-5 bg-white text-black font-black text-xl hover:bg-stone-200 active:scale-[0.98] transition-all duration-300 disabled:opacity-20 disabled:grayscale tracking-[0.4em] rounded-xl shadow-[0_20px_50px_rgba(255,255,255,0.1)] relative overflow-hidden group/btn uppercase leading-none cursor-pointer">
+                    <div className="grid grid-cols-12 gap-2.5">
+                        {/* Start Game Button */}
+                        <button 
+                            onClick={() => {
+                                audioManager.playSound('click');
+                                onStartGame(false);
+                            }} 
+                            disabled={!inputName.trim()} 
+                            className="col-span-6 px-3 py-3.5 sm:py-4 bg-white text-black font-black text-[10px] sm:text-xs hover:bg-stone-200 active:scale-[0.98] transition-all duration-305 disabled:opacity-20 disabled:grayscale tracking-[0.2em] rounded-xl shadow-[0_10px_35px_rgba(255,255,255,0.06)] hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] hover:scale-[1.015] active:scale-[0.985] relative overflow-hidden group/btn uppercase leading-none cursor-pointer border-2 border-white"
+                        >
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
                             <span>START GAME</span>
                         </button>
 
-                        <button onClick={() => {
-                            audioManager.playSound('click');
-                            onStartMultiplayer(inputName.trim());
-                        }} disabled={!inputName.trim()} className="col-span-4 py-5 bg-stone-950/60 border border-stone-800 text-stone-200 font-black text-[10px] md:text-sm hover:text-white hover:border-white active:scale-[0.98] transition-all duration-300 disabled:opacity-20 flex flex-col items-center justify-center gap-1 group rounded-xl hover:bg-stone-900/40 shadow-[0_10px_30px_rgba(255,255,255,0.02)] uppercase tracking-widest leading-none cursor-pointer">
-                            MULTIPLAYER
+                        {/* Multiplayer Button */}
+                        <button 
+                            onClick={() => {
+                                audioManager.playSound('click');
+                                onStartMultiplayer(inputName.trim());
+                            }} 
+                            disabled={!inputName.trim()} 
+                            className="col-span-6 px-3 py-3.5 sm:py-4 bg-stone-950/60 border-2 border-cyan-850/60 text-cyan-400 font-black text-[10px] sm:text-xs hover:text-white hover:border-cyan-500 hover:bg-cyan-950/20 hover:shadow-[0_0_30px_rgba(6,182,212,0.35)] hover:scale-[1.015] active:scale-[0.985] transition-all duration-300 disabled:opacity-20 flex items-center justify-center gap-2 group rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.3)] uppercase tracking-[0.2em] leading-none cursor-pointer"
+                        >
+                            <Swords size={13} className="text-cyan-500 group-hover:rotate-12 transition-transform duration-300 shrink-0" />
+                            <span>MULTIPLAYER</span>
                         </button>
 
-                        <button onClick={() => {
-                            audioManager.playSound('click');
-                            setShowHardModeWarning(true);
-                        }} disabled={!inputName.trim()} className="col-span-12 py-3 bg-stone-950/60 border border-red-900/40 text-red-600 font-black text-[9px] md:text-xs hover:text-red-500 hover:border-red-600 active:scale-[0.98] transition-all duration-300 disabled:opacity-20 flex flex-col items-center justify-center gap-1 group rounded-xl hover:bg-red-950/20 shadow-[0_10px_30px_rgba(220,38,38,0.05)] uppercase tracking-widest leading-none cursor-pointer">
-                            HARD MODE
+                        {/* Hard Mode Button */}
+                        <button 
+                            onClick={() => {
+                                audioManager.playSound('click');
+                                setShowHardModeWarning(true);
+                            }} 
+                            disabled={!inputName.trim()} 
+                            className="col-span-12 py-3.5 bg-stone-950/70 border-2 border-red-950 hover:border-red-650 text-red-500 font-black text-[10px] sm:text-xs hover:text-white hover:bg-red-950/30 hover:shadow-[0_0_35px_rgba(220,38,38,0.4)] hover:scale-[1.015] active:scale-[0.985] transition-all duration-300 disabled:opacity-20 flex items-center justify-center gap-2 group rounded-xl shadow-[0_10px_30px_rgba(220,38,38,0.05)] uppercase tracking-[0.25em] leading-none cursor-pointer animate-[border-glow-red_3s_ease-in-out_infinite]"
+                        >
+                            <Skull size={13} className="text-red-700 group-hover:text-red-400 group-hover:scale-110 transition-all duration-300 animate-pulse shrink-0" />
+                            <span>HARD MODE PROTOCOL</span>
+                            <Skull size={13} className="text-red-700 group-hover:text-red-400 group-hover:scale-110 transition-all duration-300 animate-pulse shrink-0" />
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3 mt-2">
-                        <button onClick={() => {
-                            audioManager.playSound('click');
-                            onOpenGuide();
-                        }} className="px-4 py-4 bg-stone-900/20 border border-stone-800/40 text-stone-500 font-black text-[9px] flex flex-col items-center justify-center gap-2 tracking-[0.3em] hover:text-cyan-400 hover:border-cyan-900/50 hover:bg-cyan-950/10 active:scale-95 transition-all duration-300 uppercase rounded-xl cursor-pointer">
-                            <HelpCircle size={18} className="text-stone-600" />
+                    <div className="grid grid-cols-3 gap-2.5 mt-1.5">
+                        {/* Guide Button */}
+                        <button 
+                            onClick={() => {
+                                audioManager.playSound('click');
+                                onOpenGuide();
+                            }} 
+                            className="px-3 py-2.5 sm:py-3 bg-stone-900/20 border border-stone-850 text-stone-500 font-black text-[9px] flex flex-col items-center justify-center gap-1.5 tracking-[0.3em] hover:text-cyan-400 hover:border-cyan-500/50 hover:bg-cyan-950/15 active:scale-95 hover:scale-105 transition-all duration-300 uppercase rounded-xl cursor-pointer"
+                        >
+                            <HelpCircle size={16} className="text-stone-600 group-hover:text-cyan-455 transition-colors" />
                             Guide
                         </button>
-                        <button onClick={() => {
-                            audioManager.playSound('click');
-                            if (!loggedInUser) {
-                                setShowLoginModal(true);
-                                return;
-                            }
-                            onOpenScoreboard();
-                        }} className="px-4 py-4 bg-stone-900/20 border border-stone-800/40 text-stone-500 font-black text-[9px] flex flex-col items-center justify-center gap-2 tracking-[0.3em] hover:text-amber-500 hover:border-amber-900/50 hover:bg-amber-950/10 active:scale-95 transition-all duration-300 uppercase rounded-xl cursor-pointer relative">
-                            <Trophy size={18} className="text-stone-600" />
+                        {/* Stats Button */}
+                        <button 
+                            onClick={() => {
+                                audioManager.playSound('click');
+                                if (!loggedInUser) {
+                                    setShowLoginModal(true);
+                                    return;
+                                }
+                                onOpenScoreboard();
+                            }} 
+                            className="px-3 py-2.5 sm:py-3 bg-stone-900/20 border border-stone-850 text-stone-500 font-black text-[9px] flex flex-col items-center justify-center gap-1.5 tracking-[0.3em] hover:text-amber-400 hover:border-amber-500/50 hover:bg-amber-950/15 active:scale-95 hover:scale-105 transition-all duration-300 uppercase rounded-xl cursor-pointer relative"
+                        >
+                            <Trophy size={16} className="text-stone-600" />
                             Stats
-                            {!loggedInUser && <Lock size={10} className="absolute top-2 right-2 text-red-600/60" />}
+                            {!loggedInUser && <Lock size={9} className="absolute top-2 right-2 text-red-650/70" />}
                         </button>
-                        <button onClick={() => {
-                            audioManager.playSound('click');
-                            onOpenSettings();
-                        }} className="px-4 py-4 bg-stone-900/20 border border-stone-800/40 text-stone-500 font-black text-[9px] flex flex-col items-center justify-center gap-2 tracking-[0.3em] hover:text-stone-100 hover:border-stone-600 hover:bg-stone-800/40 active:scale-95 transition-all duration-300 uppercase rounded-xl cursor-pointer">
-                            <SettingsIcon size={18} className="text-stone-600" />
+                        {/* Config Button */}
+                        <button 
+                            onClick={() => {
+                                audioManager.playSound('click');
+                                onOpenSettings();
+                            }} 
+                            className="px-3 py-2.5 sm:py-3 bg-stone-900/20 border border-stone-850 text-stone-500 font-black text-[9px] flex flex-col items-center justify-center gap-1.5 tracking-[0.3em] hover:text-stone-100 hover:border-stone-550 hover:bg-stone-800/40 active:scale-95 hover:scale-105 transition-all duration-300 uppercase rounded-xl cursor-pointer"
+                        >
+                            <SettingsIcon size={16} className="text-stone-600" />
                             Config
                         </button>
                     </div>
@@ -1005,11 +1042,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                             loadLeaderboardData();
                             setShowLeaderboard(true);
                         }}
-                        className="mt-2 w-full py-4 bg-gradient-to-r from-amber-950/20 via-stone-900/20 to-amber-950/20 border border-amber-900/30 text-amber-600/80 font-black text-[10px] md:text-xs flex items-center justify-center gap-3 tracking-[0.3em] hover:text-amber-400 hover:border-amber-600/50 hover:bg-amber-950/20 active:scale-[0.98] transition-all duration-300 uppercase rounded-xl cursor-pointer hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group/lb"
+                        className="mt-1.5 w-full py-3.5 bg-gradient-to-r from-amber-950/20 via-stone-900/20 to-amber-950/20 border border-amber-900/40 text-amber-600/90 font-black text-[10px] sm:text-xs flex items-center justify-center gap-3 tracking-[0.3em] hover:text-amber-455 hover:border-amber-500 hover:bg-amber-950/25 hover:shadow-[0_0_25px_rgba(245,158,11,0.2)] hover:scale-[1.015] active:scale-[0.985] transition-all duration-300 uppercase rounded-xl cursor-pointer group/lb"
                     >
-                        <Crown size={16} className="text-amber-700 group-hover/lb:text-amber-400 transition-colors group-hover/lb:rotate-[-10deg] transition-transform duration-300" />
+                        <Crown size={16} className="text-amber-750 group-hover/lb:text-amber-400 transition-colors group-hover/lb:rotate-[-10deg] transition-transform duration-300" />
                         Global Leaderboard
-                        <Crown size={16} className="text-amber-700 group-hover/lb:text-amber-400 transition-colors group-hover/lb:rotate-[10deg] transition-transform duration-300" />
+                        <Crown size={16} className="text-amber-750 group-hover/lb:text-amber-400 transition-colors group-hover/lb:rotate-[10deg] transition-transform duration-300" />
                     </button>
                 </div>
 
@@ -1025,7 +1062,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                     {isStandalone ? (
                         <div className="text-stone-700 text-[9px] font-black tracking-[0.8em] uppercase opacity-40">System Link: Established</div>
                     ) : (
-                        <div className="text-stone-800 text-[9px] font-black tracking-[0.8em] uppercase">Web Instance • {GAME_VERSION}</div>
+                        <div className="text-stone-850 text-[9px] font-black tracking-[0.8em] uppercase">Web Instance • {GAME_VERSION}</div>
                     )}
                 </div>
             </div>
