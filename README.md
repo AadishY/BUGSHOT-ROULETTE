@@ -39,23 +39,44 @@
 
 | Icon | Item Name | Gameplay Description & Tactical Strategy |
 | :---: | :--- | :--- |
-| 🚬 | **Cigarettes** | Restores 1 HP. Always use when injured and looking to stay out of critical HP ranges. |
-| 🍺 | **Beer** | Ejects the current shell without firing it. Essential for clearing known live shells targetted at yourself, or checking blanks. |
-| 🔗 | **Handcuffs** | Skips the opponent's next turn. Double cuffs are blocked; you cannot bypass two consecutive turns. |
-| 🔍 | **Magnifying Glass** | inspects the current shell in the chamber, revealing to you whether it is LIVE or BLANK. |
-| ✂️ | **Hand Saw** | Saws off the shotgun barrel. Doubled damage on the next shot (2 damage if Live, 0 if Blank). |
-| 📞 | **Burner Phone** | Reveals the polarity of a random future shell position (e.g. "THE 3RD SHELL IS LIVE"). |
-| 🔄 | **Inverter** | Inverts the polarity of the current shell (changes Live into Blank, or Blank into Live). |
-| 💉 | **Adrenaline** | Steals an item from the opponent's inventory and uses it immediately. Cannot steal another Adrenaline. |
-| 📡 | **Remote** | Reverses the current turn order (active in Multiplayer mode). |
-| ⚡ | **Big Inverter** | Inverts the polarity of ALL remaining shells currently loaded in the magazine. |
-| 🥋 | **Choke** | Chokes the shotgun to fire a double-barrel volley, shooting the current and the next shell simultaneously. Normalizes split damage on split shells, or double damage if both are live. |
-| 🩸 | **Blood Contract** | Sacrifice 1 HP to gain 2 high-tier loot items from a high-tier distribution pool. (Player-only item). |
-| 🍀 | **Lucky Charm** | Boosts next shipment items luck based on current HP (survival items if HP <= 2, offensive items if HP > 2). Stacks on multiple uses. |
-| 💥 | **Flashbang** | Blinds the opponent, preventing them from deploying any items on their next turn. |
-| 🔨 | **Crusher** | Slam down a giant hammer to destroy 1 random item from your opponent's inventory. |
-| 🌟 | **Totem of Undying** | [PASSIVE] Survive at 1 HP when HP drops to 0. Auto-triggers on lethal damage. UNSTEALABLE. Max 1 totem. |
-| 🪞 | **Mirror** | Copy all item effects used by the opponent on their immediate previous turn. Sequential activation. |
+| 🚬 | **Cigarettes** | Restores 1 HP (capped at max). Always use when injured. |
+| 🍺 | **Beer** | Ejects the current shell without firing it. Shows the ejected shell type. Does NOT consume Choke Mod status. |
+| 🔗 | **Handcuffs** | Skips the opponent's next turn. Cannot stack if already cuffed. |
+| 🔍 | **Magnifying Glass** | Inspects the current shell, revealing LIVE or BLANK. Dealer uses it silently. |
+| ✂️ | **Hand Saw** | Saws off the barrel — doubles next shot damage to 2 HP. Stacks with Choke Mod. |
+| 📞 | **Burner Phone** | Reveals a random future shell (3rd+). Hidden: 5% chance the caller LIES about the type. |
+| 🔄 | **Inverter** | Inverts current shell polarity (Live↔Blank). Does not reveal the result. |
+| 💉 | **Adrenaline** | Steals an item from the opponent and uses it instantly. Cannot steal Totem or another Adrenaline. |
+| 📡 | **Remote** | Swaps the current shell position with the next shell. Fails if only 1 shell remains. |
+| ⚡ | **Big Inverter** | Inverts polarity of ALL remaining shells in the magazine. |
+| 🥋 | **Choke** | Fires current + next shell simultaneously. Both LIVE = 2 DMG, one = 1 DMG, both blank = 0. Saw doubles total. |
+| 🩸 | **Blood Contract** | Sacrifice 1 HP for 2 high-tier items (weighted pool). Lucky Charm boosts high-tier weight to 15x+. Using at 1 HP = instant death. Player-only. Max 1 per inventory. |
+| 🍀 | **Lucky Charm** | Boosts next shipment quality. Stacks multiplicatively. Also massively boosts Blood Contract loot. Consumed after use. Max 1 per inventory. |
+| 💥 | **Flashbang** | Blinds opponent — prevents ALL item usage on their next turn. They can still shoot. |
+| 🔨 | **Crusher** | Destroys 1 random item from opponent's inventory. Can destroy Totem. Fails if empty. |
+| 🌟 | **Totem of Undying** | [PASSIVE] Auto-saves at 1 HP on lethal damage. Cannot be stolen via Adrenaline. Can be destroyed by Crusher. Max 1. |
+| 🪞 | **Mirror** | Replays ALL items opponent used on their last turn, in sequence. Excludes Mirror itself. |
+| 🃏 | **Tarot Deck** | Draw one of 6 randomly fanned cards. 11 possible cards with varied effects. |
+
+---
+
+## 🃏 Tarot Card Deck
+
+When using the **Tarot Deck** item, 6 cards are fanned face-down on the table. You select one to flip and reveal its power. The deck features 11 possible cards:
+
+| Card Face | Type / Color | Effect Description |
+| :--- | :---: | :--- |
+| **The Magician** | Active (Purple) | Gain 1 random item (discarded if inventory full). |
+| **The Hanged Man** | Penalty (Red) | Lose 1 HP. Totem auto-triggers if this is lethal. |
+| **The Hermit** | Penalty (Grey) | Instantly transfers your turn to your opponent. You do NOT shoot. |
+| **The Moon** | Active (Blue) | Steal 1 random item from opponent (excluding Totem). Discarded if full. |
+| **Judgment** | Active (Yellow) | If current shell is BLANK, 50% chance to secretly convert to LIVE. No effect on LIVE. Neither player told. |
+| **Wheel of Fortune** | Active (Orange) | Reshuffles all remaining shells. Invalidates Glass/Phone intel. |
+| **The Sun** | Active (Yellow) | Heal 1 HP (capped at max). |
+| **Death** | Penalty (Zinc) | Destroy 1 random item from YOUR OWN inventory. Can destroy Totem. |
+| **The Tower** | Active (Amber) | Destroy 1 random item from opponent's inventory (excluding Totem). |
+| **The Fool** | Active (Pink) | Reveals a shell type. Lie probability: 0% (3+ shells), 10% (2 shells), 25% (1 shell). |
+| **Justice** | Active (Emerald) | Swap your HP with opponent's HP. Extremely powerful when you're low and they're high. |
 
 ---
 
@@ -78,36 +99,37 @@
   - Stage 1-2: 2 items per shipment.
   - Stage 3: 1 to 4 random items per shipment.
   - Stage 4+: 4 items per shipment.
-- **Duplicate Penalty**: If a drawn item is already present in the batch or in your inventory, there is an **80% chance to reroll** (up to 20 attempts) to reduce item hoarding.
-- **Dealer Cheating Mode**: In Hard Mode, the Dealer is granted item cheating privileges, drawing items tailored specifically to their combat state (Panic vs. Aggressive).
+- **Duplicate Restriction**: Only unique items (Blood Contract, Lucky Charm, Totem) are limited to 1 per inventory. Standard items can appear multiple times.
+- **Dealer Cheating Mode**: In Hard Mode, the Dealer draws items tailored to their combat state (Panic vs. Aggressive). Has 60% supernatural intuition to sense shells. 50% chance to pick best Tarot card.
 
 ---
 
 ## 📊 Item Drop Probabilities
 
 ### Player Item Pool
-Contracts are calculated first. If the contract test succeeds, it is drawn; otherwise, standard items are drawn from the remaining probability pool.
+Contracts are tested first. If the contract roll succeeds, it is drawn; otherwise, standard items are drawn from the remaining pool.
 
-| Item | Normal Mode (Total Probability) | Hard Mode (Total Probability) |
+| Item | Normal Mode | Hard Mode |
 | :--- | :---: | :---: |
-| **Blood Contract** | **10.0%** (10% first test) | **7.0%** (7% first test) |
-| **Beer** | **9.9%** | **13.95%** |
-| **Cigarettes** | **9.9%** | **3.72%** |
-| **Magnifying Glass** | **7.2%** | **7.44%** |
-| **Handcuffs** | **8.1%** | **8.37%** |
-| **Burner Phone** | **9.0%** | **8.37%** |
-| **Hand Saw** | **8.1%** | **9.30%** |
-| **Inverter** | **8.1%** | **8.37%** |
-| **Adrenaline** | **7.2%** | **8.37%** |
-| **Choke** | **4.5%** | **4.65%** |
-| **Big Inverter** | **4.5%** | **4.65%** |
-| **Lucky Charm** | **3.6%** | **3.72%** |
-| **Flashbang** | **3.6%** | **3.72%** |
-| **Crusher** | **1.8%** | **2.79%** |
-| **Mirror** | **1.8%** | **2.79%** |
-| **Totem of Undying** | **2.7%** | **2.79%** |
+| **Blood Contract** | **9.0%** | **7.0%** |
+| **Beer** | **10.0%** | **15.0%** |
+| **Cigarettes** | **10.0%** | **4.0%** |
+| **Magnifying Glass** | **7.0%** | **8.0%** |
+| **Handcuffs** | **7.0%** | **8.0%** |
+| **Burner Phone** | **8.0%** | **8.0%** |
+| **Hand Saw** | **5.0%** | **5.0%** |
+| **Inverter** | **7.0%** | **8.0%** |
+| **Adrenaline** | **7.0%** | **7.0%** |
+| **Choke** | **5.0%** | **5.0%** |
+| **Big Inverter** | **4.0%** | **4.0%** |
+| **Lucky Charm** | **4.0%** | **4.0%** |
+| **Flashbang** | **5.0%** | **5.0%** |
+| **Crusher** | **3.0%** | **3.0%** |
+| **Mirror** | **4.0%** | **4.0%** |
+| **Tarot Deck Card** | **4.0%** | **4.0%** |
+| **Totem of Undying** | **1.0%** | **1.0%** |
 
-*Note: Dealer cannot draw a Blood Contract.*
+*Note: Dealer cannot draw a Blood Contract. Unique items (Contract, Lucky Charm, Totem) max 1 per inventory.*
 
 ---
 

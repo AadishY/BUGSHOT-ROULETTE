@@ -20,6 +20,7 @@ interface ThreeSceneProps {
     player: PlayerState;
     dealer: PlayerState;
     gameState: GameState;
+    onCardClick?: (index: number) => void;
 }
 
 const calculatePixelScale = (settings: GameSettings, width: number) => {
@@ -91,7 +92,8 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
     isHardMode,
     player,
     dealer,
-    gameState
+    gameState,
+    onCardClick
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -108,12 +110,30 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
         isHardMode: isHardMode || false,
         player,
         dealer,
-        gameState
+        gameState,
+        onCardClick,
+        onGunClick
     });
 
     useEffect(() => {
-        propsRef.current = { isSawed, isChokeActive, isPlayerCuffed, aimTarget, cameraView, animState, turnOwner, settings, knownShell, isHardMode: isHardMode || false, player, dealer, gameState };
-    }, [isSawed, isChokeActive, isPlayerCuffed, aimTarget, cameraView, animState, turnOwner, settings, knownShell, isHardMode, player, dealer, gameState]);
+        propsRef.current = {
+            isSawed,
+            isChokeActive,
+            isPlayerCuffed,
+            aimTarget,
+            cameraView,
+            animState,
+            turnOwner,
+            settings,
+            knownShell,
+            isHardMode: isHardMode || false,
+            player,
+            dealer,
+            gameState,
+            onCardClick,
+            onGunClick
+        };
+    }, [isSawed, isChokeActive, isPlayerCuffed, aimTarget, cameraView, animState, turnOwner, settings, knownShell, isHardMode, player, dealer, gameState, onCardClick, onGunClick]);
 
     const sceneRef = useRef<SceneContext | null>(null);
 
@@ -252,26 +272,82 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
         // INPUT HANDLING - Prevent Double Firing
         let isTouchInteraction = false;
 
+        const updateHoverIndex = () => {
+            if (!sceneRef.current) return;
+            const currentGameState = propsRef.current.gameState;
+            if (currentGameState.phase === 'CARD_SELECT' && currentGameState.turnOwner === 'PLAYER' && currentGameState.selectedCardIndex === null) {
+                if (sceneRef.current.itemDeckCards) {
+                    sceneRef.current.raycaster.setFromCamera(sceneRef.current.mouse, sceneRef.current.camera);
+                    const intersects = sceneRef.current.raycaster.intersectObjects(sceneRef.current.itemDeckCards, true);
+                    let hoveredIdx: number | null = null;
+                    if (intersects.length > 0) {
+                        let parentGroup: THREE.Object3D | null = intersects[0].object;
+                        while (parentGroup && !parentGroup.name.startsWith('ITEM_DECK_CARD_')) {
+                            parentGroup = parentGroup.parent;
+                        }
+                        if (parentGroup) {
+                            hoveredIdx = sceneRef.current.itemDeckCards.indexOf(parentGroup as THREE.Group);
+                        }
+                    }
+                    sceneRef.current.scene.userData.hoveredCardIndex = hoveredIdx;
+                }
+            } else {
+                if (sceneRef.current.scene?.userData) {
+                    sceneRef.current.scene.userData.hoveredCardIndex = null;
+                }
+            }
+        };
+
         const handleMouseMove = (e: MouseEvent) => {
             if (!containerRef.current || !sceneRef.current || isTouchInteraction) return;
-            sceneRef.current.mouse.x = ((e.clientX - containerRef.current.offsetLeft) / containerRef.current.clientWidth) * 2 - 1;
-            sceneRef.current.mouse.y = -((e.clientY - containerRef.current.offsetTop) / containerRef.current.clientHeight) * 2 + 1;
+            const rect = containerRef.current.getBoundingClientRect();
+            sceneRef.current.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            sceneRef.current.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            updateHoverIndex();
         };
 
         const handleClick = (e?: MouseEvent | TouchEvent) => {
             if (!sceneRef.current) return;
+
+            const currentProps = propsRef.current;
+            const currentGameState = currentProps.gameState;
+
+            if (currentGameState.phase === 'CARD_SELECT' && currentGameState.turnOwner === 'PLAYER' && currentGameState.selectedCardIndex === null) {
+                if (sceneRef.current.itemDeckCards) {
+                    sceneRef.current.raycaster.setFromCamera(sceneRef.current.mouse, sceneRef.current.camera);
+                    const intersects = sceneRef.current.raycaster.intersectObjects(sceneRef.current.itemDeckCards, true);
+                    if (intersects.length > 0) {
+                        let parentGroup: THREE.Object3D | null = intersects[0].object;
+                        while (parentGroup && !parentGroup.name.startsWith('ITEM_DECK_CARD_')) {
+                            parentGroup = parentGroup.parent;
+                        }
+                        if (parentGroup) {
+                            const idx = sceneRef.current.itemDeckCards.indexOf(parentGroup as THREE.Group);
+                            if (idx !== -1 && currentProps.onCardClick) {
+                                currentProps.onCardClick(idx);
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+
             // Raycast from current mouse pos
             sceneRef.current.raycaster.setFromCamera(sceneRef.current.mouse, sceneRef.current.camera);
             const intersects = sceneRef.current.raycaster.intersectObjects(sceneRef.current.gunGroup.children);
-            if (intersects.find(i => i.object.userData.type === 'GUN')) onGunClick();
+            if (intersects.find(i => i.object.userData.type === 'GUN') && currentProps.onGunClick) {
+                currentProps.onGunClick();
+            }
         };
 
         const handleTouchStart = (e: TouchEvent) => {
             isTouchInteraction = true; // Flag to ignore mouse events for a bit
             if (!containerRef.current || !sceneRef.current || e.changedTouches.length === 0) return;
             const touch = e.changedTouches[0];
-            sceneRef.current.mouse.x = ((touch.clientX - containerRef.current.offsetLeft) / containerRef.current.clientWidth) * 2 - 1;
-            sceneRef.current.mouse.y = -((touch.clientY - containerRef.current.offsetTop) / containerRef.current.clientHeight) * 2 + 1;
+            const rect = containerRef.current.getBoundingClientRect();
+            sceneRef.current.mouse.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+            sceneRef.current.mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+            updateHoverIndex();
         };
 
         const handleTouchEnd = (e: TouchEvent) => {

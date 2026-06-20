@@ -77,7 +77,8 @@ const InventoryComponent: React.FC<InventoryProps> = ({ player, dealer, gameStat
         'FLASHBANG': 'rgba(255, 255, 255, 0.45)',
         'CRUSHER': 'rgba(120, 110, 90, 0.35)',
         'TOTEM': 'rgba(251, 191, 36, 0.4)',
-        'MIRROR': 'rgba(129, 140, 248, 0.35)'
+        'MIRROR': 'rgba(129, 140, 248, 0.35)',
+        'DECK_CARD': 'rgba(192, 132, 252, 0.35)'
     };
 
     const BORDER_COLORS: Record<ItemType, string> = {
@@ -97,7 +98,8 @@ const InventoryComponent: React.FC<InventoryProps> = ({ player, dealer, gameStat
         'FLASHBANG': 'border-zinc-300/20 hover:border-zinc-300/50',
         'CRUSHER': 'border-stone-500/20 hover:border-stone-500/50',
         'TOTEM': 'border-amber-400/20 hover:border-amber-400/50',
-        'MIRROR': 'border-indigo-400/20 hover:border-indigo-400/50'
+        'MIRROR': 'border-indigo-400/20 hover:border-indigo-400/50',
+        'DECK_CARD': 'border-purple-400/20 hover:border-purple-400/50'
     };
 
     const ITEM_NAMES: Record<ItemType, string> = {
@@ -117,7 +119,8 @@ const InventoryComponent: React.FC<InventoryProps> = ({ player, dealer, gameStat
         'FLASHBANG': 'FLASHBANG',
         'CRUSHER': 'ITEM CRUSHER',
         'TOTEM': 'TOTEM OF UNDYING',
-        'MIRROR': 'MIRROR'
+        'MIRROR': 'MIRROR',
+        'DECK_CARD': 'TAROT CARD DECK'
     };
 
     const ITEM_LABELS: Record<ItemType, string> = {
@@ -137,7 +140,8 @@ const InventoryComponent: React.FC<InventoryProps> = ({ player, dealer, gameStat
         'FLASHBANG': 'FLASHBANG',
         'CRUSHER': 'CRUSHER',
         'TOTEM': 'TOTEM',
-        'MIRROR': 'MIRROR'
+        'MIRROR': 'MIRROR',
+        'DECK_CARD': 'TAROT'
     };
 
     let containerClass = "relative flex gap-1 md:gap-3 p-2 md:p-4 bg-gradient-to-t from-black/95 to-black/70 border-t border-l border-r border-white/10 backdrop-blur-3xl min-h-[40px] md:min-h-[140px] items-end overflow-x-auto md:overflow-visible max-w-full [&::-webkit-scrollbar]:hidden [scrollbar-width:none] rounded-t-[2rem]";
@@ -283,6 +287,7 @@ const InventoryComponent: React.FC<InventoryProps> = ({ player, dealer, gameStat
                                 {item === 'CRUSHER' && <Icons.Crusher className="text-amber-600 mb-0 md:mb-2 w-4 h-4 md:w-6 md:h-6 transition-transform group-hover:scale-110 duration-300" />}
                                 {item === 'TOTEM' && <Icons.Totem className="text-amber-400 mb-0 md:mb-2 w-4 h-4 md:w-6 md:h-6 transition-transform group-hover:scale-110 duration-300" />}
                                 {item === 'MIRROR' && <Icons.Mirror className="text-indigo-400 mb-0 md:mb-2 w-4 h-4 md:w-6 md:h-6 transition-transform group-hover:scale-110 duration-300" />}
+                                {item === 'DECK_CARD' && <Icons.DeckCard className="text-purple-400 mb-0 md:mb-2 w-4 h-4 md:w-6 md:h-6 transition-transform group-hover:scale-110 duration-300" />}
 
                                 <span className={`text-[6px] md:text-[8px] text-stone-400 font-black tracking-widest block text-center px-1 truncate w-full relative z-10 transition-colors group-hover:text-white ${isPotato ? '' : 'animate-pulse'}`}>
                                     {ITEM_LABELS[item]}

@@ -159,6 +159,7 @@ const StatusDisplayComponent: React.FC<StatusDisplayProps> = ({ player, dealer, 
                                 {item === 'CRUSHER' && <Icons.Crusher size={20} className="w-2.5 h-2.5 md:w-5 md:h-5 text-amber-600/80" />}
                                 {item === 'TOTEM' && <Icons.Totem size={20} className="w-2.5 h-2.5 md:w-5 md:h-5 text-amber-500/80 animate-pulse" />}
                                 {item === 'MIRROR' && <Icons.Mirror size={20} className="w-2.5 h-2.5 md:w-5 md:h-5 text-indigo-400" />}
+                                {item === 'DECK_CARD' && <Icons.DeckCard size={20} className="w-2.5 h-2.5 md:w-5 md:h-5 text-purple-400" />}
                             </div>
                         </div>
                     ))}

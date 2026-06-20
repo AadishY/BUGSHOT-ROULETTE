@@ -178,7 +178,7 @@ export const GameUI: React.FC<GameUIProps> = ({
         <>
             {/* Falling Shells Background - Rendered only when active to free WebGL context and improve memory/performance */}
             <div className={`absolute inset-0 bg-black transition-opacity ${gameState.phase === 'BOOT' || gameState.phase === 'INTRO' ? 'opacity-100 duration-1000' : 'opacity-0 duration-0 pointer-events-none'}`}>
-                {gameState.phase === 'INTRO' && !settings.ultraPerformance && (
+                {(gameState.phase === 'INTRO' || gameState.phase === 'BOOT') && !settings.ultraPerformance && (
                     <ShellBackground active={true} />
                 )}
             </div>
@@ -252,7 +252,9 @@ export const GameUI: React.FC<GameUIProps> = ({
 
                 {/* Overlay Text - Centered Announcements */}
                 {overlayText && !showLootOverlay && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none px-4">
+                    <div className={`absolute inset-0 z-50 flex justify-center pointer-events-none px-4 ${
+                        gameState.phase === 'CARD_SELECT' ? 'items-start pt-12 md:pt-16' : 'items-center'
+                    }`}>
                         {overlayText.startsWith('ROUND') || (overlayText.includes('LIVE') && overlayText.includes('|')) ? (
                             <div className="flex flex-col items-center">
                                 {overlayText.startsWith('ROUND') ? (
@@ -445,8 +447,9 @@ export const GameUI: React.FC<GameUIProps> = ({
                                                                                                     item === 'LUCKYCHARM' ? 'text-emerald-500' :
                                                                                                         item === 'FLASHBANG' ? 'text-zinc-300' :
                                                                                                             item === 'CRUSHER' ? 'text-amber-600' :
-                                                                                                                item === 'TOTEM' ? 'text-amber-400' :
-                                                                                                                    item === 'MIRROR' ? 'text-indigo-400' : 'text-stone-300'
+                                                                                                                (item as ItemType) === 'TOTEM' ? 'text-amber-400' :
+                                                                                                                    item === 'MIRROR' ? 'text-indigo-400' :
+                                                                                                                        item === 'DECK_CARD' ? 'text-purple-400' : 'text-stone-300'
                                                             }`}>
                                                             {item === 'BEER' && <Icons.Beer size={56} />}
                                                             {item === 'CIGS' && <Icons.Cigs size={56} />}
@@ -462,8 +465,9 @@ export const GameUI: React.FC<GameUIProps> = ({
                                                             {item === 'LUCKYCHARM' && <Icons.Luckycharm size={56} />}
                                                             {item === 'FLASHBANG' && <Icons.Flashbang size={56} />}
                                                             {item === 'CRUSHER' && <Icons.Crusher size={56} />}
-                                                            {item === 'TOTEM' && <Icons.Totem size={56} />}
+                                                            {(item as ItemType) === 'TOTEM' && <Icons.Totem size={56} />}
                                                             {item === 'MIRROR' && <Icons.Mirror size={56} />}
+                                                            {item === 'DECK_CARD' && <Icons.DeckCard size={56} />}
                                                         </div>
                                                         <span className="text-[10px] md:text-sm font-black text-stone-200 tracking-[0.2em] uppercase group-hover:text-white transition-colors">
                                                             {item.replace('_', ' ')}
@@ -519,6 +523,16 @@ export const GameUI: React.FC<GameUIProps> = ({
                 {/* Main HUD */}
                 {gameState.phase !== 'INTRO' && gameState.phase !== 'BOOT' && gameState.phase !== 'GAME_OVER' && !showLootOverlay && (
                     <div className="absolute inset-0 z-20 p-2 pb-0 md:p-8 md:pb-0 flex flex-col justify-between pointer-events-none">
+                        
+                        {gameState.phase === 'CARD_SELECT' && (
+                            <div className="absolute top-[20%] left-1/2 transform -translate-x-1/2 z-30 flex flex-col items-center animate-in fade-in zoom-in duration-500 pointer-events-none">
+                                <div className="px-6 py-2 bg-black/85 border border-purple-500/35 rounded-full shadow-[0_0_30px_rgba(168,85,247,0.2)] backdrop-blur-md">
+                                    <span className="text-xs md:text-xl font-black tracking-[0.3em] uppercase text-purple-400 animate-pulse">
+                                        {gameState.turnOwner === 'PLAYER' ? '🔮 SELECT A TAROT CARD 🔮' : '🔮 DEALER CHOOSING CARD... 🔮'}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Top Bar */}
                         <div className="flex justify-between items-start gap-2">
@@ -534,7 +548,7 @@ export const GameUI: React.FC<GameUIProps> = ({
                         {/* Bottom UI Area - Vertically stacked Controls & Inventory */}
                         <div className="mt-auto w-full flex flex-col items-center gap-2 md:gap-4 pointer-events-none pb-0 md:pb-0 z-30">
                             {/* Controls */}
-                            {gameState.phase !== 'STEALING' && isMyTurn && !showLootOverlay && (
+                            {gameState.phase !== 'STEALING' && gameState.phase !== 'CARD_SELECT' && isMyTurn && !showLootOverlay && (
                                 <div className="pointer-events-auto">
                                     <Controls
                                         isGunHeld={isGunHeld}

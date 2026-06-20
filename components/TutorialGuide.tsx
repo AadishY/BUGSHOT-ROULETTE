@@ -171,7 +171,7 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
                         <ItemCard
                             icon={<Eye size={20} />}
                             name="MAGNIFYING GLASS"
-                            description="Reveals the current shell type in the chamber."
+                            description="Reveals the current shell type (LIVE/BLANK) in the chamber. Dealer uses glass silently — you won't see the result."
                             color="text-cyan-400"
                             effect="→ REVEALS LIVE/BLANK"
                         />
@@ -179,23 +179,23 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
                         <ItemCard
                             icon={<Beer size={20} />}
                             name="BEER"
-                            description="Racks the shotgun to eject the current shell without firing."
+                            description="Racks the shotgun to eject the current shell without firing. The ejected shell type is shown. Does NOT consume Choke Mod status."
                             color="text-amber-500"
-                            effect="→ EJECTS SHELL"
+                            effect="→ EJECTS SHELL (CHOKE PRESERVED)"
                         />
 
                         <ItemCard
                             icon={<Cigarette size={20} />}
                             name="CIGARETTES"
-                            description="Light up to restore 1 health point (up to maximum)."
+                            description="Light up to restore 1 HP (capped at max HP). Cannot overheal. Most common survival item."
                             color="text-red-400"
-                            effect="→ +1 HP"
+                            effect="→ +1 HP (CAPPED)"
                         />
 
                         <ItemCard
                             icon={<Link size={20} />}
                             name="HANDCUFFS"
-                            description="Restrains your opponent, forcing them to skip their next turn."
+                            description="Restrains opponent, forcing them to skip their next turn. Cannot stack — if already cuffed, effect is wasted."
                             color="text-stone-400"
                             effect="→ SKIP ENEMY TURN"
                         />
@@ -203,17 +203,17 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
                         <ItemCard
                             icon={<Scissors size={20} />}
                             name="HAND SAW"
-                            description="Saws off the shotgun barrel, DOUBLING damage."
+                            description="Saws off the shotgun barrel, DOUBLING the next shot's damage to 2 HP. Stacks with Choke Mod for massive damage."
                             color="text-orange-500"
-                            effect="→ 2X DAMAGE"
+                            effect="→ 2X DAMAGE (STACKS W/ CHOKE)"
                         />
 
                         <ItemCard
                             icon={<Smartphone size={20} />}
                             name="BURNER PHONE"
-                            description="Mysterious caller reveals a random future shell position."
+                            description="A mysterious caller reveals a random future shell position (3rd+). Hidden: Has a secret 5% chance to LIE about the shell type. Useless if < 3 shells remain."
                             color="text-blue-300"
-                            effect="→ REVEALS FUTURE SHELL"
+                            effect="→ FUTURE SHELL (5% LIE RISK)"
                         />
                     </div>
                 </div>
@@ -234,96 +234,189 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
                         <ItemCard
                             icon={<RefreshCw size={20} />}
                             name="POLARITY INVERTER"
-                            description="Swaps the current shell: LIVE becomes BLANK and vice-versa."
+                            description="Swaps the current shell: LIVE ↔ BLANK. Only affects the next shell to be fired. Does not reveal the shell type."
                             color="text-green-400"
-                            effect="→ INVERTS CURRENT"
+                            effect="→ INVERTS CURRENT SHELL"
                         />
 
                         <ItemCard
                             icon={<Zap size={20} />}
                             name="ADRENALINE"
-                            description="Steals an item from your opponent's inventory and uses it immediately."
+                            description="Steals one item from opponent's inventory and uses it immediately. Hidden: Cannot steal Totem of Undying or another Adrenaline. If stolen Contract kills you at 1 HP, dealer stashes it instead."
                             color="text-pink-500"
-                            effect="→ STEAL & USE"
+                            effect="→ STEAL & USE (NO TOTEM/ADRENALINE)"
                         />
 
                         <ItemCard
                             icon={<Icons.Choke size={20} />}
                             name="CHOKE MOD"
-                            description="Fires 2 shots at once (current + next). Both LIVE = 2 DMG. One LIVE = 1 DMG. Both BLANK = 0 DMG."
+                            description="Attaches barrel mod to fire 2 shells simultaneously (current + next). Both LIVE = 2 DMG, one LIVE = 1 DMG, both BLANK = 0 DMG. Saw doubles total damage."
                             color="text-yellow-700"
-                            effect="→ DOUBLE FIRE"
+                            effect="→ DOUBLE FIRE (SAW STACKS)"
                         />
 
                         <ItemCard
                             icon={<Icons.BigInverter size={20} />}
                             name="BIG INVERTER"
-                            description="Inverts the polarity of ALL remaining shells in the magazine."
+                            description="Inverts polarity of ALL remaining shells in the magazine. Extremely powerful when most remaining shells are blank."
                             color="text-orange-500"
-                            effect="→ INVERTS ALL"
+                            effect="→ INVERTS ALL SHELLS"
                         />
 
                         <ItemCard
                             icon={<Icons.Remote size={20} />}
                             name="REMOTE"
-                            description="Swaps the current shell with the next shell in the chamber."
+                            description="Swaps current shell position with the next shell. Fails silently if only 1 shell remains in chamber."
                             color="text-red-600"
-                            effect="→ SWAP NEXT SHELL"
+                            effect="→ SWAP SHELL ORDER"
                         />
 
                         <ItemCard
                             icon={<Icons.Contract size={20} />}
                             name="BLOOD CONTRACT"
-                            description="Sacrifice 1 HP to obtain 2 random items from a unique high-tier pool. If used at 1 HP, you DIE. (Player Only)."
+                            description="Sacrifice 1 HP to obtain 2 high-tier items (Choke, Saw, Glass, Cigs, Adrenaline weighted 5x). If Lucky Charm is active, high-tier weight boosted to 15x+. Using at 1 HP = instant death. Player only. Max 1 per inventory."
                             color="text-red-700"
-                            effect="→ SACRIFICE HP FOR LOOT"
+                            effect="→ -1 HP, +2 HIGH-TIER ITEMS"
                         />
 
                         <ItemCard
                             icon={<Icons.Luckycharm size={20} />}
                             name="LUCKY CHARM"
-                            description="Boosts next shipment items luck. Stacks on multiple uses."
+                            description="Boosts next item shipment quality. Stacks multiplicatively on multiple uses. Also massively boosts Blood Contract loot quality. Consumed after next shipment or contract use. Max 1 per inventory."
                             color="text-emerald-500"
-                            effect="→ BOOST SHIPMENT LUCK"
+                            effect="→ BOOST LOOT + CONTRACT QUALITY"
                         />
 
                         <ItemCard
                             icon={<Icons.Flashbang size={20} />}
                             name="FLASHBANG"
-                            description="Blinds the opponent, preventing them from deploying any items on their next turn."
+                            description="Blinds the opponent, completely preventing them from using ANY items on their next turn. They can still pick up the gun and shoot."
                             color="text-zinc-300"
-                            effect="→ BLOCK OPPONENT ITEMS"
+                            effect="→ BLOCK ALL OPPONENT ITEMS"
                         />
 
                         <ItemCard
                             icon={<Icons.Crusher size={20} />}
                             name="ITEM CRUSHER"
-                            description="Slam down a giant hammer to destroy 1 random item from your opponent's inventory."
+                            description="Slams a giant hammer to destroy 1 random item from your opponent's inventory. Can destroy any item including Totem. Fails if opponent has empty inventory."
                             color="text-amber-600"
-                            effect="→ DESTROY ENEMY ITEM"
+                            effect="→ DESTROY 1 RANDOM ENEMY ITEM"
                         />
 
                         <ItemCard
                             icon={<Icons.Totem size={20} />}
                             name="TOTEM OF UNDYING"
-                            description="[PASSIVE] Survive at 1 HP when HP drops to 0. Auto-triggers on lethal damage. UNSTEALABLE. Max 1 totem."
+                            description="[PASSIVE] Auto-activates when HP drops to 0, saving you at 1 HP. Cannot be stolen via Adrenaline. Can be destroyed by Crusher. Max 1 per inventory."
                             color="text-amber-400"
-                            effect="→ AUTO-SURVIVE AT 1 HP"
+                            effect="→ AUTO-SURVIVE AT 1 HP (UNSTEALABLE)"
                         />
 
                         <ItemCard
                             icon={<Icons.Mirror size={20} />}
                             name="MIRROR"
-                            description="Copy the effects of all items used by the opponent on their immediate previous turn. Sequential activation."
+                            description="Copies and replays ALL items your opponent used on their last turn, in sequence. Excludes Mirror itself to prevent infinite loops. Useless if opponent used no items."
                             color="text-indigo-400"
-                            effect="→ DUPLICATE PREVIOUS EFFECTS"
+                            effect="→ REPLAY OPPONENT'S LAST TURN ITEMS"
                         />
                     </div>
                 </div>
             )
         },
 
-        // Page 4: Probability Matrix
+        // Page 4: Tarot Cards
+        {
+            title: "TAROT CARDS",
+            icon: <Icons.DeckCard size={20} className="text-purple-400" />,
+            content: (
+                <div className="space-y-3">
+                    <p className="text-stone-400 text-center text-xs md:text-sm mb-4">
+                        🃏 Draw one of 6 randomly presented cards for active or passive effects.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-2.5 max-h-[48vh] overflow-y-auto pr-1 custom-scrollbar">
+                        <ItemCard
+                            icon={<Icons.DeckCard />}
+                            name="THE MAGICIAN"
+                            description="Gain 1 random item. Uses standard drop table. Fails (discards) if inventory is full."
+                            color="text-purple-450"
+                            effect="→ +1 RANDOM ITEM"
+                        />
+                        <ItemCard
+                            icon={<Icons.DeckCard />}
+                            name="THE HANGED MAN"
+                            description="Lose 1 HP. If this kills you, Totem of Undying auto-triggers (if owned). Lethal without Totem = instant death."
+                            color="text-red-500"
+                            effect="→ -1 HP (TOTEM CAN SAVE)"
+                        />
+                        <ItemCard
+                            icon={<Icons.DeckCard />}
+                            name="THE HERMIT"
+                            description="Instantly transfers the current turn to your opponent. You do NOT get to shoot this turn."
+                            color="text-stone-500"
+                            effect="→ GIVE TURN TO OPPONENT"
+                        />
+                        <ItemCard
+                            icon={<Icons.DeckCard />}
+                            name="THE MOON"
+                            description="Steal 1 random item from opponent (excluding Totem). Discarded if opponent has no items or your inventory is full."
+                            color="text-blue-300"
+                            effect="→ STEAL 1 ITEM (NO TOTEM)"
+                        />
+                        <ItemCard
+                            icon={<Icons.DeckCard />}
+                            name="JUDGMENT"
+                            description="If the current shell is BLANK, there is a 50% chance it secretly converts to LIVE. Has no effect on already-LIVE shells. Neither player is told the result."
+                            color="text-yellow-600"
+                            effect="→ 50% BLANK→LIVE (SECRET)"
+                        />
+                        <ItemCard
+                            icon={<Icons.DeckCard />}
+                            name="WHEEL OF FORTUNE"
+                            description="Randomly reshuffles the order of ALL remaining shells. Invalidates any Glass/Phone intel you had."
+                            color="text-orange-400"
+                            effect="→ SHUFFLE ALL REMAINING"
+                        />
+                        <ItemCard
+                            icon={<Icons.DeckCard />}
+                            name="THE SUN"
+                            description="Heal 1 HP (capped at max HP). No effect if already at full health."
+                            color="text-yellow-400"
+                            effect="→ +1 HP (CAPPED)"
+                        />
+                        <ItemCard
+                            icon={<Icons.DeckCard />}
+                            name="DEATH"
+                            description="Destroy 1 random item from YOUR OWN inventory. Harmful card — can destroy your Totem. No effect if you have no items."
+                            color="text-zinc-600"
+                            effect="→ LOSE 1 OWN ITEM"
+                        />
+                        <ItemCard
+                            icon={<Icons.DeckCard />}
+                            name="THE TOWER"
+                            description="Destroy 1 random item from your OPPONENT's inventory (excluding Totem). No effect if opponent has no items."
+                            color="text-amber-700"
+                            effect="→ DESTROY 1 ENEMY ITEM"
+                        />
+                        <ItemCard
+                            icon={<Icons.DeckCard />}
+                            name="THE FOOL"
+                            description="Reveals a shell's type, but may LIE. Lie probability: 0% if 3+ shells remain, 10% if 2 shells remain, 25% if only 1 shell left."
+                            color="text-pink-400"
+                            effect="→ REVEAL (0/10/25% LIE RATE)"
+                        />
+                        <ItemCard
+                            icon={<Icons.DeckCard />}
+                            name="JUSTICE"
+                            description="Instantly swap your HP with your opponent's HP. Extremely powerful when you're low and they're high."
+                            color="text-emerald-400"
+                            effect="→ SWAP HP TOTALS"
+                        />
+                    </div>
+                </div>
+            )
+        },
+
+        // Page 5: Probability Matrix
         {
             title: "PROBABILITY MATRIX",
             icon: <Crosshair size={20} className="text-amber-500" />,
@@ -350,59 +443,59 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
                                     </thead>
                                     <tbody className="divide-y divide-stone-850 text-stone-300 font-mono">
                                         <tr>
-                                            <td className="p-1.5 pl-2 font-sans">Cigarettes (Heal)</td>
-                                            <td className="p-1.5 text-center">11.0%</td>
-                                            <td className="p-1.5 text-center text-red-400">4.0%</td>
+                                            <td className="p-1.5 pl-2 font-sans">Blood Contract (Loot)</td>
+                                            <td className="p-1.5 text-center">9.0%</td>
+                                            <td className="p-1.5 text-center text-red-400">7.0%</td>
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans">Beer (Rack Shell)</td>
-                                            <td className="p-1.5 text-center">12.0%</td>
-                                            <td className="p-1.5 text-center text-green-450">16.0%</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="p-1.5 pl-2 font-sans">Handcuffs (Skip Turn)</td>
-                                            <td className="p-1.5 text-center">9.0%</td>
-                                            <td className="p-1.5 text-center">9.0%</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="p-1.5 pl-2 font-sans">Hand Saw (2x DMG)</td>
-                                            <td className="p-1.5 text-center">9.0%</td>
                                             <td className="p-1.5 text-center">10.0%</td>
+                                            <td className="p-1.5 text-center text-green-450">15.0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="p-1.5 pl-2 font-sans">Cigarettes (Heal)</td>
+                                            <td className="p-1.5 text-center">10.0%</td>
+                                            <td className="p-1.5 text-center text-red-400">4.0%</td>
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans">Magnifying Glass (Reveal)</td>
+                                            <td className="p-1.5 text-center">7.0%</td>
                                             <td className="p-1.5 text-center">8.0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="p-1.5 pl-2 font-sans">Handcuffs (Skip Turn)</td>
+                                            <td className="p-1.5 text-center">7.0%</td>
                                             <td className="p-1.5 text-center">8.0%</td>
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans">Burner Phone (Future peek)</td>
-                                            <td className="p-1.5 text-center">10.0%</td>
-                                            <td className="p-1.5 text-center text-green-450">10.0%</td>
+                                            <td className="p-1.5 text-center">8.0%</td>
+                                            <td className="p-1.5 text-center">8.0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="p-1.5 pl-2 font-sans">Hand Saw (2x DMG)</td>
+                                            <td className="p-1.5 text-center">5.0%</td>
+                                            <td className="p-1.5 text-center">5.0%</td>
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans">Polarity Inverter (Swap)</td>
-                                            <td className="p-1.5 text-center">9.0%</td>
-                                            <td className="p-1.5 text-center">9.0%</td>
+                                            <td className="p-1.5 text-center">7.0%</td>
+                                            <td className="p-1.5 text-center">8.0%</td>
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans">Adrenaline (Steal)</td>
-                                            <td className="p-1.5 text-center">8.0%</td>
-                                            <td className="p-1.5 text-center">9.0%</td>
+                                            <td className="p-1.5 text-center">7.0%</td>
+                                            <td className="p-1.5 text-center">7.0%</td>
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans">Choke Mod (Double shot)</td>
                                             <td className="p-1.5 text-center">5.0%</td>
-                                            <td className="p-1.5 text-center text-red-400">5.0%</td>
+                                            <td className="p-1.5 text-center">5.0%</td>
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans">Big Inverter (All invert)</td>
-                                            <td className="p-1.5 text-center">5.0%</td>
-                                            <td className="p-1.5 text-center text-red-400">5.0%</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="p-1.5 pl-2 font-sans">Blood Contract (Loot)</td>
-                                            <td className="p-1.5 text-center">10.0%</td>
-                                            <td className="p-1.5 text-center text-red-400">7.0%</td>
+                                            <td className="p-1.5 text-center">4.0%</td>
+                                            <td className="p-1.5 text-center">4.0%</td>
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans">Lucky Charm (Luck boost)</td>
@@ -411,23 +504,28 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans">Flashbang (Blind opponent)</td>
-                                            <td className="p-1.5 text-center">4.0%</td>
-                                            <td className="p-1.5 text-center">4.0%</td>
+                                            <td className="p-1.5 text-center">5.0%</td>
+                                            <td className="p-1.5 text-center">5.0%</td>
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans text-amber-500 font-bold">Item Crusher (Destroy)</td>
-                                            <td className="p-1.5 text-center text-amber-500 font-bold">2.0%</td>
+                                            <td className="p-1.5 text-center text-amber-500 font-bold">3.0%</td>
                                             <td className="p-1.5 text-center text-amber-500 font-bold">3.0%</td>
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans text-indigo-400 font-bold">Mirror (Duplicate Turn)</td>
-                                            <td className="p-1.5 text-center text-indigo-400 font-bold">2.0%</td>
-                                            <td className="p-1.5 text-center text-indigo-400 font-bold">3.0%</td>
+                                            <td className="p-1.5 text-center text-indigo-400 font-bold">4.0%</td>
+                                            <td className="p-1.5 text-center text-indigo-400 font-bold">4.0%</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="p-1.5 pl-2 font-sans text-purple-400 font-bold">Tarot Deck Card</td>
+                                            <td className="p-1.5 text-center text-purple-400 font-bold">4.0%</td>
+                                            <td className="p-1.5 text-center text-purple-400 font-bold">4.0%</td>
                                         </tr>
                                         <tr>
                                             <td className="p-1.5 pl-2 font-sans text-amber-400 font-bold">Totem of Undying (Passive)</td>
-                                            <td className="p-1.5 text-center text-amber-400 font-bold">3.0%</td>
-                                            <td className="p-1.5 text-center text-amber-400 font-bold">3.0%</td>
+                                            <td className="p-1.5 text-center text-amber-400 font-bold">1.0%</td>
+                                            <td className="p-1.5 text-center text-amber-400 font-bold">1.0%</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -470,7 +568,7 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
             )
         },
 
-        // Page 5: Dealer Protocol (Hard Mode)
+        // Page 5: Dealer Protocol (Normal + Hard Mode)
         {
             title: "DEALER PROTOCOL",
             icon: <Shield size={20} className="text-purple-400" />,
@@ -480,29 +578,53 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
                         <div className="w-14 h-14 md:w-16 md:h-16 mx-auto mb-3 bg-gradient-to-br from-purple-700 to-purple-900 rounded-full flex items-center justify-center border border-purple-500/30">
                             <Shield size={24} className="text-white" />
                         </div>
-                        <p className="text-sm md:text-base text-stone-300">Hard Mode AI Specifications</p>
-                        <p className="text-xs md:text-sm text-stone-500 mt-1">Classified Dealer cheating behavior files</p>
+                        <p className="text-sm md:text-base text-stone-300">Dealer AI Behavior Specifications</p>
+                        <p className="text-xs md:text-sm text-stone-500 mt-1">Normal Mode vs Hard Mode breakdown</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Normal Mode Section */}
+                        <div className="md:col-span-2">
+                            <InfoCard icon={<Gamepad2 size={16} />} title="NORMAL MODE — CASUAL AI" color="border-green-500">
+                                • Uses standard drop probabilities (same as player, minus Blood Contract).<br />
+                                • Has a <span className="text-yellow-400 font-bold">10% chance to make a targeting mistake</span> — sometimes shoots self when should shoot player and vice versa.<br />
+                                • Uses items in a basic priority order: Heal → Contract → Adrenaline → Mirror → Inverter → Saw → Cuffs → Glass → Phone → Tarot → Beer → Choke → Lucky Charm → Flashbang → Crusher.<br />
+                                • <span className="text-yellow-400 font-bold">Random Tarot selection</span> — picks any card blindly when using Tarot Deck Card.<br />
+                                • No supernatural peeking at shells — relies only on Glass and Phone intel.
+                            </InfoCard>
+                        </div>
+
+                        {/* Hard Mode Section */}
                         <InfoCard icon={<Eye size={16} />} title="SUPERNATURAL INTUITION" color="border-purple-500">
-                            The Dealer has a **60% chance** at the start of every turn to immediately sense the gunpowder and peek at the current shell, without using any items.
+                            The Dealer has a <span className="text-red-400 font-bold">60% chance</span> at the start of every turn to secretly sense the current shell type WITHOUT using any items. This also extends to the next shell for Choke Mod planning.
                         </InfoCard>
 
                         <InfoCard icon={<Target size={16} />} title="TACTICAL HANDCUFFS" color="border-purple-500">
-                            Unlike normal mode, if the Dealer calculates that the remaining live shell probability is **50% or higher**, he will restrain you with **Handcuffs** even if he hasn't peeked at the shell.
+                            Unlike normal mode, if live shell probability is <span className="text-red-400 font-bold">≥50%</span>, the Dealer will preemptively use Handcuffs even without shell knowledge. In normal mode, he only cuffs reactively.
+                        </InfoCard>
+
+                        <InfoCard icon={<Icons.DeckCard size={16} />} title="SMART TAROT SELECTION" color="border-purple-500">
+                            In Hard Mode, the Dealer has a <span className="text-red-400 font-bold">50% chance</span> to peek at all 6 fanned Tarot cards and select the highest-scoring one using a utility function. Scores are based on current HP, opponent HP, inventory state, and chamber info. In Normal Mode, always random.
                         </InfoCard>
 
                         <InfoCard icon={<Zap size={16} />} title="SMART ADRENALINE STEALS" color="border-purple-500">
-                            The Dealer dynamically targets high-threat items in your inventory:
-                            <br />• Restores health using your **Cigarettes** if low on HP.
-                            <br />• Steals **Saws**, **Inverters**, **Chokes**, and **Remotes** to execute high-damage chains.
+                            The Dealer dynamically targets high-threat items:
+                            <br />• Steals <span className="text-red-400 font-bold">Saws, Inverters, Cuffs, Mirrors, Chokes, Remotes</span> for offense.
+                            <br />• Steals <span className="text-green-400 font-bold">Cigarettes</span> for healing when low HP.
+                            <br />• Will NOT steal Totem or Adrenaline.
                         </InfoCard>
 
                         <InfoCard icon={<Heart size={16} />} title="SELF-PRESERVATION MATRIX" color="border-purple-500">
-                            At **1 HP**, the Dealer:
-                            <br />• Will NEVER fire at himself (unless 100% sure it is a blank).
-                            <br />• If he steals your **Blood Contract**, he will **stash** it in his inventory instead of using it, avoiding self-destruction.
+                            At <span className="text-red-400 font-bold">1 HP</span>, the Dealer:
+                            <br />• Will NEVER fire at himself (unless 100% certain it's blank).
+                            <br />• Stashes stolen <span className="text-red-400 font-bold">Blood Contract</span> instead of using it to avoid suicide.
+                            <br />• Prioritizes healing items above all else.
+                        </InfoCard>
+
+                        <InfoCard icon={<Scale size={16} />} title="CHEATING ITEM DISTRIBUTION" color="border-purple-500">
+                            In Hard Mode, the Dealer's shipment items are NOT random — they are manipulated based on his HP:
+                            <br />• <span className="text-red-400 font-bold">Aggressive (HP &gt; 2)</span>: 25% Saw, 25% Choke, 15% Glass.
+                            <br />• <span className="text-green-400 font-bold">Panic (HP ≤ 2)</span>: 30% Cigs, 15% Beer, 15% Totem.
                         </InfoCard>
                     </div>
                 </div>
@@ -609,9 +731,9 @@ export const TutorialGuide: React.FC<TutorialGuideProps> = ({ onClose }) => {
                             • **Charge ratio**: Randomized distribution of LIVE and BLANK shells (at least 1 of each guaranteed).
                         </InfoCard>
 
-                        <InfoCard icon={<Scale size={16} />} title="INVENTORY PROTOCOL (DUPES CAP)" color="border-blue-500">
-                            • **Cargo Shipment cap**: Maximum of 1 duplicate item allowed per loot phase.<br />
-                            • **Storage cap**: Maximum of 2 of any single item type total in your inventory. This prevents hoarding and forces tactical adaptivity.
+                        <InfoCard icon={<Scale size={16} />} title="INVENTORY PROTOCOL (DUPES)" color="border-blue-500">
+                            • **Unique items** (Blood Contract, Lucky Charm, Totem): Max 1 copy per inventory. Duplicates are blocked.<br />
+                            • **Standard items** (Beer, Cigs, Saw, etc.): Can appear multiple times in the same shipment with no cap.
                         </InfoCard>
 
                         <InfoCard icon={<Zap size={16} />} title="HEALTH & SHOTGUN DMG" color="border-green-500">

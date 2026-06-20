@@ -235,12 +235,21 @@ export const performShot = async (
     }
     const nextIndex = currentShellIndex + processedShells;
 
-    setGameState(prev => ({
-        ...prev,
-        currentShellIndex: nextIndex,
-        liveCount: Math.max(0, prev.liveCount - consumedLives),
-        blankCount: Math.max(0, prev.blankCount - consumedBlanks)
-    }));
+    setGameState(prev => {
+        let finalLivesDecrement = consumedLives;
+        let finalBlanksDecrement = consumedBlanks;
+        if (consumedLives > prev.liveCount) {
+            const excess = consumedLives - prev.liveCount;
+            finalLivesDecrement = prev.liveCount;
+            finalBlanksDecrement = consumedBlanks + excess;
+        }
+        return {
+            ...prev,
+            currentShellIndex: nextIndex,
+            liveCount: Math.max(0, prev.liveCount - finalLivesDecrement),
+            blankCount: Math.max(0, prev.blankCount - finalBlanksDecrement)
+        };
+    });
 
     // Rack Sequence
     await wait(500);

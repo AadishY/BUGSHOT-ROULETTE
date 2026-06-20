@@ -637,35 +637,482 @@ export const createTotem = (): THREE.Group => {
 export const createMirror = (): THREE.Group => {
     const group = new THREE.Group();
 
-    const handleMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.7, metalness: 0.5 });
-    const frameMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.2, metalness: 0.9 });
-    const glassMat = new THREE.MeshStandardMaterial({ 
-        color: 0x88ccff, 
-        roughness: 0.05, 
-        metalness: 0.95,
-        emissive: 0x112233
+    const goldMat = new THREE.MeshStandardMaterial({ 
+        color: 0xd4af37, // Metallic gold
+        roughness: 0.25, 
+        metalness: 0.9 
     });
 
-    const handleGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.4, 12);
-    const handle = new THREE.Mesh(handleGeo, handleMat);
-    handle.position.y = -0.25;
-    handle.castShadow = true;
-    group.add(handle);
+    const glassMat = new THREE.MeshStandardMaterial({ 
+        color: 0xaadaff, 
+        roughness: 0.02, 
+        metalness: 0.98,
+        emissive: 0x112244,
+        emissiveIntensity: 0.35
+    });
 
-    const frameGeo = new THREE.TorusGeometry(0.18, 0.02, 8, 24);
-    const frame = new THREE.Mesh(frameGeo, frameMat);
-    frame.position.y = 0.0;
+    const frameTorus = new THREE.TorusGeometry(0.18, 0.025, 12, 36);
+    const frame = new THREE.Mesh(frameTorus, goldMat);
+    frame.scale.set(0.78, 1.15, 1.0);
     frame.castShadow = true;
     group.add(frame);
 
-    const glassGeo = new THREE.CylinderGeometry(0.17, 0.17, 0.015, 24);
+    const glassGeo = new THREE.CylinderGeometry(0.178, 0.178, 0.015, 32);
     const glass = new THREE.Mesh(glassGeo, glassMat);
     glass.rotation.x = Math.PI / 2;
-    glass.position.y = 0.0;
+    glass.scale.set(0.78, 1.15, 1.0);
     group.add(glass);
+
+    const addScroll = (x: number, y: number, rz: number) => {
+        const scrollGeo = new THREE.TorusGeometry(0.04, 0.009, 8, 16);
+        const mesh = new THREE.Mesh(scrollGeo, goldMat);
+        mesh.position.set(x, y, 0);
+        mesh.rotation.z = rz;
+        mesh.castShadow = true;
+        group.add(mesh);
+    };
+
+    const addBead = (x: number, y: number, r: number) => {
+        const beadGeo = new THREE.SphereGeometry(r, 8, 8);
+        const mesh = new THREE.Mesh(beadGeo, goldMat);
+        mesh.position.set(x, y, 0);
+        mesh.castShadow = true;
+        group.add(mesh);
+    };
+
+    // 1. Top Flourish
+    addScroll(0, 0.24, 0);
+    addScroll(-0.06, 0.22, Math.PI / 4);
+    addScroll(0.06, 0.22, -Math.PI / 4);
+    addBead(0, 0.29, 0.018);
+    addBead(-0.03, 0.27, 0.012);
+    addBead(0.03, 0.27, 0.012);
+
+    // 2. Bottom Flourish
+    addScroll(0, -0.24, Math.PI);
+    addScroll(-0.06, -0.22, -Math.PI / 4);
+    addScroll(0.06, -0.22, Math.PI / 4);
+    addBead(0, -0.29, 0.018);
+    addBead(-0.03, -0.27, 0.012);
+    addBead(0.03, -0.27, 0.012);
+
+    // 3. Left Side Flourish
+    addScroll(-0.16, 0.06, Math.PI / 2 + Math.PI / 6);
+    addScroll(-0.16, -0.06, Math.PI / 2 - Math.PI / 6);
+    addScroll(-0.17, 0, Math.PI / 2);
+    addBead(-0.19, 0, 0.018);
+    addBead(-0.18, 0.03, 0.01);
+    addBead(-0.18, -0.03, 0.01);
+
+    // 4. Right Side Flourish
+    addScroll(0.16, 0.06, -Math.PI / 2 - Math.PI / 6);
+    addScroll(0.16, -0.06, -Math.PI / 2 + Math.PI / 6);
+    addScroll(0.17, 0, -Math.PI / 2);
+    addBead(0.19, 0, 0.018);
+    addBead(0.18, 0.03, 0.01);
+    addBead(0.18, -0.03, 0.01);
+
+    // 5. Diagonal Scroll Accents
+    addScroll(-0.11, 0.15, Math.PI / 3);
+    addScroll(0.11, 0.15, -Math.PI / 3);
+    addScroll(-0.11, -0.15, -Math.PI / 3);
+    addScroll(0.11, -0.15, Math.PI / 3);
 
     group.name = 'ITEM_MIRROR';
     group.scale.setScalar(2.0);
+
+    return group;
+};
+
+export const createCardTexture = (name: string, isBack: boolean): THREE.CanvasTexture => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 384;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return new THREE.CanvasTexture(canvas);
+
+    if (isBack) {
+        // Gold gothic back design
+        const grad = ctx.createRadialGradient(128, 192, 20, 128, 192, 200);
+        grad.addColorStop(0, '#2d0a15'); // Dark maroon
+        grad.addColorStop(1, '#0b0205'); // Near black
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 256, 384);
+
+        ctx.strokeStyle = '#d4af37'; // Gold
+        ctx.lineWidth = 6;
+        ctx.strokeRect(10, 10, 236, 364);
+
+        ctx.strokeStyle = '#aa820a'; // Darker gold
+        ctx.lineWidth = 2;
+        ctx.strokeRect(16, 16, 224, 352);
+
+        ctx.fillStyle = '#d4af37';
+        ctx.fillRect(16, 16, 12, 12);
+        ctx.fillRect(228, 16, 12, 12);
+        ctx.fillRect(16, 356, 12, 12);
+        ctx.fillRect(228, 356, 12, 12);
+
+        ctx.beginPath();
+        ctx.moveTo(30, 30);
+        ctx.lineTo(226, 354);
+        ctx.moveTo(226, 30);
+        ctx.lineTo(30, 354);
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.15)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(128, 192, 50, 0, Math.PI * 2);
+        ctx.strokeStyle = '#d4af37';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(128, 192, 44, 0, Math.PI * 2);
+        ctx.strokeStyle = '#aa820a';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.font = 'bold 20px serif';
+        ctx.fillStyle = '#d4af37';
+        ctx.textAlign = 'center';
+        ctx.fillText('R O U L E T T E', 128, 198);
+    } else {
+        // Front design
+        let bgColor = '#111';
+        let accentColor = '#ffd700';
+        let desc = '';
+        
+        switch (name) {
+            case 'The Magician':
+                bgColor = '#1e112c'; // Purple
+                accentColor = '#c084fc';
+                desc = 'Gain a random item';
+                break;
+            case 'The Hanged Man':
+                bgColor = '#2d0606'; // Blood red
+                accentColor = '#f87171';
+                desc = 'Lose 1 health';
+                break;
+            case 'The Hermit':
+                bgColor = '#062016'; // Deep green
+                accentColor = '#34d399';
+                desc = 'Ends turn instantly';
+                break;
+            case 'The Moon':
+                bgColor = '#091e3a'; // Blue
+                accentColor = '#60a5fa';
+                desc = 'Grab item from opponent';
+                break;
+            case 'Judgment':
+                bgColor = '#2a1a08'; // Orange/Gold
+                accentColor = '#fbbf24';
+                desc = 'Invert blank shell';
+                break;
+            case 'Wheel of Fortune':
+                bgColor = '#23120b'; // Bronze
+                accentColor = '#fb923c';
+                desc = 'Reshuffle ammo';
+                break;
+            case 'The Sun':
+                bgColor = '#3b1007'; // Terracotta
+                accentColor = '#f59e0b';
+                desc = 'Gain 1 health';
+                break;
+            case 'Death':
+                bgColor = '#0a0a0a'; // Black
+                accentColor = '#e2e8f0';
+                desc = 'Destroy 1 own item';
+                break;
+            case 'The Tower':
+                bgColor = '#111827'; // Dark grey
+                accentColor = '#fbbf24';
+                desc = 'Destroy opponent item';
+                break;
+            case 'The Fool':
+                bgColor = '#042f2e'; // Teal
+                accentColor = '#2dd4bf';
+                desc = 'Reveal bullet info';
+                break;
+            case 'Justice':
+                bgColor = '#0f172a'; // Indigo
+                accentColor = '#a78bfa';
+                desc = 'Swap HP totals';
+                break;
+        }
+
+        const grad = ctx.createRadialGradient(128, 192, 10, 128, 192, 220);
+        grad.addColorStop(0, bgColor);
+        grad.addColorStop(1, '#050505');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 256, 384);
+
+        ctx.strokeStyle = accentColor;
+        ctx.lineWidth = 4;
+        ctx.strokeRect(10, 10, 236, 364);
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(14, 14, 228, 356);
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.strokeRect(28, 70, 200, 190);
+
+        ctx.font = 'small-caps bold 20px serif';
+        ctx.fillStyle = accentColor;
+        ctx.textAlign = 'center';
+        ctx.fillText(name.toUpperCase(), 128, 45);
+
+        ctx.beginPath();
+        ctx.moveTo(50, 55);
+        ctx.lineTo(206, 55);
+        ctx.strokeStyle = accentColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(128, 160);
+        ctx.strokeStyle = accentColor;
+        ctx.fillStyle = accentColor;
+        ctx.lineWidth = 3;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+
+        if (name === 'The Magician') {
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * 35,
+                           Math.sin((18 + i * 72) * Math.PI / 180) * 35);
+                ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * 15,
+                           Math.sin((54 + i * 72) * Math.PI / 180) * 15);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            ctx.fillRect(-45, -35, 6, 6);
+            ctx.fillRect(40, 30, 4, 4);
+            ctx.fillRect(35, -25, 5, 5);
+        } 
+        else if (name === 'The Hanged Man') {
+            ctx.beginPath();
+            ctx.moveTo(0, -35);
+            ctx.lineTo(0, 35);
+            ctx.moveTo(-20, -15);
+            ctx.lineTo(20, -15);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(0, 5, 12, 0, Math.PI * 2);
+            ctx.stroke();
+        } 
+        else if (name === 'The Hermit') {
+            ctx.strokeRect(-15, -25, 30, 45);
+            ctx.beginPath();
+            ctx.arc(0, -25, 10, Math.PI, 0);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-15, -10); ctx.lineTo(15, -10);
+            ctx.moveTo(-15, 10); ctx.lineTo(15, 10);
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(0, 0, 8, 0, Math.PI * 2);
+            ctx.fill();
+        } 
+        else if (name === 'The Moon') {
+            ctx.beginPath();
+            ctx.arc(-10, 0, 30, -Math.PI / 2, Math.PI / 2);
+            ctx.quadraticCurveTo(15, 0, -10, -Math.PI / 2);
+            ctx.fill();
+        } 
+        else if (name === 'Judgment') {
+            ctx.beginPath();
+            ctx.moveTo(-5, -10);
+            ctx.bezierCurveTo(-25, -35, -45, -10, -35, 15);
+            ctx.bezierCurveTo(-25, 25, -10, 10, -5, 0);
+            ctx.moveTo(5, -10);
+            ctx.bezierCurveTo(25, -35, 45, -10, 35, 15);
+            ctx.bezierCurveTo(25, 25, 10, 10, 5, 0);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(0, -25);
+            ctx.lineTo(0, 25);
+            ctx.moveTo(-10, -15);
+            ctx.lineTo(10, -15);
+            ctx.stroke();
+        } 
+        else if (name === 'Wheel of Fortune') {
+            ctx.beginPath();
+            ctx.arc(0, 0, 30, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, 0, 8, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            for (let i = 0; i < 8; i++) {
+                const angle = i * Math.PI / 4;
+                ctx.moveTo(Math.cos(angle) * 8, Math.sin(angle) * 8);
+                ctx.lineTo(Math.cos(angle) * 30, Math.sin(angle) * 30);
+            }
+            ctx.stroke();
+        } 
+        else if (name === 'The Sun') {
+            ctx.beginPath();
+            ctx.arc(0, 0, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            for (let i = 0; i < 12; i++) {
+                const angle = i * Math.PI / 6;
+                const len = i % 2 === 0 ? 32 : 24;
+                ctx.moveTo(Math.cos(angle) * 16, Math.sin(angle) * 16);
+                ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+            }
+            ctx.stroke();
+        } 
+        else if (name === 'Death') {
+            ctx.beginPath();
+            ctx.arc(0, -10, 18, Math.PI, 0);
+            ctx.lineTo(12, 15);
+            ctx.lineTo(-12, 15);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = bgColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-6, 10); ctx.lineTo(-6, 16);
+            ctx.moveTo(0, 10); ctx.lineTo(0, 16);
+            ctx.moveTo(6, 10); ctx.lineTo(6, 16);
+            ctx.stroke();
+            ctx.fillStyle = bgColor;
+            ctx.beginPath();
+            ctx.arc(-6, -6, 4, 0, Math.PI * 2);
+            ctx.arc(6, -6, 4, 0, Math.PI * 2);
+            ctx.fill();
+        } 
+        else if (name === 'The Tower') {
+            ctx.strokeRect(-15, -15, 30, 40);
+            ctx.beginPath();
+            ctx.moveTo(-18, -15); ctx.lineTo(18, -15);
+            ctx.lineTo(0, -30);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.strokeStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.moveTo(35, -45);
+            ctx.lineTo(10, -20);
+            ctx.lineTo(20, -20);
+            ctx.lineTo(-5, 0);
+            ctx.stroke();
+        } 
+        else if (name === 'The Fool') {
+            ctx.beginPath();
+            ctx.arc(0, 5, 18, 0, Math.PI, true);
+            ctx.lineTo(-18, 15);
+            ctx.lineTo(18, 15);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-18, 0);
+            ctx.bezierCurveTo(-35, -25, -25, -30, -15, -15);
+            ctx.moveTo(18, 0);
+            ctx.bezierCurveTo(35, -25, 25, -30, 15, -15);
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(0, -30, 10, -35, 0, -15);
+            ctx.stroke();
+        } 
+        else if (name === 'Justice') {
+            ctx.beginPath();
+            ctx.moveTo(0, -30);
+            ctx.lineTo(0, 25);
+            ctx.moveTo(-15, 25);
+            ctx.lineTo(15, 25);
+            ctx.moveTo(-30, -15);
+            ctx.lineTo(30, -15);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-25, -15);
+            ctx.lineTo(-32, 5);
+            ctx.moveTo(-25, -15);
+            ctx.lineTo(-18, 5);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(-25, 5, 8, 0, Math.PI, false);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(25, -15);
+            ctx.lineTo(32, 5);
+            ctx.moveTo(25, -15);
+            ctx.lineTo(18, 5);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(25, 5, 8, 0, Math.PI, false);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+
+        ctx.font = 'italic 12px sans-serif';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.textAlign = 'center';
+        ctx.fillText(desc, 128, 305);
+
+        ctx.font = '12px serif';
+        ctx.fillStyle = accentColor;
+        ctx.fillText('• X I I I •', 128, 345);
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    return texture;
+};
+
+export const createTarotCard = (name: string): THREE.Group => {
+    const group = new THREE.Group();
+    const cardGeo = new THREE.BoxGeometry(0.8, 1.2, 0.01);
+
+    const frontTex = createCardTexture(name, false);
+    const frontMat = new THREE.MeshStandardMaterial({
+        map: frontTex,
+        roughness: 0.8,
+        metalness: 0.0,
+        emissive: new THREE.Color(0x222222),
+        emissiveIntensity: 0.2,
+        side: THREE.DoubleSide
+    });
+
+    const backTex = createCardTexture(name, true);
+    const backMat = new THREE.MeshStandardMaterial({
+        map: backTex,
+        roughness: 0.75,
+        metalness: 0.0,
+        emissive: new THREE.Color(0x000000),
+        emissiveIntensity: 0.0,
+        side: THREE.DoubleSide
+    });
+
+    const edgeMat = new THREE.MeshStandardMaterial({
+        color: 0xaa820a,
+        roughness: 0.4,
+        metalness: 0.8
+    });
+
+    const materials = [
+        edgeMat,
+        edgeMat,
+        edgeMat,
+        edgeMat,
+        frontMat,
+        backMat
+    ];
+
+    const mesh = new THREE.Mesh(cardGeo, materials);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.name = 'CARD_MESH';
+    group.add(mesh);
+
+    group.name = `ITEM_DECK_CARD_${name.replace(/\s+/g, '_')}`;
+    group.userData = { name, isRevealed: false };
 
     return group;
 };

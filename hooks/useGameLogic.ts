@@ -1,11 +1,11 @@
   import { useState, useEffect, useRef } from 'react';
-import { GameState, PlayerState, ShellType, ItemType, LogEntry, TurnOwner, CameraView, AimTarget, AnimationState, RoomSettings } from '../types';
+import { GameState, PlayerState, ShellType, ItemType, LogEntry, TurnOwner, CameraView, AimTarget, AnimationState, RoomSettings, TarotCard } from '../types';
 import { MAX_HP, MAX_ITEMS, ITEMS } from '../constants';
 import { randomInt, wait } from '../utils/gameUtils';
 import * as ItemActions from '../utils/game/itemActions';
 import { audioManager } from '../utils/audioManager';
 import { performShot } from '../utils/game/shooting';
-import { distributeItems as distributeItemsAction } from '../utils/game/inventory';
+import { distributeItems as distributeItemsAction, getRandomItem } from '../utils/game/inventory';
 import { MatchStats } from '../utils/statsManager';
 
 export const useGameLogic = () => {
@@ -131,6 +131,7 @@ export const useGameLogic = () => {
     triggerCrusher: 0,
     triggerTotem: 0,
     triggerMirror: 0,
+    triggerDeckCard: 0,
     totemTarget: null,
     isSawing: false,
     ejectedShellColor: 'red',
@@ -219,7 +220,7 @@ export const useGameLogic = () => {
       triggerRecoil: 0, triggerRack: 0, triggerSparks: 0, triggerHeal: 0, triggerDrink: 0, triggerCuff: 0,
       isSawing: false, ejectedShellColor: 'red', muzzleFlashIntensity: 0, isLiveShot: false,
       dealerHit: false, dealerDropping: false, playerHit: false, playerRecovering: false, dealerRecovering: false,
-      triggerAdrenaline: 0, triggerChoke: 0, triggerPhone: 0, triggerInverter: 0, triggerRemote: 0, triggerBigInverter: 0, triggerContract: 0, triggerLuckycharm: 0, triggerTotem: 0, triggerMirror: 0, totemTarget: null
+      triggerAdrenaline: 0, triggerChoke: 0, triggerPhone: 0, triggerInverter: 0, triggerRemote: 0, triggerBigInverter: 0, triggerContract: 0, triggerLuckycharm: 0, triggerTotem: 0, triggerMirror: 0, triggerDeckCard: 0, totemTarget: null
     });
     setCameraView('PLAYER');
     setShowBlood(false);
@@ -267,7 +268,7 @@ export const useGameLogic = () => {
       triggerRecoil: 0, triggerRack: 0, triggerSparks: 0, triggerHeal: 0, triggerDrink: 0, triggerCuff: 0,
       isSawing: false, ejectedShellColor: 'red', muzzleFlashIntensity: 0, isLiveShot: false,
       dealerHit: false, dealerDropping: false, playerHit: false, playerRecovering: false, dealerRecovering: false,
-      triggerAdrenaline: 0, triggerChoke: 0, triggerPhone: 0, triggerInverter: 0, triggerRemote: 0, triggerBigInverter: 0, triggerContract: 0, triggerLuckycharm: 0, triggerTotem: 0, triggerMirror: 0, totemTarget: null
+      triggerAdrenaline: 0, triggerChoke: 0, triggerPhone: 0, triggerInverter: 0, triggerRemote: 0, triggerBigInverter: 0, triggerContract: 0, triggerLuckycharm: 0, triggerTotem: 0, triggerMirror: 0, triggerDeckCard: 0, totemTarget: null
     });
     setCameraView('PLAYER');
     setShowBlood(false);
@@ -828,9 +829,10 @@ export const useGameLogic = () => {
       case 'MIRROR': {
         audioManager.playSound('mirror');
         setAnim(p => ({ ...p, triggerMirror: p.triggerMirror + 1 }));
+        await wait(2200); // Let Mirror animation run first
 
         const opponentState = user === 'PLAYER' ? dealerRef.current : playerRef.current;
-        const copiedItems = (opponentState.lastTurnItemsUsed || []).filter(i => i !== 'MIRROR');
+        const copiedItems = (opponentState.lastTurnItemsUsed || []).filter(i => i !== 'MIRROR' && i !== 'ADRENALINE');
         
         if (copiedItems.length === 0) {
           addLog(`${userName} COPIED NO EFFECTS WITH MIRROR`, 'info');
@@ -845,25 +847,68 @@ export const useGameLogic = () => {
               'ADRENALINE': 'Adrenaline', 'CHOKE': 'Choke Mod', 'REMOTE': 'Remote Control',
               'BIG_INVERTER': 'Big Inverter', 'CONTRACT': 'Blood Contract', 'LUCKYCHARM': 'Lucky Charm',
               'FLASHBANG': 'Flashbang', 'CRUSHER': 'Item Crusher', 'TOTEM': 'Totem of Undying',
-              'MIRROR': 'Mirror'
+              'MIRROR': 'Mirror', 'DECK_CARD': 'Tarot Card'
             };
             return names[i] || i;
           };
           const friendlyNames = copiedItems.map(getFriendlyName).join(' & ');
           addLog(`${userName} MIRROR COPIED: ${friendlyNames}`, 'safe');
           setOverlayText(`🪞 MIRROR DUPLICATED: ${friendlyNames}!`);
-          await wait(2500);
+          await wait(2200);
           setOverlayText(null);
 
           for (const copiedItem of copiedItems) {
-            if (gameStateRef.current.phase === 'GAME_OVER') break;
+            if (gameStateRef.current.phase === 'GAME_OVER' || roundEnded) break;
             const itemEndedRound = await processItemEffect(user, copiedItem);
             if (itemEndedRound) {
               roundEnded = true;
             }
-            await wait(1000);
+            if (!roundEnded) {
+              await wait(1000);
+            }
           }
         }
+        break;
+      }
+      case 'DECK_CARD': {
+        const allTarotNames: TarotCard['name'][] = [
+          'The Magician', 'The Hanged Man', 'The Hermit', 'The Moon', 'Judgment',
+          'Wheel of Fortune', 'The Sun', 'Death', 'The Tower', 'The Fool', 'Justice'
+        ];
+        
+        const shuffled = [...allTarotNames].sort(() => Math.random() - 0.5);
+        const selectedNames = shuffled.slice(0, 6);
+        const cardPowers: Record<TarotCard['name'], string> = {
+          'The Magician': 'Gain a random item',
+          'The Hanged Man': 'Lose 1 HP',
+          'The Hermit': 'Ends turn instantly',
+          'The Moon': 'Grab opponent item',
+          'Judgment': '50% chance invert blank to live',
+          'Wheel of Fortune': 'Reshuffle ammo',
+          'The Sun': 'Gain 1 HP',
+          'Death': 'Destroy own item',
+          'The Tower': 'Destroy opponent item',
+          'The Fool': 'Chamber bullet reveal',
+          'Justice': 'Swap HP totals'
+        };
+        const deckCards: TarotCard[] = selectedNames.map(name => ({
+          name,
+          power: cardPowers[name]
+        }));
+
+        setGameState(prev => ({
+          ...prev,
+          deckCards,
+          selectedCardIndex: null,
+          phase: 'CARD_SELECT'
+        }));
+        
+        setCameraView('TABLE');
+        
+        addLog(`${userName} SHUFFLED TAROT CARDS`, 'info');
+        setOverlayText("🃏 SELECT A TAROT CARD...");
+        await wait(1800);
+        setOverlayText(null);
         break;
       }
     }
@@ -965,19 +1010,334 @@ export const useGameLogic = () => {
     }
 
     await wait(100);
-    if (itemToSteal === 'TOTEM') {
-      setUser(prev => ({ ...prev, items: [...prev.items, 'TOTEM' as ItemType].slice(0, MAX_ITEMS) }));
-      addLog(`${stealerName.toUpperCase()} RECEIVES THE TOTEM OF UNDYING`, 'safe');
-      setOverlayText(`🎯 ${stealerName.toUpperCase()} RECEIVES THE TOTEM!`);
-      await wait(1500);
-      setOverlayText(null);
-    } else {
-      await processItemEffect(stealer, itemToSteal);
-    }
+    await processItemEffect(stealer, itemToSteal);
 
     await wait(300);
     setIsProcessing(false);
   };
+
+  const selectTarotCard = async (index: number) => {
+    if (gameStateRef.current.selectedCardIndex !== null && gameStateRef.current.selectedCardIndex !== undefined) return;
+    
+    setIsProcessing(true);
+    
+    setGameState(prev => ({
+      ...prev,
+      selectedCardIndex: index
+    }));
+
+    audioManager.playSound('cards');
+
+    const cards = gameStateRef.current.deckCards;
+    if (!cards || !cards[index]) {
+      setIsProcessing(false);
+      const nextPhase = gameStateRef.current.turnOwner === 'PLAYER' ? 'PLAYER_TURN' : 'DEALER_TURN';
+      setGameState(prev => ({ ...prev, phase: nextPhase, deckCards: undefined, selectedCardIndex: null }));
+      setCameraView('PLAYER');
+      return;
+    }
+
+    const chosenCard = cards[index];
+    const turnOwner = gameStateRef.current.turnOwner;
+    const userName = turnOwner === 'PLAYER' ? (playerName || 'PLAYER') : (gameStateRef.current.opponentName || 'OPPONENT');
+    
+    setOverlayText(`🃏 ${userName.toUpperCase()} REVEALED: ${chosenCard.name.toUpperCase()}...`);
+
+    await wait(1800);
+    setCameraView('PLAYER');
+    await wait(1700);
+
+    let deathTriggered = false;
+
+    const dealDamage = async (target: TurnOwner, amount: number) => {
+      const isPlayerTarget = target === 'PLAYER';
+      const currentHp = isPlayerTarget ? playerRef.current.hp : dealerRef.current.hp;
+      const currentItems = isPlayerTarget ? playerRef.current.items : dealerRef.current.items;
+      const hasTotem = currentItems.includes('TOTEM');
+      const newHp = currentHp - amount;
+      
+      if (newHp <= 0) {
+        if (hasTotem) {
+          const setTarget = isPlayerTarget ? setPlayer : setDealer;
+          setTarget(p => {
+            const idx = p.items.indexOf('TOTEM');
+            const newItems = [...p.items];
+            if (idx !== -1) newItems.splice(idx, 1);
+            return { ...p, hp: 1, items: newItems };
+          });
+          
+          setOverlayText(`✨ ${isPlayerTarget ? 'PLAYER' : 'DEALER'} SAVED BY TOTEM ✨`);
+          setAnim(prev => ({
+            ...prev,
+            triggerTotem: (prev.triggerTotem || 0) + 1,
+            totemTarget: target
+          }));
+          audioManager.playSound('totem');
+          addLog(`${isPlayerTarget ? 'PLAYER' : 'DEALER'}'S TOTEM OF UNDYING SAVED THEM!`, 'safe');
+          await wait(3000);
+          setOverlayText(null);
+        } else {
+          const setTarget = isPlayerTarget ? setPlayer : setDealer;
+          setTarget(p => ({ ...p, hp: 0 }));
+          addLog(`${isPlayerTarget ? 'PLAYER' : 'DEALER'} DIED TO HANGED MAN EFFECT.`, 'danger');
+          
+          const isHardMode = gameStateRef.current.isHardMode;
+          const isMultiplayer = gameStateRef.current.isMultiplayer;
+          
+          if (isPlayerTarget) {
+            if (isHardMode) {
+              handleHardModeRoundEnd('DEALER');
+              return true;
+            }
+            if (isMultiplayer && handleMPRoundEnd) {
+              handleMPRoundEnd('DEALER');
+              return true;
+            }
+            setGameState(prev => ({ ...prev, winner: 'DEALER', phase: 'GAME_OVER' }));
+          } else {
+            if (isHardMode) {
+              handleHardModeRoundEnd('PLAYER');
+              return true;
+            }
+            if (isMultiplayer && handleMPRoundEnd) {
+              handleMPRoundEnd('PLAYER');
+              return true;
+            }
+            setGameState(prev => ({ ...prev, winner: 'PLAYER', phase: 'GAME_OVER' }));
+          }
+          return true;
+        }
+      } else {
+        const setTarget = isPlayerTarget ? setPlayer : setDealer;
+        setTarget(p => ({ ...p, hp: newHp }));
+        addLog(`${isPlayerTarget ? 'PLAYER' : 'DEALER'} lost ${amount} HP from Hanged Man card.`, 'danger');
+      }
+      return false;
+    };
+
+    switch (chosenCard.name) {
+      case 'The Magician': {
+        const item = getRandomItem(gameStateRef.current.isHardMode, turnOwner === 'DEALER');
+        const setOwner = turnOwner === 'PLAYER' ? setPlayer : setDealer;
+        const ownerItems = turnOwner === 'PLAYER' ? playerRef.current.items : dealerRef.current.items;
+        
+        if (ownerItems.length < MAX_ITEMS) {
+          setOwner(p => ({ ...p, items: [...p.items, item] }));
+          addLog(`${userName} gained a random item: ${item}`, 'safe');
+          setOverlayText(`🔮 THE MAGICIAN: GAINED ${item}!`);
+        } else {
+          addLog(`${userName}'s inventory is full. Magic item was discarded.`, 'info');
+          setOverlayText("🔮 THE MAGICIAN: INVENTORY FULL!");
+        }
+        break;
+      }
+      
+      case 'The Hanged Man': {
+        deathTriggered = await dealDamage(turnOwner, 1);
+        setOverlayText(`🩸 THE HANGED MAN: ${userName} LOST 1 HP!`);
+        break;
+      }
+      
+      case 'The Hermit': {
+        addLog(`${userName} ends turn instantly with The Hermit.`, 'danger');
+        setOverlayText(`⛓️ THE HERMIT: TURN TRANSFERRED TO ${turnOwner === 'PLAYER' ? 'DEALER' : 'PLAYER'}!`);
+        break;
+      }
+      
+      case 'The Moon': {
+        const opponent = turnOwner === 'PLAYER' ? dealerRef.current : playerRef.current;
+        const setOpponent = turnOwner === 'PLAYER' ? setDealer : setPlayer;
+        const setOwner = turnOwner === 'PLAYER' ? setPlayer : setDealer;
+        const owner = turnOwner === 'PLAYER' ? playerRef.current : dealerRef.current;
+        
+        const stealableIndices = opponent.items
+          .map((item, idx) => ({ item, idx }))
+          .filter(x => x.item !== null && x.item !== 'TOTEM')
+          .map(x => x.idx);
+        
+        if (stealableIndices.length > 0) {
+          const randIdx = stealableIndices[Math.floor(Math.random() * stealableIndices.length)];
+          const stolenItem = opponent.items[randIdx];
+          
+          setOpponent(p => {
+            const items = [...p.items];
+            const idxInItems = items.indexOf(stolenItem);
+            if (idxInItems !== -1) items.splice(idxInItems, 1);
+            return { ...p, items };
+          });
+          
+          if (owner.items.length < MAX_ITEMS) {
+            setOwner(p => ({ ...p, items: [...p.items, stolenItem] }));
+            addLog(`${userName} stole opponent's ${stolenItem}!`, 'safe');
+            setOverlayText(`🌙 THE MOON: STOLE ${stolenItem}!`);
+          } else {
+            addLog(`${userName} stole ${stolenItem} but inventory was full (discarded)!`, 'info');
+            setOverlayText(`🌙 THE MOON: STOLE ${stolenItem} (DISCARDED)`);
+          }
+        } else {
+          addLog("Opponent has no items to steal.", 'info');
+          setOverlayText("🌙 THE MOON: OPPONENT HAS NO ITEMS");
+        }
+        break;
+      }
+      
+      case 'Judgment': {
+        const chamber = [...gameStateRef.current.chamber];
+        const idx = gameStateRef.current.currentShellIndex;
+        if (idx < chamber.length) {
+          if (chamber[idx] === 'BLANK') {
+            if (Math.random() < 0.5) {
+              chamber[idx] = 'LIVE';
+              setGameState(prev => ({ ...prev, chamber }));
+            }
+          }
+          addLog("Current shell was judged by Judgment.", 'info');
+          setOverlayText("⚖️ JUDGMENT: CURRENT SHELL JUDGED!");
+        } else {
+          setOverlayText("⚖️ JUDGMENT: CHAMBER EMPTY");
+        }
+        break;
+      }
+      
+      case 'Wheel of Fortune': {
+        const chamber = [...gameStateRef.current.chamber];
+        const idx = gameStateRef.current.currentShellIndex;
+        const remaining = chamber.slice(idx);
+        if (remaining.length > 0) {
+          const shuffledRemaining = remaining.sort(() => Math.random() - 0.5);
+          for (let i = 0; i < shuffledRemaining.length; i++) {
+            chamber[idx + i] = shuffledRemaining[i];
+          }
+          const liveCount = chamber.slice(idx).filter(s => s === 'LIVE').length;
+          const blankCount = chamber.slice(idx).filter(s => s === 'BLANK').length;
+          setGameState(prev => ({ ...prev, chamber, liveCount, blankCount }));
+          setKnownShell(null);
+          addLog("Ammo chamber reshuffled!", 'info');
+          setOverlayText("🎡 WHEEL OF FORTUNE: SHUFFLED CHAMBER!");
+        } else {
+          setOverlayText("🎡 WHEEL OF FORTUNE: CHAMBER EMPTY");
+        }
+        break;
+      }
+      
+      case 'The Sun': {
+        const setOwner = turnOwner === 'PLAYER' ? setPlayer : setDealer;
+        const ownerState = turnOwner === 'PLAYER' ? playerRef.current : dealerRef.current;
+        const newHp = Math.min(ownerState.maxHp, ownerState.hp + 1);
+        setOwner(p => ({ ...p, hp: newHp }));
+        addLog(`${userName} healed 1 HP.`, 'safe');
+        setOverlayText("☀️ THE SUN: HEALED 1 HP!");
+        break;
+      }
+      
+      case 'Death': {
+        const setOwner = turnOwner === 'PLAYER' ? setPlayer : setDealer;
+        const ownerState = turnOwner === 'PLAYER' ? playerRef.current : dealerRef.current;
+        if (ownerState.items.length > 0) {
+          const randIdx = Math.floor(Math.random() * ownerState.items.length);
+          const destroyedItem = ownerState.items[randIdx];
+          setOwner(p => {
+            const items = [...p.items];
+            items.splice(randIdx, 1);
+            return { ...p, items };
+          });
+          addLog(`${userName} destroyed own item: ${destroyedItem}`, 'danger');
+          setOverlayText(`💀 DEATH: DESTROYED OWN ${destroyedItem}!`);
+        } else {
+          addLog(`${userName} has no items to destroy.`, 'info');
+          setOverlayText("💀 DEATH: NO ITEMS TO DESTROY");
+        }
+        break;
+      }
+      
+      case 'The Tower': {
+        const setOpponent = turnOwner === 'PLAYER' ? setDealer : setPlayer;
+        const opponentState = turnOwner === 'PLAYER' ? dealerRef.current : playerRef.current;
+        const destroyableItems = opponentState.items.filter(i => i !== null && i !== 'TOTEM');
+        
+        if (destroyableItems.length > 0) {
+          const randIdx = Math.floor(Math.random() * destroyableItems.length);
+          const destroyedItem = destroyableItems[randIdx];
+          setOpponent(p => {
+            const items = [...p.items];
+            const idx = items.indexOf(destroyedItem);
+            if (idx !== -1) items.splice(idx, 1);
+            return { ...p, items };
+          });
+          addLog(`${userName} destroyed opponent's item: ${destroyedItem}`, 'safe');
+          setOverlayText(`🏰 THE TOWER: DESTROYED OPPONENT'S ${destroyedItem}!`);
+        } else {
+          addLog("Opponent has no items to destroy.", 'info');
+          setOverlayText("🏰 THE TOWER: OPPONENT HAS NO ITEMS");
+        }
+        break;
+      }
+      
+      case 'The Fool': {
+        const checkLimit = gameStateRef.current.chamber.length;
+        const current = gameStateRef.current.currentShellIndex;
+        const remaining = checkLimit - current;
+        
+        let randomIndex = current;
+        let positionText = "CURRENT SHELL";
+        
+        if (remaining > 2) {
+          const offset = 1 + Math.floor(Math.random() * (remaining - 1));
+          randomIndex = current + offset;
+          positionText = `${offset + 1}TH SHELL`;
+        } else if (remaining === 2) {
+          randomIndex = current + 1;
+          positionText = "2ND SHELL";
+        } else {
+          randomIndex = current;
+          positionText = "CURRENT SHELL";
+        }
+        
+        const actualShell = gameStateRef.current.chamber[randomIndex];
+        const lieProb = remaining > 2 ? 0.0 : (remaining === 2 ? 0.10 : 0.25);
+        const isLying = Math.random() < lieProb;
+        const displayedShell = isLying ? (actualShell === 'LIVE' ? 'BLANK' : 'LIVE') : actualShell;
+        
+        const displayText = `🃏 THE FOOL: ${positionText} IS ${displayedShell}`;
+        addLog(`Tarot reveal: ${positionText} is ${displayedShell}`, 'info');
+        setOverlayText(displayText);
+        break;
+      }
+      
+      case 'Justice': {
+        const playerHp = playerRef.current.hp;
+        const dealerHp = dealerRef.current.hp;
+        setPlayer(p => ({ ...p, hp: dealerHp }));
+        setDealer(d => ({ ...d, hp: playerHp }));
+        addLog(`HP Swapped! Player HP: ${dealerHp}, Dealer HP: ${playerHp}`, 'safe');
+        setOverlayText("⚖️ JUSTICE: HP SWAPPED!");
+        break;
+      }
+    }
+
+    await wait(3000);
+    setOverlayText(null);
+
+    if (!deathTriggered && gameStateRef.current.phase !== 'GAME_OVER') {
+      let nextOwner = turnOwner;
+      if (chosenCard.name === 'The Hermit') {
+        nextOwner = turnOwner === 'PLAYER' ? 'DEALER' : 'PLAYER';
+      }
+      const nextPhase = nextOwner === 'PLAYER' ? 'PLAYER_TURN' : 'DEALER_TURN';
+      setGameState(prev => ({
+        ...prev,
+        phase: nextPhase,
+        turnOwner: nextOwner,
+        deckCards: undefined,
+        selectedCardIndex: null
+      }));
+    }
+    
+    setCameraView('PLAYER');
+    setIsProcessing(false);
+  };
+
+
 
 
   return {
@@ -1003,6 +1363,7 @@ export const useGameLogic = () => {
     fireShot,
     usePlayerItem,
     stealItem, // Exported
+    selectTarotCard,
     setAimTarget,
     setCameraView,
     setDealer,

@@ -23,7 +23,8 @@ const ITEM_NAMES: Record<ItemType, string> = {
     'FLASHBANG': 'FLASHBANG',
     'CRUSHER': 'CRUSHER',
     'TOTEM': 'TOTEM OF UNDYING',
-    'MIRROR': 'MIRROR'
+    'MIRROR': 'MIRROR',
+    'DECK_CARD': 'TAROT CARD DECK'
 };
 
 const ITEM_COLORS: Record<ItemType, string> = {
@@ -43,7 +44,8 @@ const ITEM_COLORS: Record<ItemType, string> = {
     'FLASHBANG': 'text-zinc-300 border-zinc-300/50 bg-zinc-900/30',
     'CRUSHER': 'text-amber-600 border-amber-500/55 bg-amber-950/35',
     'TOTEM': 'text-amber-400 border-amber-400/50 bg-amber-950/30',
-    'MIRROR': 'text-indigo-400 border-indigo-400/50 bg-indigo-950/30'
+    'MIRROR': 'text-indigo-400 border-indigo-400/50 bg-indigo-950/30',
+    'DECK_CARD': 'text-purple-400 border-purple-400/50 bg-purple-950/30'
 };
 
 export const LootOverlay: React.FC<LootOverlayProps> = ({ receivedItems }) => {

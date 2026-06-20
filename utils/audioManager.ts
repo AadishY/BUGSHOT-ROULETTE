@@ -44,6 +44,7 @@ class AudioManager {
             crusher: '/sound/crusher.mp3',
             totem: '/sound/AnimationSounds/Totem.mp3',
             mirror: '/sound/AnimationSounds/mirror.mp3',
+            cards: '/sound/AnimationSounds/cards.mp3',
         };
         const musicFiles = {
             menu: '/sound/menu.mp3',

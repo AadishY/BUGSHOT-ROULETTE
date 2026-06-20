@@ -230,6 +230,25 @@ export const MirrorIcon = ({ className, size = 24 }: { className?: string; size?
   </svg>
 );
 
+export const DeckCardIcon = ({ className, size = 24 }: { className?: string; size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect x="3" y="6" width="11" height="15" rx="1.5" transform="rotate(-10 3 6)" fill="currentColor" fillOpacity="0.1" />
+    <rect x="6" y="4" width="11" height="15" rx="1.5" transform="rotate(-5 6 4)" fill="currentColor" fillOpacity="0.15" />
+    <rect x="9" y="3" width="11" height="15" rx="1.5" fill="currentColor" fillOpacity="0.2" />
+    <path d="M14.5 7.5l.8 1.8 1.9.3-1.4 1.3.3 1.9-1.6-1-1.6 1 .3-1.9-1.4-1.3 1.9-.3z" strokeWidth="1" />
+  </svg>
+);
+
 export const Icons = {
   Beer,
   Cuffs: Link,
@@ -253,6 +272,7 @@ export const Icons = {
   Crusher: Hammer,
   Totem: TotemIcon,
   Mirror: MirrorIcon,
+  DeckCard: DeckCardIcon,
   Shell: ShotgunShellIcon
 };
 

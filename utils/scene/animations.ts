@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { SceneContext, SceneProps } from '../../types';
 import { audioManager } from '../audioManager';
+import { createCardTexture } from '../three/items';
 
 const _v1 = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
@@ -162,6 +163,25 @@ export function updateItemAnimations(context: SceneContext, props: SceneProps, t
         const updateItemLight = () => {
             if (!items.itemLight) return;
 
+            const phase = props.gameState?.phase;
+            const selectedCardIndex = props.gameState?.selectedCardIndex;
+            const turnOwner = props.turnOwner;
+
+            // Check if card selection reveal is active
+            if (phase === 'CARD_SELECT' && selectedCardIndex !== null && selectedCardIndex !== undefined && context.itemDeckCards) {
+                const selectedCard = context.itemDeckCards[selectedCardIndex];
+                if (selectedCard && selectedCard.visible) {
+                    const isPlayer = turnOwner === 'PLAYER';
+                    items.itemLight.position.copy(selectedCard.position);
+                    items.itemLight.position.z += isPlayer ? 0.95 : -0.95; // Spotlight directly in front of the card
+                    items.itemLight.position.y += 0.1; // Slightly centered
+                    items.itemLight.color.setHex(0xe9d5ff); // Magical light purple/gold spotlight
+                    items.itemLight.intensity = 35.0; // High intensity for readability
+                    items.itemLight.distance = 12;
+                    return;
+                }
+            }
+
             // Check which item is currently visible - Optimized to avoid array creation
             let activeItem = null;
             if (items.itemBeer.visible) activeItem = items.itemBeer;
@@ -218,6 +238,7 @@ export function updateItemAnimations(context: SceneContext, props: SceneProps, t
         if (scene.userData.lastInverter === undefined) scene.userData.lastInverter = animState.triggerInverter;
         if (scene.userData.lastAdrenaline === undefined) scene.userData.lastAdrenaline = animState.triggerAdrenaline;
         if (scene.userData.lastLuckycharm === undefined) scene.userData.lastLuckycharm = animState.triggerLuckycharm;
+        if (scene.userData.lastDeckCard === undefined) scene.userData.lastDeckCard = animState.triggerDeckCard || 0;
 
         // GLASS ANIMATION
         if (animState.triggerGlass < scene.userData.lastGlass) scene.userData.lastGlass = animState.triggerGlass;
@@ -1038,34 +1059,34 @@ export function updateItemAnimations(context: SceneContext, props: SceneProps, t
                 if (totemTime < 0.6) {
                     const p = totemTime / 0.6;
                     const scale = p * 3.2;
-                    items.itemTotem.position.set(0, -1.2 + p * 3.2, 3.5);
+                    items.itemTotem.position.set(0, -1.2 + p * 3.2, 5.2);
                     items.itemTotem.scale.setScalar(scale);
                 } else if (totemTime < 1.8) {
                     const hover = Math.sin(time * 10) * 0.12;
                     const shakeX = (Math.random() - 0.5) * 0.04;
                     const shakeY = (Math.random() - 0.5) * 0.04;
-                    items.itemTotem.position.set(shakeX, 2.0 + hover + shakeY, 3.5);
+                    items.itemTotem.position.set(shakeX, 2.0 + hover + shakeY, 5.2);
                     items.itemTotem.scale.setScalar(3.2 + Math.sin(time * 18) * 0.15);
                 } else {
                     const p = (totemTime - 1.8) / 1.0;
-                    items.itemTotem.position.set(0, 2.0 - p * 3.0, 3.5);
+                    items.itemTotem.position.set(0, 2.0 - p * 3.0, 5.2);
                     items.itemTotem.scale.setScalar(Math.max(0.001, 3.2 * (1 - p)));
                 }
             } else {
                 if (totemTime < 0.6) {
                     const p = totemTime / 0.6;
                     const scale = p * 3.2;
-                    items.itemTotem.position.set(0, -1.2 + p * 3.2, -3.5);
+                    items.itemTotem.position.set(0, -1.2 + p * 3.2, -2.2);
                     items.itemTotem.scale.setScalar(scale);
                 } else if (totemTime < 1.8) {
                     const hover = Math.sin(time * 10) * 0.12;
                     const shakeX = (Math.random() - 0.5) * 0.04;
                     const shakeY = (Math.random() - 0.5) * 0.04;
-                    items.itemTotem.position.set(shakeX, 2.0 + hover + shakeY, -3.5);
+                    items.itemTotem.position.set(shakeX, 2.0 + hover + shakeY, -2.2);
                     items.itemTotem.scale.setScalar(3.2 + Math.sin(time * 18) * 0.15);
                 } else {
                     const p = (totemTime - 1.8) / 1.0;
-                    items.itemTotem.position.set(0, 2.0 - p * 3.0, -3.5);
+                    items.itemTotem.position.set(0, 2.0 - p * 3.0, -2.2);
                     items.itemTotem.scale.setScalar(Math.max(0.001, 3.2 * (1 - p)));
                 }
             }
@@ -1090,7 +1111,7 @@ export function updateItemAnimations(context: SceneContext, props: SceneProps, t
             items.itemMirror.rotation.x = Math.sin(time * 4.0) * 0.3;
             
             const isPlayerTarget = isPlayerTurn;
-            const targetZ = isPlayerTarget ? 3.5 : -3.5;
+            const targetZ = isPlayerTarget ? 5.2 : -2.2;
             
             if (mirrorTime < 0.6) {
                 const p = mirrorTime / 0.6;
@@ -1215,6 +1236,191 @@ export function updateItemAnimations(context: SceneContext, props: SceneProps, t
         }
         if (scene.userData.mirrorStart && (now - scene.userData.mirrorStart) > cleanupThreshold) {
             items.itemMirror.visible = false;
+        }
+        // TAROT DECK CARD ANIMATION
+        if (context.itemDeckCards) {
+            const phase = props.gameState.phase;
+            const deckCards = props.gameState.deckCards;
+            const selectedCardIndex = props.gameState.selectedCardIndex;
+            const turnOwner = props.gameState.turnOwner;
+
+            // Phase change detection for CARD_SELECT
+            if (scene.userData.lastPhaseAnimation !== phase) {
+                if (phase === 'CARD_SELECT') {
+                    scene.userData.cardSelectStart = time;
+                    scene.userData.cardSelectChosenStart = null;
+                    scene.userData.cardSwapped = {};
+                    
+                    // Reset visibility and scale
+                    context.itemDeckCards.forEach((cardGroup, idx) => {
+                        cardGroup.visible = true;
+                        cardGroup.scale.set(0.001, 0.001, 0.001);
+                        
+                        // Initial position flat on table in a 2x3 grid
+                        const isPlayer = turnOwner === 'PLAYER';
+                        const r = Math.floor(idx / 3);
+                        const c = idx % 3;
+                        const startX = (c - 1) * 1.35;
+                        const startZ = (isPlayer ? 2.2 : -2.2) + (r - 0.5) * 1.8 * (isPlayer ? 1 : -1);
+                        cardGroup.position.set(startX, -0.95, startZ);
+                        
+                        // Face down: flat on table (rot X = Math.PI / 2 showing the gold-maroon back)
+                        cardGroup.rotation.set(Math.PI / 2, 0, 0);
+
+                        // Reset materials back to back texture
+                        const mesh = cardGroup.getObjectByName('CARD_MESH') as THREE.Mesh;
+                        if (mesh && Array.isArray(mesh.material) && deckCards && deckCards[idx]) {
+                            const name = deckCards[idx].name;
+                            const frontTex = createCardTexture(name, false);
+                            const backTex = createCardTexture(name, true);
+                            
+                            mesh.material[4] = new THREE.MeshStandardMaterial({
+                                map: frontTex,
+                                roughness: 0.8,
+                                metalness: 0.0,
+                                emissive: new THREE.Color(0xffffff),
+                                emissiveIntensity: 0.2,
+                                side: THREE.DoubleSide
+                            });
+                            mesh.material[5] = new THREE.MeshStandardMaterial({
+                                map: backTex,
+                                roughness: 0.95,
+                                metalness: 0.0,
+                                emissive: new THREE.Color(0x000000),
+                                emissiveIntensity: 0.0,
+                                side: THREE.DoubleSide
+                            });
+                        }
+                    });
+                } else {
+                    // Hide cards if we exit CARD_SELECT phase
+                    context.itemDeckCards.forEach(cardGroup => {
+                        cardGroup.visible = false;
+                    });
+                }
+                scene.userData.lastPhaseAnimation = phase;
+            }
+
+            if (phase === 'CARD_SELECT' && deckCards) {
+                const cardSelectTime = time - (scene.userData.cardSelectStart || time);
+
+                if (selectedCardIndex !== null && selectedCardIndex !== undefined) {
+                    if (scene.userData.cardSelectChosenStart === null || scene.userData.cardSelectChosenStart === undefined) {
+                        scene.userData.cardSelectChosenStart = time;
+                    }
+                }
+
+                const chosenTime = scene.userData.cardSelectChosenStart !== null && scene.userData.cardSelectChosenStart !== undefined
+                    ? time - scene.userData.cardSelectChosenStart
+                    : -1;
+
+                context.itemDeckCards.forEach((cardGroup, idx) => {
+                    if (idx >= deckCards.length) {
+                        cardGroup.visible = false;
+                        return;
+                    }
+                    cardGroup.visible = true;
+
+                    const isPlayer = turnOwner === 'PLAYER';
+                    const r = Math.floor(idx / 3);
+                    const c = idx % 3;
+                    const startX = (c - 1) * 1.35;
+                    const startZ = (isPlayer ? 2.2 : -2.2) + (r - 0.5) * 1.8 * (isPlayer ? 1 : -1);
+
+                    const mesh = cardGroup.getObjectByName('CARD_MESH') as THREE.Mesh;
+                    const backMat = mesh && Array.isArray(mesh.material) ? (mesh.material[5] as THREE.MeshStandardMaterial) : null;
+                    const frontMat = mesh && Array.isArray(mesh.material) ? (mesh.material[4] as THREE.MeshStandardMaterial) : null;
+
+                    const isHovered = scene.userData.hoveredCardIndex === idx;
+
+                    if (selectedCardIndex === null || selectedCardIndex === undefined) {
+                        // Rise / Hover state
+                        let targetScale = 1.25;
+                        let targetEmissive = 0.0;
+
+                        if (isHovered) {
+                            targetScale = 1.42;
+                            targetEmissive = 0.8;
+                            if (backMat) {
+                                backMat.emissive.setHex(0xa855f7); // Purple glow
+                            }
+                        }
+
+                        if (cardGroup.userData.currentScale === undefined) cardGroup.userData.currentScale = 1.25;
+                        if (cardGroup.userData.currentEmissive === undefined) cardGroup.userData.currentEmissive = 0.0;
+
+                        cardGroup.userData.currentScale = THREE.MathUtils.lerp(cardGroup.userData.currentScale, targetScale, 0.15);
+                        cardGroup.userData.currentEmissive = THREE.MathUtils.lerp(cardGroup.userData.currentEmissive, targetEmissive, 0.15);
+
+                        if (backMat) {
+                            backMat.emissiveIntensity = cardGroup.userData.currentEmissive;
+                        }
+
+                        if (cardSelectTime < 0.8) {
+                            const p = cardSelectTime / 0.8;
+                            const scale = p * cardGroup.userData.currentScale;
+                            cardGroup.scale.setScalar(scale);
+                            cardGroup.position.y = -0.95 + p * 1.15;
+                        } else {
+                            cardGroup.scale.setScalar(cardGroup.userData.currentScale);
+                            const hover = Math.sin(time * 3 + idx * 1.5) * 0.04;
+                            cardGroup.position.y = 0.2 + hover;
+                        }
+                        cardGroup.position.x = startX;
+                        cardGroup.position.z = startZ;
+                        cardGroup.rotation.set(Math.PI / 2, 0, 0);
+                    } else {
+                        // Card has been selected
+                        if (idx === selectedCardIndex) {
+                            const targetZ = isPlayer ? 2.5 : -2.5;
+                            const targetPos = new THREE.Vector3(0, 1.8, targetZ);
+                            const startPos = new THREE.Vector3(startX, 0.2, startZ);
+
+                            // Make sure revealed card is lit up from within
+                            if (frontMat) {
+                                frontMat.emissive.setHex(0x111111);
+                                frontMat.emissiveIntensity = 0.1;
+                            }
+
+                            if (chosenTime < 1.8) {
+                                const p = chosenTime / 1.8;
+                                cardGroup.position.lerpVectors(startPos, targetPos, p);
+                                
+                                cardGroup.rotation.x = Math.PI / 2 - p * (Math.PI / 2);
+                                cardGroup.rotation.y = p * Math.PI + (isPlayer ? 0 : Math.PI);
+                                cardGroup.rotation.z = 0;
+                                
+                                if (p > 0.4 && !scene.userData.cardSwapped[idx]) {
+                                    if (mesh && Array.isArray(mesh.material)) {
+                                        mesh.material[5] = mesh.material[4];
+                                        scene.userData.cardSwapped[idx] = true;
+                                    }
+                                }
+                            } else {
+                                cardGroup.position.copy(targetPos);
+                                cardGroup.position.y += Math.sin(time * 2.0) * 0.05;
+                                cardGroup.rotation.x = 0;
+                                cardGroup.rotation.y = isPlayer ? Math.PI : 0;
+                                cardGroup.rotation.z = 0;
+
+                                if (mesh && Array.isArray(mesh.material) && !scene.userData.cardSwapped[idx]) {
+                                    mesh.material[5] = mesh.material[4];
+                                    scene.userData.cardSwapped[idx] = true;
+                                }
+                            }
+                        } else {
+                            if (chosenTime < 0.6) {
+                                const p = chosenTime / 0.6;
+                                cardGroup.scale.setScalar(1.25 * (1 - p));
+                                cardGroup.position.y = 0.2 - p * 1.15;
+                            } else {
+                                cardGroup.scale.setScalar(0.001);
+                                cardGroup.visible = false;
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         updateItemLight();

@@ -1,7 +1,78 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { GameState, PlayerState, ShellType, ItemType, TurnOwner, AimTarget, CameraView, AnimationState } from '../types';
+import { GameState, PlayerState, ShellType, ItemType, TurnOwner, AimTarget, CameraView, AnimationState, TarotCard } from '../types';
 import { wait } from '../utils/gameUtils';
 import { MAX_ITEMS } from '../constants';
+
+// Utility scoring for Dealer's smart Tarot card selection (Hard Mode)
+const evaluateCardForDealer = (
+    cardName: TarotCard['name'],
+    dealer: PlayerState,
+    player: PlayerState,
+    gameState: GameState
+): number => {
+    const dealerHp = dealer.hp;
+    const dealerMaxHp = dealer.maxHp;
+    const playerHp = player.hp;
+    const remainingShells = gameState.chamber.length - gameState.currentShellIndex;
+
+    switch (cardName) {
+        case 'The Magician':
+            // Gain a random item — good if inventory has space
+            return dealer.items.length < MAX_ITEMS ? 6 : 1;
+
+        case 'The Hanged Man':
+            // Lose 1 HP — very bad at low HP, mildly bad otherwise
+            if (dealerHp <= 1) return -10;
+            if (dealerHp <= 2) return 0;
+            return 2;
+
+        case 'The Hermit':
+            // Transfers turn to player — bad for dealer (loses control)
+            return -3;
+
+        case 'The Moon':
+            // Steal a random item from opponent — great if player has good items
+            if (player.items.length === 0) return 0;
+            const highValueItems = player.items.filter(i => ['SAW', 'CUFFS', 'INVERTER', 'CHOKE', 'TOTEM', 'CONTRACT'].includes(i));
+            return highValueItems.length > 0 ? 9 : 5;
+
+        case 'Judgment':
+            // 50% chance to convert blank to live — useful for dealer's next shot on player
+            return 5;
+
+        case 'Wheel of Fortune':
+            // Reshuffles chamber — useful if current shell position is bad
+            return 3;
+
+        case 'The Sun':
+            // Heal 1 HP — excellent at low HP, diminishing returns at full
+            if (dealerHp >= dealerMaxHp) return 0;
+            if (dealerHp <= 2) return 9;
+            return 5;
+
+        case 'Death':
+            // Destroy own random item — bad unless inventory is mostly junk
+            return dealer.items.length <= 1 ? -5 : -2;
+
+        case 'The Tower':
+            // Destroy opponent's random item — very good if player has items
+            if (player.items.length === 0) return 0;
+            return 7;
+
+        case 'The Fool':
+            // Reveals shell info — moderately useful
+            return remainingShells > 1 ? 4 : 2;
+
+        case 'Justice':
+            // Swap HP — excellent if dealer HP < player HP, terrible otherwise
+            if (dealerHp < playerHp) return 10;
+            if (dealerHp > playerHp) return -8;
+            return 0;
+
+        default:
+            return 0;
+    }
+};
 
 interface DealerAIProps {
     gameState: GameState;
@@ -19,6 +90,7 @@ interface DealerAIProps {
     isMultiplayer?: boolean;
     isProcessing: boolean;
     setIsProcessing: (val: boolean) => void;
+    selectTarotCard?: (index: number) => Promise<void>;
 }
 
 export const useDealerAI = ({
@@ -36,7 +108,8 @@ export const useDealerAI = ({
     setOverlayText,
     isMultiplayer = false,
     isProcessing,
-    setIsProcessing
+    setIsProcessing,
+    selectTarotCard
 }: DealerAIProps) => {
     const isAITurnInProgress = useRef(false);
     // AI Memory: Map<shellIndex, type> - Tracks specifically known shells
@@ -85,10 +158,13 @@ export const useDealerAI = ({
         if (isMultiplayer) return;
         if (isProcessing) return;
 
-        if (gameState.phase === 'DEALER_TURN' && !isAITurnInProgress.current && isTabVisible) {
+        const isDealerCardSelect = gameState.phase === 'CARD_SELECT' && gameState.turnOwner === 'DEALER' && gameState.selectedCardIndex === null;
+        if ((gameState.phase === 'DEALER_TURN' || isDealerCardSelect) && !isAITurnInProgress.current && isTabVisible) {
             isAITurnInProgress.current = true;
             setIsProcessing(true); // Lock input while dealer thinks
-            setCameraView('PLAYER');
+            if (gameState.phase === 'DEALER_TURN') {
+                setCameraView('PLAYER');
+            }
 
             const runAITurn = async () => {
                 try {
@@ -101,9 +177,45 @@ export const useDealerAI = ({
                         return;
                     }
                     // Re-check validity after delay
-                    if (gameStateRef.current.phase !== 'DEALER_TURN' || gameStateRef.current.winner || document.hidden || !isTabVisible) {
+                    const currentPhase = gameStateRef.current.phase;
+                    const isDealerCardSelectVal = currentPhase === 'CARD_SELECT' && gameStateRef.current.turnOwner === 'DEALER' && gameStateRef.current.selectedCardIndex === null;
+                    if ((currentPhase !== 'DEALER_TURN' && !isDealerCardSelectVal) || gameStateRef.current.winner || document.hidden || !isTabVisible) {
                         setIsProcessing(false);
                         isAITurnInProgress.current = false;
+                        return;
+                    }
+
+                    if (currentPhase === 'CARD_SELECT') {
+                        await wait(1500);
+                        if (gameStateRef.current.phase === 'CARD_SELECT' && gameStateRef.current.turnOwner === 'DEALER') {
+                            const cards = gameStateRef.current.deckCards;
+                            let chosenIdx = Math.floor(Math.random() * 6);
+
+                            // Hard Mode: 50% chance to peek and choose best card
+                            if (gameStateRef.current.isHardMode && cards && cards.length > 0 && Math.random() < 0.50) {
+                                let bestScore = -Infinity;
+                                let bestIdx = 0;
+                                for (let ci = 0; ci < cards.length; ci++) {
+                                    const score = evaluateCardForDealer(
+                                        cards[ci].name,
+                                        dealerRef.current,
+                                        playerRef.current,
+                                        gameStateRef.current
+                                    );
+                                    if (score > bestScore) {
+                                        bestScore = score;
+                                        bestIdx = ci;
+                                    }
+                                }
+                                chosenIdx = bestIdx;
+                            }
+
+                            if (selectTarotCard) {
+                                await selectTarotCard(chosenIdx);
+                            }
+                        }
+                        isAITurnInProgress.current = false;
+                        setIsProcessing(false);
                         return;
                     }
 
@@ -203,9 +315,13 @@ export const useDealerAI = ({
                             else if ((shell1 === 'LIVE' || shell2 === 'LIVE') && dealerRef.current.hp > 1) itemToUse = 'CHOKE';
                         }
 
-                        // 7. INFORMATION
                         else if (!currentKnown && dealerRef.current.items.includes('GLASS') && !itemToUse) itemToUse = 'GLASS';
                         else if (dealerRef.current.items.includes('PHONE') && totalRemaining > 1 && !itemToUse) itemToUse = 'PHONE';
+                        else if (dealerRef.current.items.includes('DECK_CARD') && !itemToUse) {
+                            if (dealerRef.current.items.length >= 6 || Math.random() < 0.6) {
+                                itemToUse = 'DECK_CARD';
+                            }
+                        }
 
                         // 8. MIRROR LOGIC
                         else if (dealerRef.current.items.includes('MIRROR') && !itemToUse) {
@@ -235,7 +351,7 @@ export const useDealerAI = ({
 
                         // 9. THEFT (Adrenaline)
                         else if (dealerRef.current.items.includes('ADRENALINE') && playerRef.current.items.length > 0 && !itemToUse) {
-                            const targets = ['SAW', 'INVERTER', 'CUFFS', 'MIRROR', 'CHOKE', 'REMOTE', 'CIGS'];
+                            const targets = ['SAW', 'INVERTER', 'CUFFS', 'MIRROR', 'CHOKE', 'REMOTE', 'CIGS', 'DECK_CARD'];
                             if (playerRef.current.items.some(i => targets.includes(i))) itemToUse = 'ADRENALINE';
                         }
 
@@ -272,7 +388,7 @@ export const useDealerAI = ({
                             itemToUse = 'CONTRACT';
                         }
                         else if (dealerRef.current.items.includes('ADRENALINE') && playerRef.current.items.length > 0 && !itemToUse && Math.random() > 0.2) {
-                            const threats = ['SAW', 'CUFFS', 'INVERTER', 'CHOKE', 'CIGS', 'MIRROR'];
+                            const threats = ['SAW', 'CUFFS', 'INVERTER', 'CHOKE', 'CIGS', 'MIRROR', 'DECK_CARD'];
                             if (playerRef.current.items.some(i => threats.includes(i))) itemToUse = 'ADRENALINE';
                         }
                         else if (dealerRef.current.items.includes('MIRROR') && !itemToUse && Math.random() > 0.3) {
@@ -304,6 +420,9 @@ export const useDealerAI = ({
                         }
                         else if (dealerRef.current.items.includes('PHONE') && totalRemaining > 2 && !itemToUse) {
                             itemToUse = 'PHONE';
+                        }
+                        else if (dealerRef.current.items.includes('DECK_CARD') && !itemToUse && Math.random() < 0.5) {
+                            itemToUse = 'DECK_CARD';
                         }
                         else if (dealerRef.current.items.includes('BEER') && !itemToUse) {
                             if (currentKnown === 'BLANK' || (!currentKnown && totalRemaining > 2 && Math.random() > 0.3)) itemToUse = 'BEER';
@@ -357,8 +476,8 @@ export const useDealerAI = ({
                                  // Simulate Steal
                                  let stealIdx = -1;
                                  const priorities: ItemType[] = gameStateRef.current.isHardMode
-                                     ? ['SAW', 'INVERTER', 'CUFFS', 'MIRROR', 'CHOKE', 'REMOTE', 'CIGS', 'PHONE', 'GLASS', 'BEER', 'CONTRACT']
-                                     : ['SAW', 'INVERTER', 'CUFFS', 'MIRROR', 'CHOKE', 'CIGS', 'PHONE', 'GLASS', 'BEER', 'REMOTE', 'CONTRACT'];
+                                     ? ['SAW', 'INVERTER', 'CUFFS', 'MIRROR', 'CHOKE', 'REMOTE', 'CIGS', 'PHONE', 'GLASS', 'BEER', 'CONTRACT', 'DECK_CARD']
+                                     : ['SAW', 'INVERTER', 'CUFFS', 'MIRROR', 'CHOKE', 'CIGS', 'PHONE', 'GLASS', 'BEER', 'REMOTE', 'CONTRACT', 'DECK_CARD'];
 
                                  const activePriorities = (dealerRef.current.hp < 2 
                                      ? ['CIGS', ...priorities] 
@@ -366,6 +485,10 @@ export const useDealerAI = ({
                                  ).filter(i => i !== 'TOTEM' && i !== 'ADRENALINE');
 
                                  for (const pItem of activePriorities) {
+                                     if (pItem === 'MIRROR') {
+                                         const playerLastItems = (playerRef.current.lastTurnItemsUsed || []).filter(i => i !== 'MIRROR');
+                                         if (playerLastItems.length === 0) continue;
+                                     }
                                      const pIdx = playerRef.current.items.indexOf(pItem as ItemType);
                                      if (pIdx !== -1) {
                                          stealIdx = pIdx;

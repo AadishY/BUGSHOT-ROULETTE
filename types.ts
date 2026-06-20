@@ -1,12 +1,17 @@
 
-export type ItemType = 'GLASS' | 'BEER' | 'CIGS' | 'CUFFS' | 'SAW' | 'PHONE' | 'INVERTER' | 'ADRENALINE' | 'CHOKE' | 'REMOTE' | 'BIG_INVERTER' | 'CONTRACT' | 'LUCKYCHARM' | 'FLASHBANG' | 'CRUSHER' | 'TOTEM' | 'MIRROR';
+export interface TarotCard {
+  name: 'The Magician' | 'The Hanged Man' | 'The Hermit' | 'The Moon' | 'Judgment' | 'Wheel of Fortune' | 'The Sun' | 'Death' | 'The Tower' | 'The Fool' | 'Justice';
+  power: string;
+}
+
+export type ItemType = 'GLASS' | 'BEER' | 'CIGS' | 'CUFFS' | 'SAW' | 'PHONE' | 'INVERTER' | 'ADRENALINE' | 'CHOKE' | 'REMOTE' | 'BIG_INVERTER' | 'CONTRACT' | 'LUCKYCHARM' | 'FLASHBANG' | 'CRUSHER' | 'TOTEM' | 'MIRROR' | 'DECK_CARD';
 export type ShellType = 'LIVE' | 'BLANK';
 export type TurnOwner = 'PLAYER' | 'DEALER';
 export type CameraView = 'PLAYER' | 'DEALER' | 'GUN' | 'TABLE' | 'STEAL_UI' | 'DEALER_GUN'; // Added DEALER_GUN
 export type AimTarget = 'OPPONENT' | 'SELF' | 'IDLE' | 'CHOOSING';
 
 export interface GameState {
-  phase: 'BOOT' | 'INTRO' | 'LOAD' | 'PLAYER_TURN' | 'DEALER_TURN' | 'RESOLVING' | 'GAME_OVER' | 'LOOTING' | 'STEALING'; // Added STEALING
+  phase: 'BOOT' | 'INTRO' | 'LOAD' | 'PLAYER_TURN' | 'DEALER_TURN' | 'RESOLVING' | 'GAME_OVER' | 'LOOTING' | 'STEALING' | 'CARD_SELECT'; // Added CARD_SELECT
   turnOwner: TurnOwner;
   winner: TurnOwner | null;
   chamber: ShellType[];
@@ -30,6 +35,8 @@ export interface GameState {
     opponentWins: number;
   };
   isDebugUsed?: boolean; // Added
+  deckCards?: TarotCard[]; // Selected 6 cards
+  selectedCardIndex?: number | null; // Chosen card index
 }
 
 export interface MultiplayerGameState {
@@ -102,6 +109,7 @@ export interface AnimationState {
   triggerCrusher: number; // Crusher
   triggerTotem: number; // Totem
   triggerMirror: number; // Mirror
+  triggerDeckCard: number; // DeckCard
   totemTarget?: TurnOwner | null; // Totem target
   isSawing: boolean; // Continuous saw state
   ejectedShellColor: 'red' | 'blue' | 'red+red' | 'red+blue' | 'blue+red' | 'blue+blue';
@@ -178,6 +186,7 @@ export interface SceneContext {
     itemMirror: THREE.Group;
     itemLight: THREE.PointLight; // Light for illuminating items during animations
   };
+  itemDeckCards?: THREE.Group[]; // Tarot card 3D models fanned on table
 }
 
 export interface SceneProps {

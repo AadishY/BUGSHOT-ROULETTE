@@ -10,6 +10,8 @@ interface DebugOverlayProps {
     setPlayer: React.Dispatch<React.SetStateAction<PlayerState>>;
     setDealer: React.Dispatch<React.SetStateAction<PlayerState>>;
     setGameState: React.Dispatch<React.SetStateAction<GameState>>;
+    selectTarotCard?: (index: number) => Promise<void>;
+    setCameraView?: (view: any) => void;
     onClose?: () => void;
 }
 
@@ -20,10 +22,12 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
     setPlayer,
     setDealer,
     setGameState,
+    selectTarotCard,
+    setCameraView,
     onClose
 }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [activeTab, setActiveTab] = useState<'chamber' | 'items' | 'status'>('chamber');
+    const [activeTab, setActiveTab] = useState<'chamber' | 'items' | 'status' | 'tarot'>('chamber');
 
     // Mark the game as using debug features
     React.useEffect(() => {
@@ -155,6 +159,24 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
         }));
     };
 
+    const triggerTarotCardPower = async (cardName: string) => {
+        if (setCameraView) {
+            setCameraView('TABLE');
+        }
+        setGameState(prev => ({
+            ...prev,
+            phase: 'CARD_SELECT',
+            deckCards: [{ name: cardName as any, power: 'Debug power' }],
+            selectedCardIndex: null
+        }));
+        
+        setTimeout(() => {
+            if (selectTarotCard) {
+                selectTarotCard(0);
+            }
+        }, 400);
+    };
+
     if (isCollapsed) {
         return (
             <button
@@ -209,6 +231,12 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                     className={`flex-1 py-1 md:py-2 text-center font-bold tracking-wider text-[7.5px] md:text-[9px] uppercase cursor-pointer transition-all border-b-2 ${activeTab === 'status' ? 'text-red-500 border-red-600 bg-red-950/10' : 'text-stone-500 border-transparent hover:text-stone-300'}`}
                 >
                     Status
+                </button>
+                <button
+                    onClick={() => setActiveTab('tarot')}
+                    className={`flex-1 py-1 md:py-2 text-center font-bold tracking-wider text-[7.5px] md:text-[9px] uppercase cursor-pointer transition-all border-b-2 ${activeTab === 'tarot' ? 'text-red-500 border-red-600 bg-red-950/10' : 'text-stone-500 border-transparent hover:text-stone-300'}`}
+                >
+                    Tarot
                 </button>
             </div>
 
@@ -410,6 +438,33 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
 
                         <div className="text-[7px] md:text-[8px] text-stone-600 uppercase font-bold tracking-widest pt-1.5 md:pt-2 border-t border-stone-900 text-center">
                             Phase: {gameState.phase} | Owner: {gameState.turnOwner}
+                        </div>
+                    </div>
+                )}
+
+                {/* TAB 4: TAROT */}
+                {activeTab === 'tarot' && (
+                    <div className="space-y-2 md:space-y-3">
+                        <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px] block">Trigger Tarot Power</span>
+                        
+                        <div className="grid grid-cols-2 gap-1 md:gap-1.5 max-h-[18vh] md:max-h-60 overflow-y-auto pr-0.5 custom-scrollbar p-0.5">
+                            {[
+                                'The Magician', 'The Hanged Man', 'The Hermit', 'The Moon', 
+                                'Judgment', 'Wheel of Fortune', 'The Sun', 'Death', 
+                                'The Tower', 'The Fool', 'Justice'
+                            ].map((cardName) => (
+                                <button
+                                    key={cardName}
+                                    onClick={() => triggerTarotCardPower(cardName)}
+                                    disabled={gameState.phase === 'CARD_SELECT' && gameState.selectedCardIndex !== null}
+                                    className="py-1 md:py-1.5 bg-purple-950/20 hover:bg-purple-900/35 border border-purple-900/40 hover:border-purple-600 text-purple-400 hover:text-purple-300 rounded cursor-pointer font-bold uppercase text-[7px] md:text-[8.5px] disabled:opacity-40 disabled:pointer-events-none transition-all active:scale-95 text-center"
+                                >
+                                    {cardName}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="text-[6.5px] md:text-[7.5px] text-stone-600 uppercase font-bold tracking-wider text-center mt-1 border-t border-stone-900 pt-1">
+                            Sets 1-card deck & auto-reveals
                         </div>
                     </div>
                 )}

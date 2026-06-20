@@ -15,27 +15,3 @@ Display  proper message of 3 shot immune or 1 shot immune
 next when you are hitted with  live shot then  -1health then show a message Reverse Cursed Techine again heal that health
 Properly do this even when health is 1 and live shot make it 0
 add a overlay below health bar showing how many shots left before immuninty goes back
-
-
-
-8. DeckCard- Pick a card from 6. Create a proper 6 card model and choosing 1 from it for both player and dealer, all card fom behind should look same after pcikup it should reveal itslef having same face in both side and reveal in centre so that during dealer turn player can also see the card,
-add proper icon and animation with descption and dealer logic
-Sound i will be same for all picking card,
-display proper message which card is picked and whats its power
-it can have these power with these faces
-The Magician Gain random item,
-The Hanged Man Loose 1 health,
-he Hermit skip your turn,
-The Moon grab and item form dealer,
-Judgment increase probability of shoot to be live,
-Wheel of Fortune reshuffle ammo,
-The Sun gain 1 health,
-Death destroy 1 random item from your inventory,
-The Tower destroy 1 random item from dealer.
-The Fool Life Swap Grab phone (here phone can be used even 1 bullet is remaining, but lie prbablity increase if bullet is more than 3 no lie, if 2 bullet is there then 10%chance of lie, if 1 is there then 25%of lie).
-Justice : Instantly swaps your current HP total with the Dealer's HP total. If you are sitting at 1 HP and the Dealer has 4 HP
-
-create those face card design according to above names properly
-select 6 power randomly from above and give user to choose fromit without showing
-
-

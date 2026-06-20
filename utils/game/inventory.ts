@@ -7,51 +7,54 @@ type StateSetter<T> = React.Dispatch<React.SetStateAction<T>>;
 
 // From useGameLogic
 // Adjusted for Hard Mode support
-const getRandomItem = (isHardMode: boolean = false, isDealer: boolean = false): ItemType => {
+export const getRandomItem = (isHardMode: boolean = false, isDealer: boolean = false): ItemType => {
     // PLAYER SPECIFIC CONTRACT LOGIC
-    // Normal: 10%, Hard: 7%
+    // Normal: 9%, Hard: 7%
     if (!isDealer) {
         if (isHardMode && Math.random() < 0.07) return 'CONTRACT';
-        if (!isHardMode && Math.random() < 0.10) return 'CONTRACT';
+        if (!isHardMode && Math.random() < 0.09) return 'CONTRACT';
     }
 
-    // Standard Items (Re-normalized probabilities excluding Contract)
+    // Standard Items - exact flat probability distributions
     const r = Math.random() * 100;
 
     if (isHardMode) {
-        // Hard Mode Distribution
-        if (r < 15) return 'BEER';
-        if (r < 19) return 'CIGS';
-        if (r < 27) return 'GLASS';
-        if (r < 36) return 'CUFFS';
-        if (r < 45) return 'PHONE';
-        if (r < 55) return 'SAW';
-        if (r < 64) return 'INVERTER';
-        if (r < 73) return 'ADRENALINE';
-        if (r < 78) return 'CHOKE';
-        if (r < 83) return 'BIG_INVERTER';
-        if (r < 87) return 'LUCKYCHARM';
-        if (r < 91) return 'FLASHBANG';
-        if (r < 94) return 'CRUSHER';
-        if (r < 97) return 'MIRROR';
-        return 'TOTEM'; // Fallback / remaining 3%
+        // Hard Mode Distribution (total = 93% since CONTRACT is 7% for player)
+        // Values normalized to 100% for non-contract pool
+        if (r < 15) return 'BEER';           // 15%
+        if (r < 19) return 'CIGS';            // 4%
+        if (r < 27) return 'GLASS';           // 8%
+        if (r < 35) return 'CUFFS';           // 8%
+        if (r < 43) return 'PHONE';           // 8%
+        if (r < 48) return 'SAW';             // 5%
+        if (r < 56) return 'INVERTER';        // 8%
+        if (r < 63) return 'ADRENALINE';      // 7%
+        if (r < 68) return 'CHOKE';           // 5%
+        if (r < 72) return 'BIG_INVERTER';    // 4%
+        if (r < 76) return 'LUCKYCHARM';      // 4%
+        if (r < 81) return 'FLASHBANG';       // 5%
+        if (r < 84) return 'CRUSHER';         // 3%
+        if (r < 88) return 'MIRROR';          // 4%
+        if (r < 92) return 'DECK_CARD';       // 4%
+        return 'TOTEM';                       // 1% (+ remainder)
     } else {
-        // Normal Mode Distribution
-        if (r < 11) return 'BEER';
-        if (r < 22) return 'CIGS';
-        if (r < 30) return 'GLASS';
-        if (r < 39) return 'CUFFS';
-        if (r < 49) return 'PHONE';
-        if (r < 58) return 'SAW';
-        if (r < 67) return 'INVERTER';
-        if (r < 75) return 'ADRENALINE';
-        if (r < 80) return 'CHOKE';
-        if (r < 85) return 'BIG_INVERTER';
-        if (r < 89) return 'LUCKYCHARM';
-        if (r < 93) return 'FLASHBANG';
-        if (r < 95) return 'CRUSHER';
-        if (r < 97) return 'MIRROR';
-        return 'TOTEM'; // Fallback / remaining 3%
+        // Normal Mode Distribution (total = 91% since CONTRACT is 9% for player)
+        if (r < 10) return 'BEER';            // 10%
+        if (r < 20) return 'CIGS';            // 10%
+        if (r < 27) return 'GLASS';           // 7%
+        if (r < 34) return 'CUFFS';           // 7%
+        if (r < 42) return 'PHONE';           // 8%
+        if (r < 47) return 'SAW';             // 5%
+        if (r < 54) return 'INVERTER';        // 7%
+        if (r < 61) return 'ADRENALINE';      // 7%
+        if (r < 66) return 'CHOKE';           // 5%
+        if (r < 70) return 'BIG_INVERTER';    // 4%
+        if (r < 74) return 'LUCKYCHARM';      // 4%
+        if (r < 79) return 'FLASHBANG';       // 5%
+        if (r < 82) return 'CRUSHER';         // 3%
+        if (r < 86) return 'MIRROR';          // 4%
+        if (r < 90) return 'DECK_CARD';       // 4%
+        return 'TOTEM';                       // 1% (+ remainder)
     }
 };
 
@@ -85,19 +88,21 @@ const getDealerCheatingItem = (hp: number): ItemType => {
     return 'ADRENALINE';                // 10% steal
 };
 
-export const getContractLoot = (): ItemType[] => {
+export const getContractLoot = (luckycharmsUsed: number = 0): ItemType[] => {
     // Weighted Pool based on Request: High Tier (50%) vs Others (10%)
-    // High Tier (Weight 5): CHOKE, CIGS, SAW, GLASS
-    // Low Tier (Weight 1): BEER, CUFFS, PHONE, INVERTER, ADRENALINE, REMOTE, BIG_INVERTER
+    // High Tier (Weight 5): CHOKE, CIGS, SAW, GLASS, ADRENALINE
+    // Low Tier (Weight 1): BEER, PHONE, INVERTER, BIG_INVERTER, CUFFS
+    // Lucky Charm boost: high-tier weight = 5 + 10 * luckycharmsUsed
 
     const highTier: ItemType[] = ['CHOKE', 'CIGS', 'SAW', 'GLASS', 'ADRENALINE'];
     const lowTier: ItemType[] = ['BEER', 'PHONE', 'INVERTER', 'BIG_INVERTER', 'CUFFS'];
 
+    const highTierWeight = 5 + (10 * luckycharmsUsed);
     const weightedPool: ItemType[] = [];
 
-    // Add High Tier (5x weight)
+    // Add High Tier (boosted weight)
     highTier.forEach(item => {
-        for (let i = 0; i < 5; i++) weightedPool.push(item);
+        for (let i = 0; i < highTierWeight; i++) weightedPool.push(item);
     });
 
     // Add Low Tier (1x weight)
@@ -122,6 +127,7 @@ export const generateLootBatch = (
     userHp: number = 4,
     userMaxHp: number = 4
 ): ItemType[] => {
+    const UNIQUE_ITEMS: ItemType[] = ['CONTRACT', 'LUCKYCHARM', 'TOTEM'];
     const batch: ItemType[] = [];
     const counts: Record<string, number> = {};
 
@@ -129,7 +135,6 @@ export const generateLootBatch = (
         let item: ItemType | null = null;
         let tries = 0;
 
-        // Strict duplicate limit: Max 1 of same item per batch, Max 2 total (including existing inventory)
         do {
             let candidate: ItemType;
 
@@ -164,37 +169,31 @@ export const generateLootBatch = (
                 candidate = getRandomItem(isHardMode, forDealer);
             }
 
-            if (candidate === 'TOTEM' && (existingItems.includes('TOTEM') || batch.includes('TOTEM'))) {
-                tries++;
-                continue; // Skip this candidate and try again
+            // Only restrict duplicates for unique items (CONTRACT, LUCKYCHARM, TOTEM)
+            if (UNIQUE_ITEMS.includes(candidate)) {
+                const currentCount = counts[candidate] || 0;
+                const inventoryCount = existingItems.filter(x => x === candidate).length;
+                if (currentCount >= 1 || inventoryCount >= 1) {
+                    tries++;
+                    continue; // Max 1 of these unique items per batch + inventory
+                }
             }
 
-            const currentCount = counts[candidate] || 0;
-            const inventoryCount = existingItems.filter(x => x === candidate).length;
-
-            // Probabilistic penalty: if already in batch or existing inventory, 80% chance to reroll
-            // Bypassed for Charmed items to guarantee needed drops.
-            const isDuplicate = currentCount > 0 || inventoryCount > 0;
-            if (!isCharmed && isDuplicate && Math.random() < 0.80 && tries < 20) {
-                tries++;
-                continue;
-            }
-
-            if (currentCount < 1 && (currentCount + inventoryCount) < 2) {
-                item = candidate;
-            }
+            item = candidate;
             tries++;
         } while (!item && tries < 25);
 
-        // Fallback if random keeps giving same item
-        if (!item || (item === 'TOTEM' && (existingItems.includes('TOTEM') || batch.includes('TOTEM')))) {
+        // Fallback if random keeps giving same unique item
+        if (!item) {
             let fbTries = 0;
             do {
                 if (forDealer && isHardMode) item = getDealerCheatingItem(dealerHp);
                 else item = getRandomItem(isHardMode, forDealer);
                 fbTries++;
-            } while (item === 'TOTEM' && fbTries < 20);
-            if (item === 'TOTEM') item = 'BEER'; // absolute fallback
+            } while (UNIQUE_ITEMS.includes(item!) && (existingItems.includes(item!) || batch.includes(item!)) && fbTries < 20);
+            if (!item || (UNIQUE_ITEMS.includes(item) && (existingItems.includes(item) || batch.includes(item)))) {
+                item = 'BEER'; // absolute fallback
+            }
         }
 
         batch.push(item);

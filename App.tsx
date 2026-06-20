@@ -132,7 +132,8 @@ export default function App() {
     setOverlayText: spGame.setOverlayText,
     isMultiplayer: spGame.gameState.isMultiplayer,
     isProcessing: spGame.isProcessing,
-    setIsProcessing: spGame.setIsProcessing
+    setIsProcessing: spGame.setIsProcessing,
+    selectTarotCard: spGame.selectTarotCard
   });
 
   const handleResetSettings = () => setSettings(DEFAULT_SETTINGS);
@@ -477,6 +478,7 @@ export default function App() {
         player={spGame.player}
         dealer={spGame.dealer}
         gameState={spGame.gameState}
+        onCardClick={spGame.selectTarotCard}
       />
 
       {/* UI Overlay */}
@@ -620,6 +622,8 @@ export default function App() {
           setPlayer={spGame.setPlayer}
           setDealer={spGame.setDealer}
           setGameState={spGame.setGameState}
+          selectTarotCard={spGame.selectTarotCard}
+          setCameraView={spGame.setCameraView}
         />
       )}
     </div>

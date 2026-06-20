@@ -127,14 +127,15 @@ export const handleContract = async (
     if (setOverlayColor) setOverlayColor('none');
 
     // 2. Grant Loot
-    const newItems = getContractLoot();
+    const activeCharmsCount = user === 'PLAYER' ? (player.luckycharmsUsed || 0) : (dealer.luckycharmsUsed || 0);
+    const newItems = getContractLoot(activeCharmsCount);
     const itemNames = newItems.join(' & ');
 
     if (user === 'PLAYER') {
         setPlayer(p => {
             const current = p.items;
             const combined = [...current, ...newItems].slice(0, MAX_ITEMS);
-            return { ...p, items: combined };
+            return { ...p, items: combined, luckycharmsUsed: 0 };
         });
         if (setOverlayText) {
             setOverlayText('🩸 BLOOD ACCEPTED 🩸');
@@ -148,7 +149,7 @@ export const handleContract = async (
     } else {
         setDealer(d => {
             const combined = [...d.items, ...newItems].slice(0, MAX_ITEMS);
-            return { ...d, items: combined };
+            return { ...d, items: combined, luckycharmsUsed: 0 };
         });
     }
 
@@ -607,7 +608,9 @@ const getFriendlyItemName = (item: ItemType): string => {
         'LUCKYCHARM': 'Lucky Charm',
         'FLASHBANG': 'Flashbang',
         'CRUSHER': 'Item Crusher',
-        'TOTEM': 'Totem of Undying'
+        'TOTEM': 'Totem of Undying',
+        'MIRROR': 'Mirror',
+        'DECK_CARD': 'Tarot Card'
     };
     return names[item] || item;
 };

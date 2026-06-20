@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { SceneContext } from '../../types';
 import { getDeviceType } from '../gameUtils';
-import { setupLighting, createTable, createGunModel, createDealerModel, createPlayerAvatar, createProjectiles, createEnvironment, createDust, createBeerCan, createCigarette, createSaw, createHandcuffs, createMagnifyingGlass, createPhone, createInverter, createAdrenaline, createRemote, createBigInverter, createContract, createLuckycharm, createFlashbang, createCrusher, createTotem, createMirror } from '../threeHelpers';
+import { setupLighting, createTable, createGunModel, createDealerModel, createPlayerAvatar, createProjectiles, createEnvironment, createDust, createBeerCan, createCigarette, createSaw, createHandcuffs, createMagnifyingGlass, createPhone, createInverter, createAdrenaline, createRemote, createBigInverter, createContract, createLuckycharm, createFlashbang, createCrusher, createTotem, createMirror, createTarotCard } from '../threeHelpers';
 
 
 export const cleanScene = (scene: THREE.Scene) => {
@@ -186,6 +186,14 @@ export const initThreeScene = (container: HTMLElement, props: any): SceneContext
     const itemTotem = createTotem(); itemTotem.visible = false; scene.add(itemTotem);
     const itemMirror = createMirror(); itemMirror.visible = false; scene.add(itemMirror);
 
+    const itemDeckCards: THREE.Group[] = [];
+    for (let i = 0; i < 6; i++) {
+        const card = createTarotCard('Death');
+        card.visible = false;
+        scene.add(card);
+        itemDeckCards.push(card);
+    }
+
     const itemLight = new THREE.PointLight(0xffffee, 0, 25);
     itemLight.position.set(0, 5, -12);
     scene.add(itemLight);
@@ -295,6 +303,7 @@ export const initThreeScene = (container: HTMLElement, props: any): SceneContext
         chokeMesh,
         muzzleLight: lights.muzzleLight,
         roomRedLight: lights.roomRedLight,
-        nextShellIndex: 0
+        nextShellIndex: 0,
+        itemDeckCards
     };
 };

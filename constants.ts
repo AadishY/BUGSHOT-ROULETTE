@@ -3,7 +3,7 @@ import { ItemType, GameSettings } from './types';
 export const MAX_HP = 4;
 export const MAX_ITEMS = 8;
 
-export const ITEMS: ItemType[] = ['GLASS', 'BEER', 'CIGS', 'CUFFS', 'SAW', 'PHONE', 'INVERTER', 'ADRENALINE', 'CHOKE', 'REMOTE', 'BIG_INVERTER', 'CONTRACT', 'LUCKYCHARM', 'FLASHBANG', 'CRUSHER', 'TOTEM', 'MIRROR'];
+export const ITEMS: ItemType[] = ['GLASS', 'BEER', 'CIGS', 'CUFFS', 'SAW', 'PHONE', 'INVERTER', 'ADRENALINE', 'CHOKE', 'REMOTE', 'BIG_INVERTER', 'CONTRACT', 'LUCKYCHARM', 'FLASHBANG', 'CRUSHER', 'TOTEM', 'MIRROR', 'DECK_CARD'];
 
 export const ITEM_DESCRIPTIONS: Record<ItemType, string> = {
   'GLASS': 'BREAK TO REVEAL CURRENT SHELL',
@@ -22,7 +22,8 @@ export const ITEM_DESCRIPTIONS: Record<ItemType, string> = {
   'FLASHBANG': 'PREVENTS OPPONENT ITEM USAGE ON NEXT TURN',
   'CRUSHER': 'DESTROY 1 RANDOM ITEM FROM OPPONENTS INVENTORY',
   'TOTEM': '[PASSIVE] SURVIVE AT 1 HP ON LETHAL DAMAGE',
-  'MIRROR': 'COPY ALL ITEM EFFECTS USED BY OPPONENT ON PREVIOUS TURN'
+  'MIRROR': 'COPY ALL ITEM EFFECTS USED BY OPPONENT ON PREVIOUS TURN',
+  'DECK_CARD': 'DRAW 1 OF 6 TAROT CARDS FOR ACTIVE & PASSIVE EFFECTS'
 };
 
 const getInitialSettings = (): GameSettings => {
@@ -60,5 +61,5 @@ const getInitialSettings = (): GameSettings => {
 
 export const DEFAULT_SETTINGS: GameSettings = getInitialSettings();
 
-export const GAME_VERSION = '1.1.3';
+export const GAME_VERSION = '1.2.0';
 
