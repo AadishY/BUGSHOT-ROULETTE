@@ -16,7 +16,7 @@ const getBackendUrl = () => {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3001';
     }
-    return 'https://aadish-roulette.onrender.com';
+    return 'https://yoakatsuki-buckshot.hf.space';
 };
 
 const checkIfDiscord = () => {

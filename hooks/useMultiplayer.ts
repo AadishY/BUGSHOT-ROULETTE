@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { MultiplayerGameState, RoomSettings, ChatMessage, MultiplayerPlayer } from '../types';
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'https://aadish-roulette.onrender.com';
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'https://yoakatsuki-buckshot.hf.space';
 
 export function useMultiplayer() {
     const [socket, setSocket] = useState<Socket | null>(null);
