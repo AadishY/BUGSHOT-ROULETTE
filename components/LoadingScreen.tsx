@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
 
 interface LoadingScreenProps {
     onComplete: () => void;
@@ -7,6 +8,7 @@ interface LoadingScreenProps {
     duration?: number;
     error?: string | null;
     onRetry?: () => void;
+    showClose?: boolean;
 }
 
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({
@@ -15,7 +17,8 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
     text: initialText = "INITIALIZING SYSTEM...",
     duration = 3000,
     error,
-    onRetry
+    onRetry,
+    showClose = false
 }) => {
     const [progress, setProgress] = useState(0);
     const [terminalLines, setTerminalLines] = useState<string[]>([]);
@@ -90,6 +93,16 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
     return (
         <div className="flex flex-col items-center justify-center w-full h-full bg-black text-green-500 z-[300] absolute inset-0 font-mono crt overflow-hidden select-none">
+            {showClose && onBack && !error && (
+                <button
+                    onClick={onBack}
+                    className="absolute top-6 right-6 z-[320] bg-black/60 hover:bg-stone-900 border border-green-900/60 hover:border-green-500 text-green-500 hover:text-green-300 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 active:scale-95 cursor-pointer shadow-[0_0_15px_rgba(34,197,94,0.1)] group"
+                    title="Go Back"
+                >
+                    <X size={20} className="group-hover:rotate-90 transition-transform duration-300" />
+                </button>
+            )}
+
             {/* Ambient Background Grid Tech */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#052e16_1px,transparent_1px),linear-gradient(to_bottom,#052e16_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-25 pointer-events-none" />
 

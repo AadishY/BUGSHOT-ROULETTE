@@ -268,8 +268,14 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
                     const avgFps = fpsAverages.reduce((a, b) => a + b, 0) / 3;
                     const currentSettings = propsRef.current.settings;
                     
-                    if (avgFps < 20 && !currentSettings.ultraPerformance && !hasShownPerfWarning) {
+                    const alreadyShownWarning = sessionStorage.getItem('aadish_roulette_perf_warning_shown') === 'true';
+                    if (avgFps < 20 && !currentSettings.ultraPerformance && !hasShownPerfWarning && !alreadyShownWarning) {
                         hasShownPerfWarning = true;
+                        try {
+                            sessionStorage.setItem('aadish_roulette_perf_warning_shown', 'true');
+                        } catch (e) {
+                            console.warn("sessionStorage failed:", e);
+                        }
                         if (propsRef.current.onLowPerformance) {
                             propsRef.current.onLowPerformance(avgFps);
                         }

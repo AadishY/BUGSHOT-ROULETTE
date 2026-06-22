@@ -592,6 +592,12 @@ export default function App() {
         gameState={spGame.gameState}
         onCardClick={spGame.selectTarotCard}
         onLowPerformance={(fps) => {
+          if (sessionStorage.getItem('aadish_roulette_perf_warning_shown') === 'true') return;
+          try {
+            sessionStorage.setItem('aadish_roulette_perf_warning_shown', 'true');
+          } catch (e) {
+            console.warn("sessionStorage failed:", e);
+          }
           setDetectedLowFps(Math.round(fps));
           setShowPerformancePopup(true);
         }}
@@ -752,6 +758,7 @@ export default function App() {
             onRetry={() => {
               if (appState === 'LOADING_MP') mp.connect();
             }}
+            showClose={appState === 'LOADING_MP'}
           />
         </div>
       )}
