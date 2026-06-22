@@ -28,10 +28,9 @@
 ### 🎥 Gameplay Showcase
 
 Watch the short gameplay trailer to see the high-stakes action in real-time:
+https://github.com/user-attachments/assets/e369969c-1fcc-43d0-994e-a4c02572d001
 
-<div align="center">
-  <video src="https://cdn.jsdelivr.net/gh/AadishY/Aadish-Roulette@main/public/image/ShortVideo(Lowsize).mp4" width="100%" controls loop muted style="border-radius: 12px; border: 1px solid #333; max-width: 800px;"></video>
-</div>
+
 
 ---
 
