@@ -23,6 +23,12 @@ import { randomInt } from './utils/gameUtils';
 import { ShellType, ItemType } from './types';
 
 const urlParams = new URLSearchParams(window.location.search);
+
+declare global {
+  interface Window {
+    updateDiscordActivity?: (details: string, state?: string) => void;
+  }
+}
 const isDiscordPlatform = urlParams.has('frame_id') || urlParams.has('instance_id') || window.location.search.includes('platform=') || window.location.hostname.includes('discordsays.com');
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 
     (isDiscordPlatform ? window.location.origin : 'https://yoakatsuki-buckshot.hf.space');
@@ -90,13 +96,80 @@ export default function App() {
       const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID || '1517863650998882406';
       console.log(`[Discord] Initializing SDK with client ID: ${clientId}`);
       const discordSdk = new DiscordSDK(clientId);
-      discordSdk.ready()
-        .then(() => {
+      let isAuthenticated = false;
+      const sessionStartTime = Date.now();
+
+      const initDiscord = async () => {
+        try {
+          await discordSdk.ready();
           console.log("[Discord] SDK is ready!");
-        })
-        .catch((err) => {
-          console.error("[Discord] SDK initialization failed:", err);
-        });
+
+          // 1. Authorize with scope permissions
+          const { code } = await discordSdk.commands.authorize({
+            client_id: clientId,
+            response_type: "code",
+            state: "",
+            prompt: "none",
+            scope: ["identify", "rpc.activities.write"],
+          });
+
+          // 2. Exchange code on backend server
+          const tokenRes = await fetch(`${SERVER_URL}/api/token`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code })
+          });
+
+          if (!tokenRes.ok) {
+            throw new Error(`Token exchange failed: ${tokenRes.status} ${tokenRes.statusText}`);
+          }
+
+          const { access_token } = await tokenRes.json();
+
+          // 3. Authenticate
+          await discordSdk.commands.authenticate({
+            access_token,
+          });
+
+          isAuthenticated = true;
+          console.log("[Discord] SDK authenticated successfully!");
+
+          // Register global updater function
+          window.updateDiscordActivity = async (details: string, state?: string) => {
+            if (!isAuthenticated) return;
+            try {
+              await discordSdk.commands.setActivity({
+                activity: {
+                  type: 0, // Playing
+                  details: details.substring(0, 127),
+                  state: state ? state.substring(0, 127) : "",
+                  assets: {
+                    large_image: "banner",
+                    large_text: "Aadish Roulette",
+                    small_image: "favicon",
+                    small_text: "A Deadly Game of Chance"
+                  },
+                  timestamps: {
+                    start: sessionStartTime
+                  }
+                }
+              });
+            } catch (err) {
+              console.error("[Discord] Failed to update setActivity:", err);
+            }
+          };
+
+          // Set initial menu status
+          window.updateDiscordActivity("In Main Menu", "Preparing to bind soul...");
+
+        } catch (err) {
+          console.error("[Discord] SDK authorization/authentication failed:", err);
+        }
+      };
+
+      initDiscord();
     }
   }, []);
 
@@ -531,6 +604,67 @@ export default function App() {
       }
     }
   }, [spGame.player.hp, spGame.dealer.hp, spGame.gameState.phase, spGame.isProcessing, spGame.player.items.length, spGame.dealer.items.length]);
+
+  // --- DISCORD RICH PRESENCE UPDATER ---
+  useEffect(() => {
+    if (!window.updateDiscordActivity) return;
+
+    try {
+      if (appState === 'MENU') {
+        window.updateDiscordActivity("In Main Menu", "Preparing to bind soul...");
+      } else if (appState === 'MP_SELECTION') {
+        window.updateDiscordActivity("Browsing Multiplayer", "Searching for active lobbies...");
+      } else if (appState === 'LOBBY') {
+        const roomObj = mp.room as any;
+        const roomName = roomObj?.name || "Room";
+        const isHost = roomObj?.hostId === mp.playerId;
+        const playerCount = roomObj?.players?.length || 1;
+        window.updateDiscordActivity(
+          `In Lobby: ${roomName}`,
+          isHost ? `Host // Players: ${playerCount}/2` : `Waiting // Players: ${playerCount}/2`
+        );
+      } else if (appState === 'GAME') {
+        if (spGame.gameState.isMultiplayer && mp.room) {
+          const roomObj = mp.room as any;
+          const opponent = roomObj.players?.find((p: any) => p.id !== mp.playerId);
+          const opponentName = opponent?.name || "Opponent";
+          const playerHp = roomObj.gameState?.players?.[mp.playerId]?.hp ?? spGame.player.hp;
+          const playerMaxHp = roomObj.gameState?.settings?.hp ?? spGame.player.maxHp;
+          window.updateDiscordActivity(
+            "In Multiplayer Match",
+            `VS ${opponentName} // HP: ${playerHp}/${playerMaxHp}`
+          );
+        } else {
+          const round = spGame.gameState.isHardMode
+            ? (spGame.gameState.hardModeState?.round || 1)
+            : (spGame.gameState.roundCount + 1);
+          const hp = spGame.player.hp;
+          const maxHp = spGame.player.maxHp;
+          const modeText = spGame.gameState.isHardMode ? "HARD MODE" : "NORMAL MODE";
+          window.updateDiscordActivity(
+            `Fighting Dealer (${modeText})`,
+            `Round ${round} // HP: ${hp}/${maxHp}`
+          );
+        }
+      } else if (appState === 'LOADING_MP') {
+        window.updateDiscordActivity("Loading Multiplayer", "Establishing connection link...");
+      } else if (appState === 'LOADING_SP' || appState === 'LOADING_GAME') {
+        window.updateDiscordActivity("Loading Match", "Calibrating systems...");
+      }
+    } catch (err) {
+      console.error("[Discord RPC] Error updating status:", err);
+    }
+  }, [
+    appState,
+    mp.room,
+    mp.playerId,
+    spGame.gameState.roundCount,
+    spGame.gameState.hardModeState?.round,
+    spGame.player.hp,
+    spGame.player.maxHp,
+    spGame.gameState.isHardMode,
+    spGame.gameState.isMultiplayer
+  ]);
 
   const handleMainMenu = () => {
     setAppState('GAME');

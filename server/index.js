@@ -74,6 +74,47 @@ app.post('/redis/pipeline', async (req, res) => {
     }
 });
 
+// --- DISCORD EMBEDDED ACTIVITY OAUTH TOKEN EXCHANGE ---
+app.post('/api/token', async (req, res) => {
+    try {
+        const { code } = req.body;
+        if (!code) {
+            return res.status(400).json({ error: 'Authorization code is required' });
+        }
+
+        const clientId = process.env.DISCORD_CLIENT_ID || '1517863650998882406';
+        const clientSecret = process.env.DISCORD_CLIENT_SECRET;
+
+        if (!clientSecret) {
+            console.error("DISCORD_CLIENT_SECRET environment variable is missing!");
+            return res.status(500).json({ error: 'Server configuration error: client secret missing' });
+        }
+
+        const response = await fetch('https://discord.com/api/oauth2/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'authorization_code',
+                code: code
+            }).toString()
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            return res.status(response.status).json(data);
+        }
+
+        res.json({ access_token: data.access_token });
+    } catch (err) {
+        console.error("Discord token exchange error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Analytics Metric Storage Vitals
 const serverStartTime = Date.now();
 let globalMatchesPlayed = 0;
