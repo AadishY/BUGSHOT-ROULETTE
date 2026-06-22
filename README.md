@@ -28,7 +28,7 @@
 Watch the short gameplay trailer to see the high-stakes action in real-time:
 
 <div align="center">
-  <video src="https://github.com/AadishY/Aadish-Roulette/raw/main/public/image/ShortVideo(Lowsize).mp4" width="100%" controls loop muted style="border-radius: 12px; border: 1px solid #333; max-width: 800px;"></video>
+  <video src="https://cdn.jsdelivr.net/gh/AadishY/Aadish-Roulette@main/public/image/ShortVideo(Lowsize).mp4" width="100%" controls loop muted style="border-radius: 12px; border: 1px solid #333; max-width: 800px;"></video>
 </div>
 
 ---
