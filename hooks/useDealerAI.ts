@@ -446,17 +446,18 @@ export const useDealerAI = ({
                                     itemToUse = 'MIRROR';
                                 }
                             }
-                            else if (dealerRef.current.items.includes('INVERTER') && currentKnown === 'BLANK') {
-                                itemToUse = 'INVERTER';
+                            else if (dealerRef.current.items.includes('INVERTER')) {
+                                const playerImmune = playerRef.current.jackpotImmunityShots !== undefined && playerRef.current.jackpotImmunityShots > 0;
+                                if (currentKnown === 'BLANK' || (currentKnown === 'LIVE' && playerImmune)) {
+                                    itemToUse = 'INVERTER';
+                                }
                             }
                             else if (dealerRef.current.items.includes('BIG_INVERTER') && currentKnown === 'BLANK' && totalRemaining >= 3) {
                                 itemToUse = 'BIG_INVERTER';
                             }
                             else if (dealerRef.current.items.includes('SAW') && !dealerRef.current.isSawedActive && currentKnown === 'LIVE' && playerRef.current.hp > 1) {
-                                // 70% chance in Normal Mode to correctly avoid wasting SAW on an immune player
                                 const playerImmune = playerRef.current.jackpotImmunityShots !== undefined && playerRef.current.jackpotImmunityShots > 0;
-                                const shouldAvoidSaw = playerImmune && Math.random() < 0.70;
-                                if (!shouldAvoidSaw) {
+                                if (!playerImmune) {
                                     itemToUse = 'SAW';
                                 }
                             }
@@ -479,7 +480,10 @@ export const useDealerAI = ({
                                 itemToUse = 'DECK_CARD';
                             }
                             else if (dealerRef.current.items.includes('BEER')) {
-                                if (currentKnown === 'BLANK' || (!currentKnown && totalRemaining > 2 && Math.random() > 0.3)) itemToUse = 'BEER';
+                                const playerImmune = playerRef.current.jackpotImmunityShots !== undefined && playerRef.current.jackpotImmunityShots > 0;
+                                if (currentKnown === 'BLANK' || (currentKnown === 'LIVE' && playerImmune) || (!currentKnown && totalRemaining > 2 && Math.random() > 0.3)) {
+                                    itemToUse = 'BEER';
+                                }
                             }
                             else if (dealerRef.current.items.includes('CHOKE') && !dealerRef.current.isChokeActive && totalRemaining >= 2) {
                                 if (Math.random() < 0.5) itemToUse = 'CHOKE';
@@ -675,8 +679,13 @@ export const useDealerAI = ({
                                     target = finalLiveProb >= Math.max(0.3, threshold) ? 'PLAYER' : 'DEALER';
                                 }
                             } else {
-                                // Normal Mode: Aggressive/Loose
-                                target = finalLiveProb >= 0.4 ? 'PLAYER' : 'DEALER';
+                                // Normal Mode: Aggressive/Loose, but smart if player is immune
+                                const playerImmune = playerRef.current.jackpotImmunityShots !== undefined && playerRef.current.jackpotImmunityShots > 0;
+                                if (playerImmune) {
+                                    target = finalLiveProb >= 0.7 ? 'PLAYER' : 'DEALER';
+                                } else {
+                                    target = finalLiveProb >= 0.4 ? 'PLAYER' : 'DEALER';
+                                }
                             }
                         }
 

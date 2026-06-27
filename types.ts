@@ -29,6 +29,11 @@ export interface GameState {
     playerWins: number;
     dealerWins: number;
   };
+  normalModeState?: {
+    round: number;
+    playerWins: number;
+    dealerWins: number;
+  };
   roomSettings?: RoomSettings;
   multiModeState?: {
     playerWins: number;

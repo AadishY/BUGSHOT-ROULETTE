@@ -28,6 +28,7 @@ interface ShootingContext {
     matchStats?: React.MutableRefObject<MatchStats>; // Added
     handleHardModeRoundEnd?: (winner: TurnOwner) => void;
     handleMPRoundEnd?: (winner: TurnOwner) => void;
+    handleNormalModeRoundEnd?: (winner: TurnOwner) => void;
     opponentName: string;
     onBatchEnd?: () => void;
 }
@@ -41,7 +42,7 @@ export const performShot = async (
         gameState, setGameState, player, setPlayer, dealer, setDealer,
         setAnim, setKnownShell, setAimTarget, setCameraView, setOverlayText, setOverlayColor,
         setShowFlash, setShowBlood, addLog, playerName, startRound, setIsProcessing, matchStats,
-        handleHardModeRoundEnd, handleMPRoundEnd, opponentName, onBatchEnd
+        handleHardModeRoundEnd, handleMPRoundEnd, handleNormalModeRoundEnd, opponentName, onBatchEnd
     } = ctx;
 
     setIsProcessing(true);
@@ -363,6 +364,12 @@ export const performShot = async (
                             setIsProcessing(false);
                             return;
                         }
+                        if (!gameState.isMultiplayer && !gameState.isHardMode && handleNormalModeRoundEnd) {
+                            addLog('ROUND LOST', 'danger');
+                            handleNormalModeRoundEnd('DEALER');
+                            setIsProcessing(false);
+                            return;
+                        }
                         setGameState(prev => ({ ...prev, winner: 'DEALER', phase: 'GAME_OVER' }));
                         if (matchStats?.current) matchStats.current.result = 'LOSS';
                         gameOver = true;
@@ -424,6 +431,12 @@ export const performShot = async (
                     if (gameState.isMultiplayer && handleMPRoundEnd) {
                         addLog('ROUND WON', 'safe');
                         handleMPRoundEnd('PLAYER');
+                        setIsProcessing(false);
+                        return;
+                    }
+                    if (!gameState.isMultiplayer && !gameState.isHardMode && handleNormalModeRoundEnd) {
+                        addLog('ROUND WON', 'safe');
+                        handleNormalModeRoundEnd('PLAYER');
                         setIsProcessing(false);
                         return;
                     }

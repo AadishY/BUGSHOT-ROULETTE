@@ -24,7 +24,7 @@ export const LogsDisplay: React.FC<LogsDisplayProps> = ({ logs }) => {
                 <div className="flex-1 overflow-y-auto font-mono text-[8px] md:text-sm p-1 md:p-4 flex flex-col justify-end">
                     <div>
                         {logs.map(log => (
-                            <div key={log.id} className={`mb-0.5 md:mb-1 ${log.type === 'danger' ? 'text-red-500' : log.type === 'safe' ? 'text-green-500' : log.type === 'info' ? 'text-cyan-400' : 'text-stone-500'}`}>{`> ${log.text}`}</div>
+                            <div key={log.id} className={`mb-0.5 md:mb-1 ${log.type === 'danger' ? 'text-red-500' : log.type === 'safe' ? 'text-green-500' : log.type === 'info' ? 'text-cyan-400' : log.type === 'dealer' ? 'text-amber-400 font-extrabold' : 'text-stone-500'}`}>{`> ${log.text}`}</div>
                         ))}
                         <div ref={logsEndRef} />
                     </div>

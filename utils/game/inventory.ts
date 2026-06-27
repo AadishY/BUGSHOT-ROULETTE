@@ -329,10 +329,19 @@ export const distributeItems = async (
         else amount = 4;
     } else {
         // NORMAL MODE LOGIC
-        const roundNum = forceClear ? 1 : gameState.roundCount + 1;
-        if (roundNum >= 10) amount = 4;
-        else if (roundNum >= 4) amount = 3;
-        else amount = 2;
+        if (!gameState.isMultiplayer) {
+            const currentRound = gameState.normalModeState?.round || 1;
+            if (currentRound === 1) {
+                amount = 0; // No shipment
+            } else {
+                amount = randomInt(2, 4); // Items with same randomness in number
+            }
+        } else {
+            const roundNum = forceClear ? 1 : gameState.roundCount + 1;
+            if (roundNum >= 10) amount = 4;
+            else if (roundNum >= 4) amount = 3;
+            else amount = 2;
+        }
     }
 
     const generateLoot = (forDealer: boolean, currentItems: ItemType[]) => {
@@ -346,6 +355,18 @@ export const distributeItems = async (
     // Generate loot pools separately
     const pNew = pItemsOverride || generateLoot(false, forceClear ? [] : playerItems);
     const dNew = dItemsOverride || generateLoot(true, forceClear ? [] : dealerItems);
+
+    if (amount === 0) {
+        setPlayer(p => {
+            const baseItems = forceClear ? [] : p.items;
+            return { ...p, items: baseItems, luckycharmsUsed: 0 };
+        });
+        setDealer(d => {
+            const baseItems = forceClear ? [] : d.items;
+            return { ...d, items: baseItems, luckycharmsUsed: 0 };
+        });
+        return;
+    }
 
     // SAFETY: Clear any previous overlay state explicitely before showing new
     setShowLootOverlay(false);

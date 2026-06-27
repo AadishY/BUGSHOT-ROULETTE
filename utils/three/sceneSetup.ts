@@ -7,9 +7,10 @@ import { setupLighting, createTable, createGunModel, createDealerModel, createPl
 export const cleanScene = (scene: THREE.Scene) => {
     scene.traverse((object) => {
         if (object instanceof THREE.Mesh || object instanceof THREE.Points || (object as any).isLine) {
-            if (object.geometry) object.geometry.dispose();
-            if (object.material) {
-                const materials = Array.isArray(object.material) ? object.material : [object.material];
+            const mesh = object as any;
+            if (mesh.geometry) mesh.geometry.dispose();
+            if (mesh.material) {
+                const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
                 materials.forEach((mat) => {
                     for (const key in mat) {
                         const val = (mat as any)[key];

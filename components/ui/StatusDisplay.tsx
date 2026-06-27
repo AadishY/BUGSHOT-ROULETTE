@@ -71,6 +71,15 @@ const StatusDisplayComponent: React.FC<StatusDisplayProps> = ({ player, dealer, 
                         </span>
                     </div>
                 )}
+
+                {!gameState.isMultiplayer && !gameState.isHardMode && gameState.normalModeState && (
+                    <div className="flex items-center gap-1 md:gap-2 bg-stone-900/40 px-2 md:px-3 py-1 rounded-full border border-stone-800/40">
+                        <span className="text-[8px] md:text-xs font-black text-stone-500 tracking-[0.2em] uppercase">RD</span>
+                        <span className="text-xs md:text-lg text-stone-350 font-black tracking-widest leading-none">
+                            {gameState.normalModeState.round}<span className="text-[10px] text-stone-750 mx-1">/</span>2
+                        </span>
+                    </div>
+                )}
             </div>
 
             {/* Center Protocol Display */}

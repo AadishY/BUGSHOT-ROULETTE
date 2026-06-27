@@ -22,7 +22,8 @@ export const handleContract = async (
     isHardMode?: boolean,
     isMultiplayer?: boolean,
     handleHardModeRoundEnd?: (winner: TurnOwner) => void,
-    handleMPRoundEnd?: (winner: TurnOwner) => void
+    handleMPRoundEnd?: (winner: TurnOwner) => void,
+    handleNormalModeRoundEnd?: (winner: TurnOwner) => void
 ) => {
     setTriggerContract(p => p + 1);
     await wait(2500); // Wait for contract sign/burn animation
@@ -96,6 +97,11 @@ export const handleContract = async (
                         handleMPRoundEnd('DEALER');
                         return;
                     }
+                    if (!isMultiplayer && !isHardMode && handleNormalModeRoundEnd) {
+                        addLog('YOU DIED (BLOOD CONTRACT).', 'danger');
+                        handleNormalModeRoundEnd('DEALER');
+                        return;
+                    }
                     setGameState(prev => ({ ...prev, winner: 'DEALER', phase: 'GAME_OVER' }));
                     addLog('YOU DIED (BLOOD CONTRACT).', 'danger');
                     await wait(1500);
@@ -107,55 +113,58 @@ export const handleContract = async (
             }
         }
     } else {
-        const newHp = dealer.hp - 1;
-        const hasTotem = dealer.items.includes('TOTEM');
+            const newHp = dealer.hp - 1;
+            const hasTotem = dealer.items.includes('TOTEM');
 
-        if (newHp <= 0) {
-            if (hasTotem) {
-                setDealer(d => {
-                    const idx = d.items.indexOf('TOTEM');
-                    const newItems = [...d.items];
-                    if (idx !== -1) newItems.splice(idx, 1);
-                    return { ...d, hp: 1, items: newItems };
-                });
+            if (newHp <= 0) {
+                if (hasTotem) {
+                    setDealer(d => {
+                        const idx = d.items.indexOf('TOTEM');
+                        const newItems = [...d.items];
+                        if (idx !== -1) newItems.splice(idx, 1);
+                        return { ...d, hp: 1, items: newItems };
+                    });
 
-                if (setOverlayText) setOverlayText('✨ TOTEM ACTIVATED ✨\nDealer survives at 1 HP!');
-                setAnim(prev => ({
-                    ...prev,
-                    triggerTotem: (prev.triggerTotem || 0) + 1,
-                    totemTarget: 'DEALER'
-                }));
-                audioManager.playSound('totem');
-                addLog("DEALER'S TOTEM ACTIVATED: Survived lethal blood contract sacrifice at 1 HP!", 'safe');
-                await wait(3000);
-                if (setOverlayText) setOverlayText(null);
+                    if (setOverlayText) setOverlayText('✨ TOTEM ACTIVATED ✨\nDealer survives at 1 HP!');
+                    setAnim(prev => ({
+                        ...prev,
+                        triggerTotem: (prev.triggerTotem || 0) + 1,
+                        totemTarget: 'DEALER'
+                    }));
+                    audioManager.playSound('totem');
+                    addLog("DEALER'S TOTEM ACTIVATED: Survived lethal blood contract sacrifice at 1 HP!", 'safe');
+                    await wait(3000);
+                    if (setOverlayText) setOverlayText(null);
+                } else {
+                    setDealer(d => ({ ...d, hp: 0 }));
+                    // Immediate Death
+                    if (isHardMode && handleHardModeRoundEnd) {
+                        addLog('DEALER DIED (BLOOD CONTRACT).', 'safe');
+                        handleHardModeRoundEnd('PLAYER');
+                        return;
+                    }
+                    if (isMultiplayer && handleMPRoundEnd) {
+                        addLog('DEALER DIED (BLOOD CONTRACT).', 'safe');
+                        handleMPRoundEnd('PLAYER');
+                        return;
+                    }
+                    if (!isMultiplayer && !isHardMode && handleNormalModeRoundEnd) {
+                        addLog('DEALER DIED (BLOOD CONTRACT).', 'safe');
+                        handleNormalModeRoundEnd('PLAYER');
+                        return;
+                    }
+                    setGameState(prev => ({ ...prev, winner: 'PLAYER', phase: 'GAME_OVER' }));
+                    addLog('DEALER DIED (BLOOD CONTRACT).', 'safe');
+                    await wait(1500);
+                    if (setOverlayColor) setOverlayColor('none');
+                    return; // End execution
+                }
             } else {
-                setDealer(d => ({ ...d, hp: 0 }));
-                // Immediate Death
-                if (isHardMode && handleHardModeRoundEnd) {
-                    addLog('DEALER DIED (BLOOD CONTRACT).', 'safe');
-                    handleHardModeRoundEnd('PLAYER');
-                    return;
-                }
-                if (isMultiplayer && handleMPRoundEnd) {
-                    addLog('DEALER DIED (BLOOD CONTRACT).', 'safe');
-                    handleMPRoundEnd('PLAYER');
-                    return;
-                }
-                setGameState(prev => ({ ...prev, winner: 'PLAYER', phase: 'GAME_OVER' }));
-                addLog('DEALER DIED (BLOOD CONTRACT).', 'safe');
-                await wait(1500);
-                if (setOverlayColor) setOverlayColor('none');
-                return; // End execution
+                setDealer(d => ({ ...d, hp: newHp }));
             }
-        } else {
-            setDealer(d => ({ ...d, hp: newHp }));
         }
-    }
 
-    await wait(800); // Wait for pain
-
-    if (setOverlayColor) setOverlayColor('none');
+        await wait(800); // Wait for pain
 
     // 2. Grant Loot
     const activeCharmsCount = user === 'PLAYER' ? (player.luckycharmsUsed || 0) : (dealer.luckycharmsUsed || 0);

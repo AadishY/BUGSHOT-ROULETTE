@@ -641,7 +641,7 @@ export default function App() {
           } else {
             const round = spGame.gameState.isHardMode
               ? (spGame.gameState.hardModeState?.round || 1)
-              : (spGame.gameState.roundCount + 1);
+              : (spGame.gameState.normalModeState?.round || 1);
             const modeText = spGame.gameState.isHardMode ? "Hard Mode" : "Normal";
             window.updateDiscordActivity(
               playerWon ? "🏆 Defeated the Dealer" : "💀 The Dealer Won",
@@ -668,14 +668,17 @@ export default function App() {
           // Singleplayer in-game
           const round = spGame.gameState.isHardMode
             ? (spGame.gameState.hardModeState?.round || 1)
-            : (spGame.gameState.roundCount + 1);
+            : (spGame.gameState.normalModeState?.round || 1);
           const hp = spGame.player.hp;
           const maxHp = spGame.player.maxHp;
           const modeText = spGame.gameState.isHardMode ? "Hard Mode" : "Normal";
           const isMyTurn = spGame.gameState.turnOwner === 'PLAYER';
           const shellsLeft = spGame.gameState.chamber.length - spGame.gameState.currentShellIndex;
           const hardState = spGame.gameState.hardModeState;
-          const scoreText = hardState ? ` (${hardState.playerWins}-${hardState.dealerWins})` : '';
+          const normalState = spGame.gameState.normalModeState;
+          const scoreText = hardState 
+            ? ` (${hardState.playerWins}-${hardState.dealerWins})` 
+            : (normalState ? ` (${normalState.playerWins}-${normalState.dealerWins})` : '');
 
           window.updateDiscordActivity(
             `${modeText} — Round ${round}${scoreText}`,

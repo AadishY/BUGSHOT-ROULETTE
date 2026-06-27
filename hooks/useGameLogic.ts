@@ -212,7 +212,8 @@ export const useGameLogic = () => {
       blankCount: 0,
       roundCount: 0,
       isHardMode: false, // Reset to normal on full reset
-      hardModeState: undefined
+      hardModeState: undefined,
+      normalModeState: undefined
     });
     audioManager.stopJackpotMusic();
     setPlayer({ hp: MAX_HP, maxHp: MAX_HP, items: [], isHandcuffed: false, isSawedActive: false, luckycharmsUsed: 0, isFlashbanged: false, jackpotImmunityShots: 0 });
@@ -293,6 +294,7 @@ export const useGameLogic = () => {
     };
 
     const initialHardModeState = hardMode ? { round: 1, playerWins: 0, dealerWins: 0 } : undefined;
+    const initialNormalModeState = !hardMode && !isMultiplayer ? { round: 1, playerWins: 0, dealerWins: 0 } : undefined;
 
     setGameState({
       phase: 'LOAD',
@@ -307,6 +309,7 @@ export const useGameLogic = () => {
       isMultiplayer: isMultiplayer,
       opponentName: opponentName,
       hardModeState: initialHardModeState,
+      normalModeState: initialNormalModeState,
       roomSettings: mpSettings || { rounds: 1, hp: 4, itemsPerShipment: 4 },
       multiModeState: { playerWins: 0, opponentWins: 0 }
     });
@@ -391,12 +394,16 @@ export const useGameLogic = () => {
     setAnim({ dealerDropping: false, playerHit: false });
     setCameraView(turnOwnerOverride || 'PLAYER');
 
-    // Hard Mode HP Setup
+    // HP Setup
     let startingHp = hpOverride || MAX_HP;
     if (isHM && !hpOverride) {
       const stage = hmState?.round || 1;
       if (stage === 1) startingHp = 2;
       else if (stage === 2) startingHp = 3;
+      else startingHp = 4;
+    } else if (!gameStateRef.current.isMultiplayer && !isHM && !hpOverride) {
+      const stage = gameStateRef.current.normalModeState?.round || 1;
+      if (stage === 1) startingHp = 2;
       else startingHp = 4;
     }
 
@@ -450,6 +457,7 @@ export const useGameLogic = () => {
       ...gameStateRef.current,
       isHardMode: isHM,
       hardModeState: hmState,
+      normalModeState: gameStateRef.current.normalModeState,
       roundCount: resetItems ? 1 : gameStateRef.current.roundCount + 1
     };
 
@@ -540,6 +548,77 @@ export const useGameLogic = () => {
     // Trigger Next Round
     await startRound(true, true, nextState);
     setIsProcessing(false);
+  };
+
+  const handleNormalModeRoundEnd = async (winner: TurnOwner) => {
+    setIsProcessing(true);
+
+    const currentState = gameStateRef.current.normalModeState || { round: 1, playerWins: 0, dealerWins: 0 };
+    const currentRound = currentState.round;
+
+    let nextState = { ...currentState };
+    if (winner === 'PLAYER') {
+      nextState.playerWins++;
+      matchStatsRef.current.roundsSurvived++;
+    } else {
+      nextState.dealerWins++;
+    }
+
+    // Track Round Result
+    if (!matchStatsRef.current.roundResults) matchStatsRef.current.roundResults = [];
+    matchStatsRef.current.roundResults.push(winner === 'PLAYER' ? 'WIN' : 'LOSS');
+
+    if (winner === 'DEALER') {
+      const winMsg = `${getOpponentName().toUpperCase()} WON THE GAME`;
+      setOverlayColor('red');
+      setOverlayText(winMsg);
+      audioManager.playSound('rack');
+      await wait(3000);
+      setGameState(prev => ({ ...prev, winner: 'DEALER', phase: 'GAME_OVER', normalModeState: nextState }));
+      matchStatsRef.current.result = 'LOSS';
+      setIsProcessing(false);
+      setOverlayColor('none');
+      setOverlayText(null);
+      return;
+    }
+
+    // Player won round
+    if (currentRound === 1) {
+      const winMsg = `${playerName} WON ROUND 1`;
+      setOverlayColor('green');
+      setOverlayText(winMsg);
+      audioManager.playSound('insert');
+      await wait(3000);
+
+      // Transition to Round 2:
+      // First display text as dealer subtitles "LET'S MAKE THIS A LITTLE MORE INTERESTING"
+      setOverlayColor('none');
+      setOverlayText("LET'S MAKE THIS A LITTLE MORE INTERESTING");
+      addLog("DEALER: LET'S MAKE THIS A LITTLE MORE INTERESTING", 'dealer');
+      // Wait to let player read
+      await wait(3000);
+      setOverlayText(null);
+
+      nextState.round = 2;
+      setGameState(prev => ({ ...prev, normalModeState: nextState, phase: 'LOAD' }));
+
+      // start the round with 4 health and items with same randomness in number and shell randomness
+      await startRound(true, false, undefined, undefined, undefined, undefined, undefined, 4);
+      setIsProcessing(false);
+    } else {
+      // If player won round 2, they win the game!
+      const winMsg = `${playerName} WON THE GAME`;
+      setOverlayColor('green');
+      setOverlayText(winMsg);
+      audioManager.playSound('insert');
+      await wait(3000);
+
+      setGameState(prev => ({ ...prev, winner: 'PLAYER', phase: 'GAME_OVER', normalModeState: nextState }));
+      matchStatsRef.current.result = 'WIN';
+      setIsProcessing(false);
+      setOverlayColor('none');
+      setOverlayText(null);
+    }
   };
 
   const handleMPRoundEnd = async (winner: TurnOwner) => {
@@ -674,6 +753,7 @@ export const useGameLogic = () => {
       matchStats: matchStatsRef,
       handleHardModeRoundEnd,
       handleMPRoundEnd,
+      handleNormalModeRoundEnd,
       opponentName: getOpponentName()
     });
   };
@@ -1163,6 +1243,10 @@ export const useGameLogic = () => {
               handleMPRoundEnd('DEALER');
               return true;
             }
+            if (!isMultiplayer && !isHardMode && handleNormalModeRoundEnd) {
+              handleNormalModeRoundEnd('DEALER');
+              return true;
+            }
             setGameState(prev => ({ ...prev, winner: 'DEALER', phase: 'GAME_OVER' }));
           } else {
             if (isHardMode) {
@@ -1171,6 +1255,10 @@ export const useGameLogic = () => {
             }
             if (isMultiplayer && handleMPRoundEnd) {
               handleMPRoundEnd('PLAYER');
+              return true;
+            }
+            if (!isMultiplayer && !isHardMode && handleNormalModeRoundEnd) {
+              handleNormalModeRoundEnd('PLAYER');
               return true;
             }
             setGameState(prev => ({ ...prev, winner: 'PLAYER', phase: 'GAME_OVER' }));
@@ -1478,6 +1566,7 @@ export const useGameLogic = () => {
     setOnBatchEnd: (cb: () => void) => { onBatchEndRef.current = cb; },
     startRound,
     handleHardModeRoundEnd,
-    handleMPRoundEnd
+    handleMPRoundEnd,
+    handleNormalModeRoundEnd
   };
 };
