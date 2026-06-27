@@ -41,22 +41,22 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onResetG
     const [selectedMPMatch, setSelectedMPMatch] = useState<any>(null);
     const [finalScore, setFinalScore] = useState(0);
     const [displayedScore, setDisplayedScore] = useState(0);
-    const [quote, setQuote] = useState('');
+    const [quote] = useState(() => {
+        const quotes = winner === 'PLAYER' ? WIN_QUOTES : LOSS_QUOTES;
+        return quotes[Math.floor(Math.random() * quotes.length)];
+    });
     const hasSavedRef = useRef(false);
 
     useEffect(() => {
-        const quotes = winner === 'PLAYER' ? WIN_QUOTES : LOSS_QUOTES;
-        setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
-
-        if (matchData) {
+        if (matchData && !hasSavedRef.current) {
+            hasSavedRef.current = true;
+            
             if (winner === 'PLAYER') {
                 matchData.result = 'WIN';
             } else if (winner === 'DEALER') {
                 matchData.result = 'LOSS';
             }
-        }
 
-        if (matchData && !hasSavedRef.current) {
             // Check if current user is developer (devs can save stats even with debug)
             let isDeveloper = false;
             try {
@@ -72,14 +72,13 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onResetG
             } else {
                 console.log("Stats NOT saved: debug cheats used.");
             }
-            hasSavedRef.current = true;
             const score = calculateMatchScore(matchData);
             setFinalScore(score);
             setStats(getStoredStats());
         } else if (!matchData) {
             setStats(getStoredStats());
         }
-    }, [matchData, winner, isDebugUsed]);
+    }, []);
 
     useEffect(() => {
         if (finalScore === 0) return;

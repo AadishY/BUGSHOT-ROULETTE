@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { Scoreboard } from './Scoreboard';
 import { Settings as SettingsIcon, HelpCircle, Trophy, ShieldAlert, Lock, User, Terminal, BookOpen, Crown, Shield, Skull, X, Crosshair, Swords, Activity, Award } from 'lucide-react';
 import { audioManager } from '../../utils/audioManager';
 import { loginUser, registerUser, getLeaderboard } from '../../utils/redisService';
@@ -1024,151 +1025,28 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                         >
                             Close Terminal
                         </button>
-                    </div>
-                </div>
-            )}
-
-            {/* TACTICAL PROFILE POPUP MODAL (CAREER LOG) */}
-            {selectedCareerUser && (
-                <div className="absolute inset-0 z-[110] flex flex-col items-center justify-start sm:justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-300 overflow-y-auto custom-scrollbar">
-                    <div className="relative w-full max-w-2xl bg-stone-950/95 border-2 border-stone-850 p-5 sm:p-8 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.9)] font-mono text-left max-h-[95vh] overflow-y-auto scrollbar-thin my-4 sm:my-auto">
-                        <div className="absolute top-0 left-0 w-full h-[2px] bg-amber-600/30" />
-                        
-                        {/* Header Box */}
-                        <div className="flex items-start justify-between border-b border-stone-900 pb-4 mb-6">
-                            <div className="flex items-center gap-3.5">
-                                <div className="p-3 bg-amber-500/10 border border-amber-600/30 text-amber-500 rounded-xl">
-                                    <Trophy size={22} />
-                                </div>
-                                <div>
-                                    <h2 className="text-lg font-black text-stone-200 uppercase tracking-widest flex items-center gap-2">
-                                        Career Log: {selectedCareerUser.username}
-                                        {selectedCareerUser.isDeveloper && (
-                                            <span className="px-1.5 py-0.5 bg-purple-650/35 border border-purple-500/40 text-purple-400 text-[7px] font-black tracking-widest rounded-md uppercase shrink-0">DEV</span>
-                                        )}
-                                    </h2>
-                                    <p className="text-[9px] text-stone-500 font-bold tracking-widest uppercase mt-0.5">Tactical Performance Data</p>
-                                </div>
-                            </div>
-                            <button 
-                                onClick={() => {
-                                    audioManager.playSound('click');
-                                    setSelectedCareerUser(null);
-                                }}
-                                className="text-stone-300 hover:text-red-400 bg-stone-900/60 hover:bg-red-955/30 border border-stone-800 hover:border-red-500/45 p-2 rounded-xl cursor-pointer flex items-center justify-center transition-all small-btn"
-                            >
-                                <X size={18} />
-                            </button>
-                        </div>
-
-                        {/* Top Summary Blocks */}
-                        <div className="grid grid-cols-3 gap-3 mb-6">
-                            <div className="bg-stone-900/30 border border-stone-900 rounded-xl p-4 text-center">
-                                <div className="text-[8px] text-stone-500 font-bold tracking-widest uppercase mb-1">Wins</div>
-                                <div className="text-2xl font-black text-stone-200">{selectedCareerUser.wins}</div>
-                            </div>
-                            <div className="bg-stone-900/30 border border-stone-900 rounded-xl p-4 text-center">
-                                <div className="text-[8px] text-stone-500 font-bold tracking-widest uppercase mb-1">Losses</div>
-                                <div className="text-2xl font-black text-stone-200">{selectedCareerUser.losses}</div>
-                            </div>
-                            <div className="bg-stone-900/30 border border-stone-900 rounded-xl p-4 text-center">
-                                <div className="text-[8px] text-stone-500 font-bold tracking-widest uppercase mb-1">Success</div>
-                                <div className="text-2xl font-black text-stone-200">{winRate}<span className="text-xs text-stone-500 ml-0.5">%</span></div>
-                            </div>
-                        </div>
-
-                        {/* Combat Analysis Block Divider */}
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="h-[1px] w-8 bg-stone-900" />
-                            <span className="text-[8px] text-stone-500 font-bold tracking-[0.3em] uppercase whitespace-nowrap">Combat Analysis</span>
-                            <div className="h-[1px] flex-1 bg-stone-900" />
-                        </div>
-
-                        {/* Core Stats Details Container */}
-                        <div className="grid grid-cols-4 gap-2.5 mb-6">
-                            <div className="bg-stone-900/10 border border-stone-900/40 rounded-xl p-3 text-center">
-                                <Activity size={14} className="text-blue-500 mx-auto mb-1.5" />
-                                <div className="text-base font-black text-stone-200">{selectedCareerUser.stats.totalRounds || 0}</div>
-                                <div className="text-[7px] text-stone-500 font-bold uppercase tracking-widest mt-0.5">Rounds</div>
-                            </div>
-                            <div className="bg-stone-900/10 border border-stone-900/40 rounded-xl p-3 text-center">
-                                <Crosshair size={14} className="text-red-500 mx-auto mb-1.5" />
-                                <div className="text-base font-black text-stone-200">{precisionRate}%</div>
-                                <div className="text-[7px] text-stone-500 font-bold uppercase tracking-widest mt-0.5">Precision</div>
-                            </div>
-                            <div className="bg-stone-900/10 border border-stone-900/40 rounded-xl p-3 text-center">
-                                <Swords size={14} className="text-amber-500 mx-auto mb-1.5" />
-                                <div className="text-base font-black text-stone-200">{selectedCareerUser.stats.damageDealt || 0}</div>
-                                <div className="text-[7px] text-stone-500 font-bold uppercase tracking-widest mt-0.5">Lethality</div>
-                            </div>
-                            <div className="bg-stone-900/10 border border-stone-900/40 rounded-xl p-3 text-center">
-                                <Skull size={14} className="text-purple-500 mx-auto mb-1.5" />
-                                <div className="text-base font-black text-stone-200">{selectedCareerUser.stats.highestRound || 0}</div>
-                                <div className="text-[7px] text-stone-500 font-bold uppercase tracking-widest mt-0.5">Tier</div>
-                            </div>
-                        </div>
-
-                        {/* Match Feed Header Block */}
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="h-[1px] w-8 bg-stone-900" />
-                            <span className="text-[8px] text-stone-500 font-bold tracking-[0.3em] uppercase whitespace-nowrap">Recent Operations</span>
-                            <div className="h-[1px] flex-1 bg-stone-900" />
-                        </div>
-
-                        {/* Recent History Feed Loop */}
-                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
-                            {(!selectedCareerUser.stats.matchHistory || selectedCareerUser.stats.matchHistory.length === 0) ? (
-                                <div className="text-center py-6 text-stone-600 text-[10px] font-bold uppercase tracking-wider">
-                                    No records filed in operations matrix
-                                </div>
-                            ) : (
-                                [...selectedCareerUser.stats.matchHistory].reverse().map((match: any, mIdx: number) => {
-                                    const isWin = match.result === 'WIN';
-                                    return (
-                                        <div 
-                                            key={mIdx} 
-                                            onClick={() => {
-                                                if (match.isMultiplayer) {
-                                                    audioManager.playSound('click');
-                                                    setSelectedMPMatch(match);
-                                                }
-                                            }}
-                                            className={`bg-stone-955 border border-stone-900 p-3 rounded-xl flex items-center justify-between transition-all ${
-                                                match.isMultiplayer ? 'cursor-pointer hover:border-cyan-500/40 hover:bg-stone-900/10' : ''
-                                            }`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-lg font-black text-xs flex items-center justify-center shrink-0 ${isWin ? 'bg-green-950/40 text-green-400 border border-green-900/30' : 'bg-red-955/40 text-red-500 border border-red-900/20'}`}>
-                                                    {isWin ? 'W' : 'L'}
-                                                </div>
-                                                <div>
-                                                    <div className="text-xs font-black text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
-                                                        MATCH #{selectedCareerUser.stats.matchHistory.length - mIdx}
-                                                        {match.isMultiplayer ? (
-                                                            <span className="px-1.5 py-0.5 bg-cyan-950/60 border border-cyan-900/40 text-cyan-400 text-[6px] font-black tracking-widest rounded uppercase animate-pulse">MP</span>
-                                                        ) : match.isHardMode ? (
-                                                            <span className="px-1.5 py-0.5 bg-red-950/60 border border-red-900/40 text-red-500 text-[6px] font-black tracking-widest rounded uppercase">HardMode</span>
-                                                        ) : null}
-                                                    </div>
-                                                    <div className="text-[8px] text-stone-600 font-bold mt-0.5">{match.timestamp ? new Date(match.timestamp).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : 'Unknown'}</div>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-4 text-right">
-                                                <div>
-                                                    <div className="text-[6px] text-stone-600 font-bold uppercase tracking-widest">Score</div>
-                                                    <div className="text-xs font-black text-amber-500">{(match.score || match.itemPoints || 0).toLocaleString()}</div>
-                                                </div>
-                                                <div className="min-w-8">
-                                                    <div className="text-[6px] text-stone-600 font-bold uppercase tracking-widest">Rounds</div>
-                                                    <div className="text-xs font-black text-stone-300">{match.highestRound || match.rounds || 1}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
-                    </div>
+                             {/* TACTICAL PROFILE POPUP MODAL (CAREER LOG) */}
+            {selectedCareerUser && (() => {
+                const statsToDisplay = {
+                    ...selectedCareerUser.stats,
+                    wins: selectedCareerUser.wins || 0,
+                    losses: selectedCareerUser.losses || 0,
+                    highestRound: selectedCareerUser.stats?.highestRound || 0,
+                    itemPoints: selectedCareerUser.stats?.itemPoints || 0,
+                    shotsFired: selectedCareerUser.stats?.shotsFired || 0,
+                    shotsHit: selectedCareerUser.stats?.shotsHit || 0,
+                    damageDealt: selectedCareerUser.stats?.damageDealt || 0,
+                    damageTaken: selectedCareerUser.stats?.damageTaken || 0,
+                    itemsUsed: typeof selectedCareerUser.stats?.itemsUsed === 'number' ? selectedCareerUser.stats.itemsUsed : 0,
+                    matchHistory: selectedCareerUser.stats?.matchHistory || []
+                };
+                return (
+                    <Scoreboard
+                        stats={statsToDisplay}
+                        onClose={() => setSelectedCareerUser(null)}
+                    />
+                );
+            })()}       </div>
                 </div>
             )}
 

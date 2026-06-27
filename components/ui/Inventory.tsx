@@ -35,11 +35,16 @@ const InventoryComponent: React.FC<InventoryProps> = ({ player, dealer, gameStat
 
     React.useEffect(() => {
         const checkMobile = () => {
-            setIsMobileView(window.innerWidth < 768);
+            const hasTouch = window.matchMedia('(pointer: coarse)').matches;
+            const ua = navigator.userAgent.toLowerCase();
+            const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
+            setIsMobileView(hasTouch && isMobileDevice);
         };
         checkMobile();
         window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
+        return () => {
+            window.removeEventListener('resize', checkMobile);
+        };
     }, []);
 
     React.useEffect(() => {

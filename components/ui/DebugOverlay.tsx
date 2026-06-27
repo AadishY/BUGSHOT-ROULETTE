@@ -31,6 +31,24 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [activeTab, setActiveTab] = useState<'chamber' | 'items' | 'status' | 'tarot'>('chamber');
 
+    // Resolve player names / User IDs for developer debug menu
+    let playerDisplayName = 'PLAYER';
+    let dealerDisplayName = 'DEALER';
+
+    try {
+        const loggedInUser = localStorage.getItem('aadish_roulette_logged_in_user');
+        if (loggedInUser) {
+            const u = JSON.parse(loggedInUser);
+            if (u.username) {
+                playerDisplayName = u.username.toUpperCase();
+            }
+        }
+    } catch (e) {}
+
+    if (gameState.isMultiplayer) {
+        dealerDisplayName = (gameState.opponentName || 'OPPONENT').toUpperCase();
+    }
+
     // Mark the game as using debug features
     React.useEffect(() => {
         setGameState(prev => {
@@ -192,7 +210,7 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
     }
 
     return (
-        <div className="fixed bottom-2 right-2 md:bottom-4 md:right-4 z-[999] w-[45vw] min-w-[190px] max-w-[90vw] md:w-[35vw] md:min-w-[250px] md:max-w-[85vw] max-h-[40vh] md:max-h-[85vh] bg-stone-950/85 backdrop-blur-md border border-red-900/40 rounded-xl md:rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col font-mono text-[7.5px] md:text-xs select-none">
+        <div className="fixed bottom-2 right-2 md:bottom-4 md:right-4 z-[999] w-[80vw] sm:w-[45vw] md:w-[35vw] max-h-[50vh] md:max-h-[85vh] bg-stone-950/90 backdrop-blur-md border border-red-900/40 rounded-xl md:rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col font-mono text-[7.5px] md:text-xs select-none">
             {/* Header */}
             <div className="p-1.5 md:p-3 bg-red-950/30 border-b border-red-900/30 flex justify-between items-center">
                 <div className="flex items-center gap-1 md:gap-2 text-red-500 font-extrabold tracking-widest text-[7.5px] md:text-[10px] uppercase">
@@ -309,10 +327,11 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                         {/* Target selection */}
                         {['player', 'dealer'].map((target) => {
                             const state = target === 'player' ? player : dealer;
+                            const targetName = target === 'player' ? playerDisplayName : dealerDisplayName;
                             return (
                                 <div key={target} className="space-y-1.5 md:space-y-2 border-b border-stone-900 pb-2.5 md:pb-3 last:border-0 last:pb-0">
                                     <div className="flex justify-between items-center">
-                                        <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px]">{target} Inventory</span>
+                                        <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px]">{targetName} Inventory</span>
                                         <button
                                             onClick={() => clearItems(target as any)}
                                             className="text-[7.5px] md:text-[9px] text-red-500 hover:text-red-400 font-bold uppercase tracking-wider cursor-pointer"
@@ -372,9 +391,10 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                             <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px] block">Health Editor</span>
                             {['player', 'dealer'].map((target) => {
                                 const state = target === 'player' ? player : dealer;
+                                const targetName = target === 'player' ? playerDisplayName : dealerDisplayName;
                                 return (
                                     <div key={target} className="flex justify-between items-center bg-stone-900/50 p-1 md:p-2 border border-stone-900 rounded-lg">
-                                        <span className="font-bold text-[8.5px] md:text-[10px] uppercase text-stone-400">{target} HP:</span>
+                                        <span className="font-bold text-[8.5px] md:text-[10px] uppercase text-stone-400">{targetName} HP:</span>
                                         
                                         <div className="flex items-center gap-1.5 md:gap-4">
                                             {/* HP indicator */}
@@ -426,14 +446,14 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                                     onClick={() => setWinnerInstantly('PLAYER')}
                                     className="py-1 md:py-2 bg-green-950/40 border border-green-900/40 text-green-400 rounded hover:bg-green-900/30 cursor-pointer font-bold uppercase text-[8px] md:text-[9px] flex items-center justify-center gap-1 md:gap-1.5"
                                 >
-                                    <Award size={9} className="md:w-[11px] md:h-[11px]" /> Win Player
+                                    <Award size={9} className="md:w-[11px] md:h-[11px]" /> Win {playerDisplayName}
                                 </button>
                                 <button
                                     onClick={() => setWinnerInstantly('DEALER')}
                                     className="py-1 md:py-2 bg-red-950/40 border border-red-900/40 text-red-400 rounded hover:bg-red-900/30 cursor-pointer font-bold uppercase text-[8px] md:text-[9px] flex items-center justify-center gap-1 md:gap-1.5"
                                     style={{ gridColumn: 'span 2' }}
                                 >
-                                    <Award size={9} className="md:w-[11px] md:h-[11px]" /> Win Dealer / Opponent
+                                    <Award size={9} className="md:w-[11px] md:h-[11px]" /> Win {dealerDisplayName}
                                 </button>
                             </div>
 

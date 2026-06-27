@@ -732,7 +732,7 @@ export const GameUI: React.FC<GameUIProps> = ({
 
             {/* Minimized Chat Overlay - Visible in-game at above left corner when minimized */}
             {isMultiplayer && gameState.phase !== 'INTRO' && gameState.phase !== 'BOOT' && isChatMinimized && (
-                <div className="absolute top-24 left-4 z-[100] pointer-events-none max-w-xs md:max-w-sm space-y-2 select-none">
+                <div className="absolute top-28 left-4 z-[100] pointer-events-none max-w-xs md:max-w-sm space-y-2 select-none">
                     {messages
                         .filter(m => m.sender !== 'SYSTEM' && !m.text.startsWith('SYSTEM:'))
                         .slice(-3) // Show last 3 messages

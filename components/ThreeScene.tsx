@@ -250,11 +250,17 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
                 return;
             }
 
-            // Frame Limiting Logic (Only strictly enforce on low-end to save battery/thermal)
-            if (isLowEndMobile) {
+            const isUltra = !!propsRef.current.settings?.ultraPerformance;
+            const isBalanced = !!propsRef.current.settings?.balancedPerformance;
+            const currentTargetFPS = isUltra ? 30 : (isBalanced ? 45 : (isMobile && (isAndroid || window.devicePixelRatio < 2) ? 40 : 60));
+            const currentFrameInterval = 1000 / currentTargetFPS;
+            const shouldLimitFrame = isUltra || isBalanced || (isMobile && (isAndroid || window.devicePixelRatio < 2));
+
+            // Frame Limiting Logic (Enforce based on performance settings to save battery/thermal)
+            if (shouldLimitFrame) {
                 const elapsed = currentTime - lastFrameTime;
-                if (elapsed < frameInterval) return;
-                lastFrameTime = currentTime - (elapsed % frameInterval);
+                if (elapsed < currentFrameInterval) return;
+                lastFrameTime = currentTime - (elapsed % currentFrameInterval);
             } else {
                 lastFrameTime = currentTime;
             }
@@ -301,33 +307,38 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
             updateScene(sceneRef.current, propsRef.current, time, delta);
 
             // Project 3D positions of heads to HTML coordinates for crisp overlays
-            if (sceneRef.current && propsRef.current.onUpdateNameTags) {
+            if (sceneRef.current) {
                 const { scene, camera } = sceneRef.current;
                 const tempV = new THREE.Vector3();
-                const tags: { name: string; x: number; y: number; visible: boolean }[] = [];
+                const opponentEl = document.getElementById('nametag-opponent');
 
                 scene.traverse((obj) => {
-                    if (obj.name.startsWith('PLAYER_')) {
-                        const name = obj.name.replace('PLAYER_', '');
+                    if (obj.name === 'DEALER') {
                         const head = obj.getObjectByName('HEAD');
                         if (head) {
                             tempV.setFromMatrixPosition(head.matrixWorld);
-                            // Position slightly above the head
-                            tempV.y += 2.2;
+                            // Position slightly above the head (Y=2.4)
+                            tempV.y += 2.4;
                             tempV.project(camera);
 
-                            const x = (tempV.x * 0.5 + 0.5) * 100;
-                            const y = (tempV.y * -0.5 + 0.5) * 100;
+                            const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
+                            const y = (tempV.y * -0.5 + 0.5) * window.innerHeight;
 
                             // Visible if in front of screen plane
                             const visible = tempV.z <= 1.0;
 
-                            tags.push({ name, x, y, visible });
+                            if (opponentEl) {
+                                if (visible) {
+                                    opponentEl.style.left = `${x}px`;
+                                    opponentEl.style.top = `${y}px`;
+                                    opponentEl.style.display = 'block';
+                                } else {
+                                    opponentEl.style.display = 'none';
+                                }
+                            }
                         }
                     }
                 });
-
-                propsRef.current.onUpdateNameTags(tags);
             }
         };
 

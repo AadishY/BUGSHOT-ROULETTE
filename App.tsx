@@ -315,8 +315,25 @@ export default function App() {
 
   // Broadcast local actions to server
   const handleFireShot = async (target: 'PLAYER' | 'DEALER') => {
+    if (spGame.gameState.phase !== 'PLAYER_TURN' && spGame.gameState.phase !== 'DEALER_TURN' && spGame.gameState.phase !== 'RESOLVING') return;
+    if (spGame.gameState.turnOwner !== 'PLAYER') return;
+    if (spGame.isProcessing) return;
+
+    const isMobile = window.matchMedia('(pointer: coarse)').matches;
+    const intendedAim = target === 'DEALER' ? 'OPPONENT' : 'SELF';
+
+    // On mobile, the first tap only aims (points) the gun, and the second tap fires
+    if (isMobile && spGame.aimTarget === 'CHOOSING') {
+      spGame.setAimTarget(intendedAim);
+      spGame.setCameraView('GUN');
+      
+      if (appState === 'GAME' && spGame.gameState.isMultiplayer) {
+        mp.sendAction(mp.room.id, { type: 'HOVER_TARGET', target: intendedAim });
+      }
+      return;
+    }
+
     if (appState === 'GAME' && spGame.gameState.isMultiplayer) {
-      if (spGame.gameState.turnOwner !== 'PLAYER') return;
       mp.sendAction(mp.room.id, { type: 'SHOOT', shooter: 'PLAYER', target });
     }
     await spGame.fireShot('PLAYER', target);
@@ -381,9 +398,73 @@ export default function App() {
   const handleCardClick = async (index: number) => {
     if (appState === 'GAME' && spGame.gameState.isMultiplayer) {
       if (spGame.gameState.turnOwner !== 'PLAYER') return;
-      mp.sendAction(mp.room.id, { type: 'SELECT_CARD', index });
+      
+      const cards = spGame.gameState.deckCards;
+      const chosenCard = cards ? cards[index] : null;
+      const cardRandoms: any = {};
+
+      if (chosenCard) {
+        if (chosenCard.name === 'The Magician') {
+          const ITEMS: import('./types').ItemType[] = [
+            'BEER', 'CIGS', 'SAW', 'GLASS', 'CUFFS', 'PHONE', 'INVERTER', 'ADRENALINE',
+            'CHOKE', 'REMOTE', 'BIG_INVERTER', 'CONTRACT', 'LUCKYCHARM', 'FLASHBANG',
+            'CRUSHER', 'TOTEM', 'MIRROR', 'DECK_CARD', 'JACKPOT'
+          ];
+          cardRandoms.magicianItem = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+        } else if (chosenCard.name === 'Judgment') {
+          cardRandoms.judgmentSuccess = Math.random() < 0.5;
+        } else if (chosenCard.name === 'The Moon') {
+          const oppItems = spGame.dealer.items;
+          const stealableIndices = [];
+          for (let i = 0; i < oppItems.length; i++) {
+            if (oppItems[i] !== null && oppItems[i] !== 'TOTEM' && oppItems[i] !== 'JACKPOT') {
+              stealableIndices.push(i);
+            }
+          }
+          if (stealableIndices.length > 0) {
+            cardRandoms.moonIndex = stealableIndices[Math.floor(Math.random() * stealableIndices.length)];
+          }
+        } else if (chosenCard.name === 'Death') {
+          const myItems = spGame.player.items;
+          const destructibleIndices = [];
+          for (let i = 0; i < myItems.length; i++) {
+            if (myItems[i] !== null) {
+              destructibleIndices.push(i);
+            }
+          }
+          if (destructibleIndices.length > 0) {
+            cardRandoms.deathIndex = destructibleIndices[Math.floor(Math.random() * destructibleIndices.length)];
+          }
+        } else if (chosenCard.name === 'The Tower') {
+          const oppItems = spGame.dealer.items;
+          const destructibleIndices = [];
+          for (let i = 0; i < oppItems.length; i++) {
+            if (oppItems[i] !== null && oppItems[i] !== 'TOTEM') {
+              destructibleIndices.push(i);
+            }
+          }
+          if (destructibleIndices.length > 0) {
+            cardRandoms.towerIndex = destructibleIndices[Math.floor(Math.random() * destructibleIndices.length)];
+          }
+        } else if (chosenCard.name === 'Wheel of Fortune') {
+          const chamber = [...spGame.gameState.chamber];
+          const idx = spGame.gameState.currentShellIndex;
+          const remaining = chamber.slice(idx);
+          if (remaining.length > 0) {
+            const shuffledRemaining = [...remaining].sort(() => Math.random() - 0.5);
+            for (let i = 0; i < shuffledRemaining.length; i++) {
+              chamber[idx + i] = shuffledRemaining[i];
+            }
+            cardRandoms.wheelChamber = chamber;
+          }
+        }
+      }
+
+      mp.sendAction(mp.room.id, { type: 'SELECT_CARD', index, cardRandoms });
+      await spGame.selectTarotCard(index, cardRandoms);
+    } else {
+      await spGame.selectTarotCard(index);
     }
-    await spGame.selectTarotCard(index);
   };
 
   const handlePickupGun = () => {
@@ -402,13 +483,10 @@ export default function App() {
     spGame.stealItem(index, 'PLAYER');
   };
 
-  const nextHoverRef = React.useRef(0);
   const handleHoverTarget = (target: any) => {
-    const now = Date.now();
     if (appState === 'GAME' && spGame.gameState.isMultiplayer) {
-      if (now > nextHoverRef.current) {
+      if (spGame.gameState.turnOwner === 'PLAYER') {
         mp.sendAction(mp.room.id, { type: 'HOVER_TARGET', target });
-        nextHoverRef.current = now + 100; // 10hz throttle
       }
     }
     spGame.setAimTarget(target);
@@ -438,7 +516,7 @@ export default function App() {
               await spGame.processItemEffect('DEALER', action.item, action.deckCards, action.jackpotOutcome, action.crushIndex, action.contractLoot);
               break;
             case 'SELECT_CARD':
-              spGame.selectTarotCard(action.index);
+              spGame.selectTarotCard(action.index, action.cardRandoms);
               break;
             case 'PICKUP_GUN':
               spGame.pickupGun('DEALER');
@@ -468,6 +546,9 @@ export default function App() {
               if (action.gameState.phase) {
                 if (action.gameState.phase === 'PLAYER_TURN') invertedGameState.phase = 'DEALER_TURN';
                 else if (action.gameState.phase === 'DEALER_TURN') invertedGameState.phase = 'PLAYER_TURN';
+              }
+              if (action.gameState.winner) {
+                invertedGameState.winner = action.gameState.winner === 'PLAYER' ? 'DEALER' : 'PLAYER';
               }
 
               // Correct opponentName sync: opponent for client is host
@@ -627,7 +708,8 @@ export default function App() {
           const clientCharms = spGame.dealer.luckycharmsUsed || 0;
           const { chamber, hostItems, clientItems, lives, blanks } = generateMPBatch(settings, playerCount, hostCharms, clientCharms);
 
-          const nextStarts = Math.random() < 0.5;
+          const lastWasHost = spGame.gameState.turnOwner === 'PLAYER';
+          const nextStarts = !lastWasHost;
           const syncAction = {
             type: 'SYNC_ROUND',
             chamber,
@@ -666,8 +748,8 @@ export default function App() {
   // Sync state broadcast from host to stay in sync
   useEffect(() => {
     if (appState === 'GAME' && spGame.gameState.isMultiplayer && mp.room?.hostId === mp.playerId) {
-      // Throttle/Condition: Only sync when not in the middle of a vital animation
-      if (!spGame.isProcessing && spGame.gameState.phase !== 'RESOLVING') {
+      // Throttle/Condition: Only sync when not in the middle of a vital animation and not in GAME_OVER phase
+      if (!spGame.isProcessing && spGame.gameState.phase !== 'RESOLVING' && spGame.gameState.phase !== 'GAME_OVER') {
         mp.sendAction(mp.room.id, {
           type: 'SYNC_STATE',
           playerState: spGame.player,
@@ -1122,7 +1204,19 @@ export default function App() {
         </div>
       )}
 
-      {settings.debugMode && appState === 'GAME' && spGame.gameState.phase !== 'BOOT' && spGame.gameState.phase !== 'INTRO' && (!spGame.gameState.isMultiplayer || spGame.playerName.toLowerCase() === 'aadish') && (
+      {settings.debugMode && appState === 'GAME' && spGame.gameState.phase !== 'BOOT' && spGame.gameState.phase !== 'INTRO' && (() => {
+        if (!spGame.gameState.isMultiplayer) return true;
+        try {
+          const loggedInUser = localStorage.getItem('aadish_roulette_logged_in_user');
+          if (loggedInUser) {
+            const u = JSON.parse(loggedInUser);
+            if (u.username?.toLowerCase() === (import.meta.env.VITE_DEV_USERNAME || 'aadish').toLowerCase()) {
+              return true;
+            }
+          }
+        } catch (e) {}
+        return spGame.playerName.toLowerCase() === 'aadish';
+      })() && (
         <DebugOverlay
           gameState={spGame.gameState}
           player={spGame.player}

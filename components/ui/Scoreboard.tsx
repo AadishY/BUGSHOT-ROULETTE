@@ -26,15 +26,20 @@ const getMatchCodename = (index: number, isHardMode: boolean): string => {
 
 interface ScoreboardProps {
     onClose: () => void;
+    stats?: GameStats;
 }
 
-export const Scoreboard: React.FC<ScoreboardProps> = ({ onClose }) => {
+export const Scoreboard: React.FC<ScoreboardProps> = ({ onClose, stats: initialStats }) => {
     const [stats, setStats] = useState<GameStats | null>(null);
     const [selectedMPMatch, setSelectedMPMatch] = useState<any>(null);
 
     useEffect(() => {
-        setStats(getStoredStats());
-    }, []);
+        if (initialStats) {
+            setStats(initialStats);
+        } else {
+            setStats(getStoredStats());
+        }
+    }, [initialStats]);
 
     if (!stats) return null;
 

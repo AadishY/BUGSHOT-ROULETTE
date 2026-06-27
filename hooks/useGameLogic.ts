@@ -1193,7 +1193,7 @@ export const useGameLogic = () => {
     setIsProcessing(false);
   };
 
-  const selectTarotCard = async (index: number) => {
+  const selectTarotCard = async (index: number, cardRandomsOverride?: any) => {
     if (gameStateRef.current.selectedCardIndex !== null && gameStateRef.current.selectedCardIndex !== undefined) return;
     
     setIsProcessing(true);
@@ -1302,7 +1302,9 @@ export const useGameLogic = () => {
 
     switch (chosenCard.name) {
       case 'The Magician': {
-        const item = getRandomItem(gameStateRef.current.isHardMode, turnOwner === 'DEALER');
+        const item = (cardRandomsOverride && cardRandomsOverride.magicianItem)
+          ? cardRandomsOverride.magicianItem
+          : getRandomItem(gameStateRef.current.isHardMode, turnOwner === 'DEALER');
         const setOwner = turnOwner === 'PLAYER' ? setPlayer : setDealer;
         const ownerItems = turnOwner === 'PLAYER' ? playerRef.current.items : dealerRef.current.items;
         
@@ -1341,13 +1343,15 @@ export const useGameLogic = () => {
           .map(x => x.idx);
         
         if (stealableIndices.length > 0) {
-          const randIdx = stealableIndices[Math.floor(Math.random() * stealableIndices.length)];
+          const randIdx = (cardRandomsOverride && cardRandomsOverride.moonIndex !== undefined)
+            ? cardRandomsOverride.moonIndex
+            : stealableIndices[Math.floor(Math.random() * stealableIndices.length)];
           const stolenItem = opponent.items[randIdx];
           
           setOpponent(p => {
             const items = [...p.items];
-            const idxInItems = items.indexOf(stolenItem);
-            if (idxInItems !== -1) items.splice(idxInItems, 1);
+            // Remove exactly at the index to prevent duplicate issues
+            items.splice(randIdx, 1);
             return { ...p, items };
           });
           
@@ -1371,7 +1375,10 @@ export const useGameLogic = () => {
         const idx = gameStateRef.current.currentShellIndex;
         if (idx < chamber.length) {
           if (chamber[idx] === 'BLANK') {
-            if (Math.random() < 0.5) {
+            const success = (cardRandomsOverride && cardRandomsOverride.hasOwnProperty('judgmentSuccess'))
+              ? cardRandomsOverride.judgmentSuccess
+              : (Math.random() < 0.5);
+            if (success) {
               chamber[idx] = 'LIVE';
               setGameState(prev => ({ ...prev, chamber }));
             }
@@ -1389,13 +1396,26 @@ export const useGameLogic = () => {
         const idx = gameStateRef.current.currentShellIndex;
         const remaining = chamber.slice(idx);
         if (remaining.length > 0) {
-          const shuffledRemaining = remaining.sort(() => Math.random() - 0.5);
-          for (let i = 0; i < shuffledRemaining.length; i++) {
-            chamber[idx + i] = shuffledRemaining[i];
+          if (cardRandomsOverride && cardRandomsOverride.wheelChamber) {
+            setGameState(prev => {
+              const liveCount = cardRandomsOverride.wheelChamber.slice(idx).filter((s: string) => s === 'LIVE').length;
+              const blankCount = cardRandomsOverride.wheelChamber.slice(idx).filter((s: string) => s === 'BLANK').length;
+              return {
+                ...prev,
+                chamber: cardRandomsOverride.wheelChamber,
+                liveCount,
+                blankCount
+              };
+            });
+          } else {
+            const shuffledRemaining = remaining.sort(() => Math.random() - 0.5);
+            for (let i = 0; i < shuffledRemaining.length; i++) {
+              chamber[idx + i] = shuffledRemaining[i];
+            }
+            const liveCount = chamber.slice(idx).filter(s => s === 'LIVE').length;
+            const blankCount = chamber.slice(idx).filter(s => s === 'BLANK').length;
+            setGameState(prev => ({ ...prev, chamber, liveCount, blankCount }));
           }
-          const liveCount = chamber.slice(idx).filter(s => s === 'LIVE').length;
-          const blankCount = chamber.slice(idx).filter(s => s === 'BLANK').length;
-          setGameState(prev => ({ ...prev, chamber, liveCount, blankCount }));
           setKnownShell(null);
           addLog("Ammo chamber reshuffled!", 'info');
           setOverlayText("🎡 WHEEL OF FORTUNE: SHUFFLED CHAMBER!");
@@ -1419,7 +1439,9 @@ export const useGameLogic = () => {
         const setOwner = turnOwner === 'PLAYER' ? setPlayer : setDealer;
         const ownerState = turnOwner === 'PLAYER' ? playerRef.current : dealerRef.current;
         if (ownerState.items.length > 0) {
-          const randIdx = Math.floor(Math.random() * ownerState.items.length);
+          const randIdx = (cardRandomsOverride && cardRandomsOverride.deathIndex !== undefined)
+            ? cardRandomsOverride.deathIndex
+            : Math.floor(Math.random() * ownerState.items.length);
           const destroyedItem = ownerState.items[randIdx];
           setOwner(p => {
             const items = [...p.items];
@@ -1441,7 +1463,9 @@ export const useGameLogic = () => {
         const destroyableItems = opponentState.items.filter(i => i !== null && i !== 'TOTEM');
         
         if (destroyableItems.length > 0) {
-          const randIdx = Math.floor(Math.random() * destroyableItems.length);
+          const randIdx = (cardRandomsOverride && cardRandomsOverride.towerIndex !== undefined)
+            ? cardRandomsOverride.towerIndex
+            : Math.floor(Math.random() * destroyableItems.length);
           const destroyedItem = destroyableItems[randIdx];
           setOpponent(p => {
             const items = [...p.items];

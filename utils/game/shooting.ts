@@ -562,11 +562,18 @@ export const performShot = async (
 
     const ownerPhase = nextOwner === 'PLAYER' ? 'PLAYER_TURN' : 'DEALER_TURN';
     setGameState(prev => ({ ...prev, turnOwner: nextOwner, phase: ownerPhase, lastTurnWasSkipped: skipped }));
-    setCameraView(nextOwner === 'PLAYER' ? 'PLAYER' : 'DEALER');
-    // Originally setCameraView(nextOwner === 'PLAYER' ? 'PLAYER' : 'PLAYER'); // Wait, why both PLAYER?
-    // Original code: setCameraView(nextOwner === 'PLAYER' ? 'PLAYER' : 'PLAYER'); 
-    // Yes, originally it forced PLAYER view even if dealer turn, maybe because DealerAI handles view switching? 
-    // Or maybe it's a bug/feature. I'll keep it as is.
+    
+    if (skipped) {
+        if (nextOwner === 'PLAYER') {
+            setCameraView('GUN');
+            setAimTarget('CHOOSING');
+        } else {
+            setCameraView('DEALER_GUN');
+            setAimTarget('IDLE');
+        }
+    } else {
+        setCameraView(nextOwner === 'PLAYER' ? 'PLAYER' : 'DEALER');
+    }
 
     if (turnChanged) {
         if (shooter === 'PLAYER') setPlayer(p => ({ ...p, isFlashbanged: false }));
