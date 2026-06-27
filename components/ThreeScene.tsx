@@ -310,7 +310,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
             if (sceneRef.current) {
                 const { scene, camera } = sceneRef.current;
                 const tempV = new THREE.Vector3();
-                const opponentEl = document.getElementById('nametag-opponent');
+                const tagsList: { name: string, x: number, y: number, visible: boolean }[] = [];
 
                 scene.traverse((obj) => {
                     if (obj.name === 'DEALER') {
@@ -321,24 +321,25 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
                             tempV.y += 2.4;
                             tempV.project(camera);
 
-                            const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
-                            const y = (tempV.y * -0.5 + 0.5) * window.innerHeight;
+                            const x = (tempV.x * 0.5 + 0.5) * 100;
+                            const y = (tempV.y * -0.5 + 0.5) * 100;
 
                             // Visible if in front of screen plane
                             const visible = tempV.z <= 1.0;
 
-                            if (opponentEl) {
-                                if (visible) {
-                                    opponentEl.style.left = `${x}px`;
-                                    opponentEl.style.top = `${y}px`;
-                                    opponentEl.style.display = 'block';
-                                } else {
-                                    opponentEl.style.display = 'none';
-                                }
-                            }
+                            tagsList.push({
+                                name: propsRef.current.gameState.opponentName || 'OPPONENT',
+                                x,
+                                y,
+                                visible
+                            });
                         }
                     }
                 });
+
+                if (propsRef.current.onUpdateNameTags) {
+                    propsRef.current.onUpdateNameTags(tagsList);
+                }
             }
         };
 
@@ -492,7 +493,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
             }
             if (containerRef.current) containerRef.current.innerHTML = '';
         };
-    }, [gameState.isMultiplayer, settings.ultraPerformance, settings.balancedPerformance]); // Rebuild scene when switching SP/MP or toggling performance profiles
+    }, [gameState.isMultiplayer, settings.ultraPerformance, settings.balancedPerformance, isPaused]); // Rebuild scene when switching SP/MP, toggling performance profiles, or unpausing the game
 
     // Separate effect for Pixel Scale / Resolution updates (No Rebuild)
     useEffect(() => {

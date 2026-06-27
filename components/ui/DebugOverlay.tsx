@@ -14,6 +14,7 @@ interface DebugOverlayProps {
     setCameraView?: (view: any) => void;
     onClose?: () => void;
     processItemEffect?: (user: TurnOwner, item: ItemType) => Promise<boolean>;
+    onSyncDebugState?: (type: 'PLAYER' | 'DEALER' | 'GAMESTATE', state: any) => void;
 }
 
 export const DebugOverlay: React.FC<DebugOverlayProps> = ({
@@ -26,7 +27,8 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
     selectTarotCard,
     setCameraView,
     onClose,
-    processItemEffect
+    processItemEffect,
+    onSyncDebugState
 }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [activeTab, setActiveTab] = useState<'chamber' | 'items' | 'status' | 'tarot'>('chamber');
@@ -64,12 +66,14 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
             newChamber[index] = newChamber[index] === 'LIVE' ? 'BLANK' : 'LIVE';
             const liveCount = newChamber.filter(s => s === 'LIVE').length;
             const blankCount = newChamber.filter(s => s === 'BLANK').length;
-            return {
+            const next = {
                 ...prev,
                 chamber: newChamber,
                 liveCount,
                 blankCount
             };
+            if (onSyncDebugState) onSyncDebugState('GAMESTATE', next);
+            return next;
         });
     };
 
@@ -78,12 +82,14 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
             const newChamber = prev.chamber.map(() => type);
             const liveCount = type === 'LIVE' ? prev.chamber.length : 0;
             const blankCount = type === 'BLANK' ? prev.chamber.length : 0;
-            return {
+            const next = {
                 ...prev,
                 chamber: newChamber,
                 liveCount,
                 blankCount
             };
+            if (onSyncDebugState) onSyncDebugState('GAMESTATE', next);
+            return next;
         });
     };
 
@@ -92,12 +98,14 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
             const newChamber = prev.chamber.map(() => Math.random() > 0.5 ? 'LIVE' : 'BLANK');
             const liveCount = newChamber.filter(s => s === 'LIVE').length;
             const blankCount = newChamber.filter(s => s === 'BLANK').length;
-            return {
+            const next = {
                 ...prev,
                 chamber: newChamber,
                 liveCount,
                 blankCount
             };
+            if (onSyncDebugState) onSyncDebugState('GAMESTATE', next);
+            return next;
         });
     };
 
@@ -106,10 +114,12 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
         const setter = target === 'player' ? setPlayer : setDealer;
         setter(prev => {
             if (prev.items.length >= 8) return prev; // Limit to 8
-            return {
+            const next = {
                 ...prev,
                 items: [...prev.items, item]
             };
+            if (onSyncDebugState) onSyncDebugState(target === 'player' ? 'PLAYER' : 'DEALER', next);
+            return next;
         });
     };
 
@@ -118,16 +128,22 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
         setter(prev => {
             const newItems = [...prev.items];
             newItems.splice(index, 1);
-            return {
+            const next = {
                 ...prev,
                 items: newItems
             };
+            if (onSyncDebugState) onSyncDebugState(target === 'player' ? 'PLAYER' : 'DEALER', next);
+            return next;
         });
     };
 
     const clearItems = (target: 'player' | 'dealer') => {
         const setter = target === 'player' ? setPlayer : setDealer;
-        setter(prev => ({ ...prev, items: [] }));
+        setter(prev => {
+            const next = { ...prev, items: [] };
+            if (onSyncDebugState) onSyncDebugState(target === 'player' ? 'PLAYER' : 'DEALER', next);
+            return next;
+        });
     };
 
     // --- Health Cheats ---
@@ -136,16 +152,22 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
         setter(prev => {
             const newHp = Math.min(prev.maxHp, Math.max(0, prev.hp + amount));
             if (newHp === 0) {
-                setGameState(g => ({
-                    ...g,
-                    phase: 'GAME_OVER',
-                    winner: target === 'player' ? 'DEALER' : 'PLAYER'
-                }));
+                setGameState(g => {
+                    const nextG = {
+                        ...g,
+                        phase: 'GAME_OVER' as any,
+                        winner: (target === 'player' ? 'DEALER' : 'PLAYER') as any
+                    };
+                    if (onSyncDebugState) onSyncDebugState('GAMESTATE', nextG);
+                    return nextG;
+                });
             }
-            return {
+            const next = {
                 ...prev,
                 hp: newHp
             };
+            if (onSyncDebugState) onSyncDebugState(target === 'player' ? 'PLAYER' : 'DEALER', next);
+            return next;
         });
     };
 
@@ -154,29 +176,39 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
         setter(prev => {
             const newMax = Math.max(1, prev.maxHp + amount);
             const newHp = Math.min(newMax, prev.hp);
-            return {
+            const next = {
                 ...prev,
                 maxHp: newMax,
                 hp: newHp
             };
+            if (onSyncDebugState) onSyncDebugState(target === 'player' ? 'PLAYER' : 'DEALER', next);
+            return next;
         });
     };
 
     // --- Game flow cheats ---
     const setWinnerInstantly = (winner: TurnOwner) => {
-        setGameState(prev => ({
-            ...prev,
-            phase: 'GAME_OVER',
-            winner
-        }));
+        setGameState(prev => {
+            const next = {
+                ...prev,
+                phase: 'GAME_OVER' as any,
+                winner
+            };
+            if (onSyncDebugState) onSyncDebugState('GAMESTATE', next);
+            return next;
+        });
     };
 
     const togglePhase = () => {
-        setGameState(prev => ({
-            ...prev,
-            phase: prev.phase === 'PLAYER_TURN' ? 'DEALER_TURN' : 'PLAYER_TURN',
-            turnOwner: prev.phase === 'PLAYER_TURN' ? 'DEALER' : 'PLAYER'
-        }));
+        setGameState(prev => {
+            const next = {
+                ...prev,
+                phase: (prev.phase === 'PLAYER_TURN' ? 'DEALER_TURN' : 'PLAYER_TURN') as any,
+                turnOwner: (prev.phase === 'PLAYER_TURN' ? 'DEALER' : 'PLAYER') as any
+            };
+            if (onSyncDebugState) onSyncDebugState('GAMESTATE', next);
+            return next;
+        });
     };
 
     const triggerTarotCardPower = async (cardName: string) => {
@@ -185,7 +217,7 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
         }
         setGameState(prev => ({
             ...prev,
-            phase: 'CARD_SELECT',
+            phase: 'CARD_SELECT' as any,
             deckCards: [{ name: cardName as any, power: 'Debug power' }],
             selectedCardIndex: null
         }));

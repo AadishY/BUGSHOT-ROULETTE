@@ -286,6 +286,7 @@ const InventoryComponent: React.FC<InventoryProps> = ({ player, dealer, gameStat
                         >
                             <button
                                 onClick={() => {
+                                    if (isUsageDisabled) return;
                                     if (isMobileView) {
                                         if (selectedIdx === idx) {
                                             onUseItem(idx);

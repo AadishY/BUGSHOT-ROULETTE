@@ -536,6 +536,26 @@ export default function App() {
               // @ts-ignore
               spGame.startRound(false, false, undefined, action.chamber, pItems, dItems, clientNextTurn);
               break;
+            case 'DEBUG_SYNC_PLAYER':
+              spGame.setDealer(action.player);
+              break;
+            case 'DEBUG_SYNC_DEALER':
+              spGame.setPlayer(action.dealer);
+              break;
+            case 'DEBUG_SYNC_GAMESTATE':
+              const invGameState = { ...action.gameState };
+              if (action.gameState.turnOwner) {
+                invGameState.turnOwner = action.gameState.turnOwner === 'PLAYER' ? 'DEALER' : 'PLAYER';
+              }
+              if (action.gameState.phase) {
+                if (action.gameState.phase === 'PLAYER_TURN') invGameState.phase = 'DEALER_TURN';
+                else if (action.gameState.phase === 'DEALER_TURN') invGameState.phase = 'PLAYER_TURN';
+              }
+              if (action.gameState.winner) {
+                invGameState.winner = action.gameState.winner === 'PLAYER' ? 'DEALER' : 'PLAYER';
+              }
+              spGame.setGameState(invGameState);
+              break;
             case 'SYNC_STATE':
               // Deep sync if host tells us the ground truth
               // CRITICAL: We must invert the perspective for the remote player
@@ -1227,6 +1247,17 @@ export default function App() {
           selectTarotCard={spGame.selectTarotCard}
           setCameraView={spGame.setCameraView}
           processItemEffect={spGame.processItemEffect}
+          onSyncDebugState={(type, state) => {
+            if (appState === 'GAME' && spGame.gameState.isMultiplayer) {
+              if (type === 'PLAYER') {
+                mp.sendAction(mp.room.id, { type: 'DEBUG_SYNC_PLAYER', player: state });
+              } else if (type === 'DEALER') {
+                mp.sendAction(mp.room.id, { type: 'DEBUG_SYNC_DEALER', dealer: state });
+              } else if (type === 'GAMESTATE') {
+                mp.sendAction(mp.room.id, { type: 'DEBUG_SYNC_GAMESTATE', gameState: state });
+              }
+            }
+          }}
         />
       )}
 
