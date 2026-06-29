@@ -321,8 +321,8 @@ export const initThreeScene = (container: HTMLElement, props: any): SceneContext
             dealerGroup.name = 'DEALER';
         }
 
-        // Reduce fog so the head models are clearly visible in multiplayer
-        if (scene.fog instanceof THREE.FogExp2) scene.fog.density = 0.008;
+        // Greatly reduce fog so realistic head scans are clearly visible in multiplayer
+        if (scene.fog instanceof THREE.FogExp2) scene.fog.density = 0.003;
 
     } else if (isThreePlayer && props.gameState?.multiplayerState?.players) {
         const players = props.gameState.multiplayerState.players;
@@ -352,7 +352,7 @@ export const initThreeScene = (container: HTMLElement, props: any): SceneContext
             dealerGroup.name = 'DEALER';
         }
 
-        if (scene.fog instanceof THREE.FogExp2) scene.fog.density = 0.008;
+        if (scene.fog instanceof THREE.FogExp2) scene.fog.density = 0.003;
 
     } else if (isMP) {
         const opponentName = props.gameState?.opponentName || 'OPPONENT';
@@ -361,15 +361,15 @@ export const initThreeScene = (container: HTMLElement, props: any): SceneContext
             opponentName, 4, 4, getModelForSeat('dealer', remotePlayer?.id));
         dealerGroup.name = 'DEALER'; // Keep 'DEALER' for animation logic compatibility
 
-        if (scene.fog instanceof THREE.FogExp2) scene.fog.density = 0.008;
+        if (scene.fog instanceof THREE.FogExp2) scene.fog.density = 0.003;
 
     } else {
         dealerGroup = createDealerModel(scene, props.settings?.debugHeadModel ?? 'DEFAULT');
 
-        // Reduce global fog density when a non-default head model is active so it isn't obscured
+        // Greatly reduce global fog density for non-default head scans so they aren't obscured
         if (props.settings?.debugHeadModel && props.settings.debugHeadModel !== 'DEFAULT') {
             if (scene.fog instanceof THREE.FogExp2) {
-                scene.fog.density = 0.008;
+                scene.fog.density = 0.003;
             }
         }
     }

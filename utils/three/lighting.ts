@@ -11,8 +11,8 @@ export const setupLighting = (scene: THREE.Scene, settings?: GameSettings) => {
     const isMobile = device === 'mobile' || !!settings?.ultraPerformance || !!settings?.balancedPerformance;
     const isTablet = device === 'tablet';
 
-    // Slight fog for depth - bit thicker for atmosphere
-    scene.fog = new THREE.FogExp2(0x0a0a0a, 0.025);
+    // Slight fog for depth — reduced base density so realistic head scans aren't obscured
+    scene.fog = new THREE.FogExp2(0x0a0a0a, 0.012);
 
     // Reduced ambient for high contrast - boost ambient slightly in Potato mode to prevent pitch blackness
     const ambientIntensity = settings?.ultraPerformance 
