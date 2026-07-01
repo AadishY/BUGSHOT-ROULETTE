@@ -76,29 +76,18 @@ export const getStoredStats = (): GameStats => {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-            const parsed = JSON.parse(saved);
-            // Storage migration: ensure matchHistory exists
-            if (!parsed.matchHistory) parsed.matchHistory = [];
-            if (parsed.shotsHit === undefined) parsed.shotsHit = 0;
-            return parsed;
+            const parsed = JSON.parse(saved) || {};
+            return {
+                ...emptyStats(),
+                ...parsed,
+                matchHistory: Array.isArray(parsed.matchHistory) ? parsed.matchHistory : [],
+                shotsHit: parsed.shotsHit ?? 0,
+            };
         }
     } catch (e) {
         console.error("Failed to load stats", e);
     }
-    return {
-        wins: 0,
-        losses: 0,
-        totalRounds: 0,
-        shotsFired: 0,
-        shotsHit: 0,
-        selfShots: 0,
-        damageDealt: 0,
-        itemsUsed: 0,
-        mostUsedItem: 'NONE',
-        highestRound: 0,
-        itemPoints: 0,
-        matchHistory: []
-    };
+    return emptyStats();
 };
 
 export const calculateMatchScore = (stats: MatchStats): number => {
@@ -202,9 +191,16 @@ export const saveGameStats = async (matchStats: MatchStats): Promise<GameStats> 
         totalItemsMatch += count;
     });
     current.itemsUsed += totalItemsMatch;
-
     current.highestRound = Math.max(current.highestRound, matchStats.roundsSurvived);
     current.itemPoints += totalItemsMatch * 15;
+
+    const topItem = Object.entries(matchStats.itemsUsed).reduce(
+        (best, [item, count]) => count > best.count ? { item, count } : best,
+        { item: current.mostUsedItem || 'NONE', count: 0 }
+    );
+    if (topItem.count > 0) {
+        current.mostUsedItem = topItem.item;
+    }
 
     // Add History
     if (!current.matchHistory) current.matchHistory = [];
@@ -215,9 +211,7 @@ export const saveGameStats = async (matchStats: MatchStats): Promise<GameStats> 
         isMultiplayer: Boolean(matchStats.isMultiplayer),
         mpPlayers: matchStats.mpPlayers || []
     };
-    current.matchHistory.unshift(historyEntry);
-    // Keep last 20 games
-    if (current.matchHistory.length > 20) current.matchHistory.pop();
+    current.matchHistory = [historyEntry, ...current.matchHistory].slice(0, 20);
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
 

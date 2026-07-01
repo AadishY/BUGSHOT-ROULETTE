@@ -123,6 +123,7 @@ export const GameUI: React.FC<GameUIProps> = ({
     const [unreadCount, setUnreadCount] = useState(0);
     const [pendingItemIndex, setPendingItemIndex] = useState<number | null>(null);
     const prevMsgLength = useRef(messages.length);
+    const fullscreenRequestedRef = useRef(false);
 
     const [isStickersOpen, setIsStickersOpen] = useState(false);
     const [activeStickers, setActiveStickers] = useState<{ id: string; sender: string; color: string; filename: string }[]>([]);
@@ -201,11 +202,24 @@ export const GameUI: React.FC<GameUIProps> = ({
     const handleStartGame = (hardMode?: boolean) => {
         if (inputName.trim()) {
             if (onUpdateName) onUpdateName(inputName.trim());
-            try {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().catch(() => { });
+
+            if (!fullscreenRequestedRef.current && document.documentElement?.requestFullscreen) {
+                fullscreenRequestedRef.current = true;
+                const requestFullscreen = () => {
+                    try {
+                        if (!document.fullscreenElement) {
+                            void document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+                        }
+                    } catch (e) {}
+                };
+
+                if (typeof window !== 'undefined') {
+                    window.setTimeout(requestFullscreen, 80);
+                } else {
+                    requestFullscreen();
                 }
-            } catch (e) { }
+            }
+
             onStartGame(inputName.trim(), hardMode);
         }
     };

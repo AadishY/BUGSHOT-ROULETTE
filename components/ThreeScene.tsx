@@ -205,31 +205,26 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
                 sceneRef.current = context;
                 updateCameraResponsive();
 
-                // Warm up all shaders dynamically to prevent freezes when items/gun/effects first appear
+                // Warm up shaders later, after the first frame, so startup feels snappier.
                 try {
                     const renderer = context.renderer;
                     const scene = context.scene;
                     const camera = context.camera;
-
-                    const invisibleObjects: THREE.Object3D[] = [];
-                    scene.traverse((obj) => {
-                        if (obj instanceof THREE.Mesh || obj instanceof THREE.Points || obj instanceof THREE.Group) {
-                            if (!obj.visible) {
-                                obj.visible = true;
-                                invisibleObjects.push(obj);
-                            }
+                    const warmup = () => {
+                        if (!sceneRef.current || sceneRef.current.renderer !== renderer) return;
+                        try {
+                            renderer.compile(scene, camera);
+                        } catch (e) {
+                            console.warn('WebGL warmup deferred:', e);
                         }
-                    });
-
-                    // Force compilation of all WebGL programs in the scene graph
-                    renderer.compile(scene, camera);
-
-                    // Restore initial visibility state
-                    invisibleObjects.forEach((obj) => {
-                        obj.visible = false;
-                    });
+                    };
+                    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+                        (window as Window & typeof globalThis & { requestIdleCallback: (cb: IdleRequestCallback, options?: IdleRequestOptions) => number }).requestIdleCallback(() => warmup(), { timeout: 1000 });
+                    } else {
+                        window.setTimeout(warmup, 250);
+                    }
                 } catch (e) {
-                    console.error("WebGL Warmup Error:", e);
+                    console.error('WebGL Warmup Error:', e);
                 }
             }
         };
@@ -282,6 +277,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
 
             const phase = propsRef.current.gameState?.phase;
             const isInMenu = phase === 'BOOT' || phase === 'INTRO' || phase === 'LOAD';
+            const frameStart = performance.now();
 
             const isUltra = !!propsRef.current.settings?.ultraPerformance;
             const isBalanced = !!propsRef.current.settings?.balancedPerformance;
@@ -337,10 +333,19 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
 
             time += delta;
 
+            const updateStart = performance.now();
             updateScene(sceneRef.current, propsRef.current, time, delta);
+            const frameDuration = performance.now() - updateStart;
+            const frameBudgetMs = (currentTargetFPS > 0 ? 1000 / currentTargetFPS : 16.67) * 1.2;
+            if (sceneRef.current && frameDuration > frameBudgetMs) {
+                sceneRef.current.scene.userData.performanceMode = true;
+            } else if (sceneRef.current && frameDuration < frameBudgetMs * 0.6) {
+                sceneRef.current.scene.userData.performanceMode = false;
+            }
 
             if (sceneRef.current && propsRef.current.onUpdateNameTags) {
-                if (++nameTagFrameCounter % nameTagUpdateInterval !== 0) {
+                const shouldReduceNameTags = !!sceneRef.current.scene.userData.performanceMode;
+                if (++nameTagFrameCounter % (shouldReduceNameTags ? 4 : nameTagUpdateInterval) !== 0) {
                     return;
                 }
 
@@ -479,23 +484,31 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
             updateHoverIndex();
         };
 
+        const clickLock = { lastTime: 0 };
         const handleClick = (e?: MouseEvent | TouchEvent) => {
+            const now = performance.now();
+            if (now - clickLock.lastTime < 100) {
+                return;
+            }
+            clickLock.lastTime = now;
+
             if (!sceneRef.current) return;
 
             const currentProps = propsRef.current;
             const currentGameState = currentProps.gameState;
 
             if (currentGameState.phase === 'CARD_SELECT' && currentGameState.turnOwner === 'PLAYER' && currentGameState.selectedCardIndex === null) {
-                if (sceneRef.current.itemDeckCards) {
+                const itemDeckCards = sceneRef.current.itemDeckCards;
+                if (itemDeckCards && itemDeckCards.length > 0) {
                     sceneRef.current.raycaster.setFromCamera(sceneRef.current.mouse, sceneRef.current.camera);
-                    const intersects = sceneRef.current.raycaster.intersectObjects(sceneRef.current.itemDeckCards, true);
+                    const intersects = sceneRef.current.raycaster.intersectObjects(itemDeckCards, true);
                     if (intersects.length > 0) {
                         let parentGroup: THREE.Object3D | null = intersects[0].object;
                         while (parentGroup && !parentGroup.name.startsWith('ITEM_DECK_CARD_')) {
                             parentGroup = parentGroup.parent;
                         }
                         if (parentGroup) {
-                            const idx = sceneRef.current.itemDeckCards.indexOf(parentGroup as THREE.Group);
+                            const idx = itemDeckCards.indexOf(parentGroup as THREE.Group);
                             if (idx !== -1 && currentProps.onCardClick) {
                                 currentProps.onCardClick(idx);
                             }
@@ -505,11 +518,13 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
                 return;
             }
 
-            // Raycast from current mouse pos
             sceneRef.current.raycaster.setFromCamera(sceneRef.current.mouse, sceneRef.current.camera);
-            const intersects = sceneRef.current.raycaster.intersectObjects(sceneRef.current.gunGroup.children);
-            if (intersects.find(i => i.object.userData.type === 'GUN') && currentProps.onGunClick) {
-                currentProps.onGunClick();
+            const gunHitTargets = sceneRef.current.gunGroup.children;
+            if (gunHitTargets && gunHitTargets.length > 0) {
+                const intersects = sceneRef.current.raycaster.intersectObjects(gunHitTargets, true);
+                if (intersects.length > 0 && intersects.some(i => i.object.userData.type === 'GUN') && currentProps.onGunClick) {
+                    currentProps.onGunClick();
+                }
             }
         };
 
@@ -554,8 +569,15 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
             if (sceneRef.current) {
                 cleanScene(sceneRef.current.scene);
                 try {
-                    sceneRef.current.renderer.dispose();
-                } catch (e) {}
+                    const renderer = sceneRef.current.renderer;
+                    const webglContext = (renderer.getContext && renderer.getContext()) as WebGLRenderingContext | null;
+                    if (webglContext && !webglContext.isContextLost()) {
+                        (renderer as THREE.WebGLRenderer & { forceContextLoss?: () => void }).forceContextLoss?.();
+                    }
+                    renderer.dispose();
+                } catch (e) {
+                    console.warn('Error disposing renderer during cleanup:', e);
+                }
                 sceneRef.current = null;
             }
             if (containerRef.current) containerRef.current.innerHTML = '';

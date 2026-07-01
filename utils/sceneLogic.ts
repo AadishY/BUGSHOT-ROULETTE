@@ -12,6 +12,26 @@ export function updateScene(context: SceneContext, props: SceneProps, time: numb
     const { turnOwner, aimTarget, cameraView, settings, animState, gameState, player, dealer } = props;
     const { phase } = gameState;
     const isMobile = scene.userData.isMobile;
+    const reduceEffects = !!scene.userData.performanceMode;
+    const hasActiveVisualEffects = !!(
+        animState.triggerGlass ||
+        animState.triggerDrink ||
+        animState.triggerPhone ||
+        animState.triggerInverter ||
+        animState.triggerRemote ||
+        animState.triggerAdrenaline ||
+        animState.triggerLuckycharm ||
+        animState.triggerDeckCard ||
+        animState.triggerTotem ||
+        animState.triggerMirror ||
+        animState.triggerCuff ||
+        animState.triggerSparks ||
+        animState.playerHit ||
+        animState.dealerHit ||
+        animState.player3Hit ||
+        animState.isSawing
+    );
+    const shouldUpdateHeavyEffects = !reduceEffects || hasActiveVisualEffects;
 
     const MAX_DT = 0.05;
     const dt = Math.max(0.0, Math.min(delta || 0.016, MAX_DT)); // Clamp DT to prevent huge jumps/skips and negative values
@@ -832,7 +852,9 @@ export function updateScene(context: SceneContext, props: SceneProps, time: numb
     }
 
     // --- ITEM ANIMATIONS ---
-    updateItemAnimations(context, props, time, dt);
+    if (shouldUpdateHeavyEffects) {
+        updateItemAnimations(context, props, time, dt);
+    }
 
     // Muzzle Flash Randomness — index loop to avoid per-frame closure alloc
     if (muzzleFlash.visible) {
@@ -846,16 +868,22 @@ export function updateScene(context: SceneContext, props: SceneProps, time: numb
         }
     }
 
-    updateBlood(bloodParticles, dt);
+    if (shouldUpdateHeavyEffects) {
+        updateBlood(bloodParticles, dt);
+    }
 
     if (animState.playerHit || animState.dealerHit || animState.player3Hit) {
         bloodParticles.visible = true;
     }
 
-    updateSparks(sparkParticles, dt);
-    updateBullet(bulletMesh, dt);
+    if (shouldUpdateHeavyEffects) {
+        updateSparks(sparkParticles, dt);
+    }
+    if (!reduceEffects || bulletMesh.visible) {
+        updateBullet(bulletMesh, dt);
+    }
 
-    if (shellCasings && shellVelocities) {
+    if (shellCasings && shellVelocities && shouldUpdateHeavyEffects) {
         for (let i = 0; i < shellCasings.length; i++) {
             updateShell(shellCasings[i], shellVelocities[i], time, dt);
         }

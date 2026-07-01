@@ -62,6 +62,7 @@ export const cleanScene = (scene: THREE.Scene) => {
     });
 
     scene.clear();
+    scene.userData = {};
 };
 
 export const initThreeScene = (container: HTMLElement, props: any): SceneContext | null => {

@@ -322,6 +322,22 @@ export const loginUser = async (username: string, passwordHash: string): Promise
     }
 };
 
+export const getUserStatsFromRedis = async (username: string): Promise<GameStats | null> => {
+    const cleanUsername = username.trim().toLowerCase();
+    if (!cleanUsername) return null;
+
+    const key = `aadishroulette:${cleanUsername}`;
+    try {
+        const existingDataStr = await executeRedisCommand(['GET', key]);
+        if (!existingDataStr) return null;
+        const userData: UserData = JSON.parse(existingDataStr);
+        return userData.stats || null;
+    } catch (err) {
+        console.error(`Failed to fetch stats from Redis for ${cleanUsername}:`, err);
+        return null;
+    }
+};
+
 export const saveUserStatsToRedis = async (username: string, stats: GameStats): Promise<boolean> => {
     const cleanUsername = username.trim().toLowerCase();
     const key = `aadishroulette:${cleanUsername}`;

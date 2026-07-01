@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X, Trophy, Activity, Target, Zap, Skull, Swords } from 'lucide-react';
 import { GameStats, getStoredStats } from '../../utils/statsManager';
+import { getUserStatsFromRedis } from '../../utils/redisService';
 import { audioManager } from '../../utils/audioManager';
 
 // Thematic codename pools for match history display
@@ -32,16 +33,114 @@ interface ScoreboardProps {
 export const Scoreboard: React.FC<ScoreboardProps> = ({ onClose, stats: initialStats }) => {
     const [stats, setStats] = useState<GameStats | null>(null);
     const [selectedMPMatch, setSelectedMPMatch] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (initialStats) {
-            setStats(initialStats);
-        } else {
-            setStats(getStoredStats());
-        }
+        const initializeStats = async () => {
+            setIsLoading(true);
+            setLoadError(null);
+            const loggedInUser = localStorage.getItem('aadish_roulette_logged_in_user');
+
+            if (!loggedInUser) {
+                setStats(initialStats || getStoredStats());
+                setIsLoading(false);
+                return;
+            }
+
+            try {
+                const userObj = JSON.parse(loggedInUser);
+                if (!userObj?.username) {
+                    setStats(initialStats || getStoredStats());
+                    setIsLoading(false);
+                    return;
+                }
+
+                const remoteStats = await getUserStatsFromRedis(userObj.username);
+                if (!remoteStats) {
+                    setLoadError('Unable to load latest remote stats.');
+                    setStats(null);
+                    setIsLoading(false);
+                    return;
+                }
+
+                setStats(remoteStats);
+                localStorage.setItem('aadish_roulette_stats_v1', JSON.stringify(remoteStats));
+            } catch (e) {
+                console.warn('Failed to refresh stats from Upstash:', e);
+                setLoadError('Unable to load latest remote stats.');
+                setStats(null);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        void initializeStats();
     }, [initialStats]);
 
-    if (!stats) return null;
+    if (isLoading) {
+        return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md pointer-events-auto p-4 animate-in fade-in duration-300">
+                <div className="bg-stone-950/90 border border-white/10 rounded-3xl p-8 text-center text-stone-100 shadow-[0_20px_60px_rgba(0,0,0,0.65)]">
+                    <div className="mb-4 text-lg font-black uppercase tracking-[0.35em]">SYNCING STATS</div>
+                    <div className="text-sm text-stone-400">Fetching latest stats from Upstash...</div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!stats) {
+        return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md pointer-events-auto p-4 animate-in fade-in duration-300">
+                <div className="bg-stone-950/90 border border-white/10 rounded-3xl p-8 text-center text-stone-100 shadow-[0_20px_60px_rgba(0,0,0,0.65)] max-w-sm">
+                    <div className="mb-4 text-lg font-black uppercase tracking-[0.35em]">REMOTE STATS ERROR</div>
+                    <div className="text-sm text-stone-400 mb-6">{loadError || 'Unable to load Upstash stats.'}</div>
+                    <button
+                        onClick={() => {
+                            audioManager.playSound('click');
+                            void (async () => {
+                                setIsLoading(true);
+                                setLoadError(null);
+                                const loggedInUser = localStorage.getItem('aadish_roulette_logged_in_user');
+                                if (!loggedInUser) {
+                                    setStats(initialStats || getStoredStats());
+                                    setIsLoading(false);
+                                    return;
+                                }
+                                try {
+                                    const userObj = JSON.parse(loggedInUser);
+                                    const remoteStats = await getUserStatsFromRedis(userObj.username);
+                                    if (!remoteStats) {
+                                        setLoadError('Unable to load latest remote stats.');
+                                        setStats(null);
+                                    } else {
+                                        setStats(remoteStats);
+                                        localStorage.setItem('aadish_roulette_stats_v1', JSON.stringify(remoteStats));
+                                    }
+                                } catch (err) {
+                                    setLoadError('Unable to load latest remote stats.');
+                                } finally {
+                                    setIsLoading(false);
+                                }
+                            })();
+                        }}
+                        className="px-4 py-2 bg-yellow-500 text-stone-950 font-bold rounded-xl hover:bg-yellow-400 transition-colors"
+                    >
+                        Retry
+                    </button>
+                    <button
+                        onClick={() => {
+                            audioManager.playSound('click');
+                            onClose();
+                        }}
+                        className="mt-3 px-4 py-2 bg-stone-900 text-stone-200 font-bold rounded-xl hover:bg-stone-800 transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const totalGames = stats.wins + stats.losses;
     const winRate = totalGames > 0 ? Math.round((stats.wins / totalGames) * 100) : 0;
