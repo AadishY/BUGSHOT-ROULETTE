@@ -2213,6 +2213,10 @@ export default function App() {
         </div>
       )}
 
+      {/* Tutorial Guide Modal */}
+      {isGuideOpen && (
+        <TutorialGuide onClose={() => setIsGuideOpen(false)} />
+      )}
 
       {/* Crisp HTML Player Name Tags (Multiplayer only) */}
       {appState === 'GAME' && spGame.gameState.isMultiplayer && nameTags.map((tag, i) => (
