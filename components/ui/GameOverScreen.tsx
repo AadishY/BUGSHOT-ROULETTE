@@ -48,37 +48,41 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onResetG
     const hasSavedRef = useRef(false);
 
     useEffect(() => {
-        if (matchData && !hasSavedRef.current) {
-            hasSavedRef.current = true;
-            
-            if (winner === 'PLAYER') {
-                matchData.result = 'WIN';
-            } else if (winner === 'DEALER') {
-                matchData.result = 'LOSS';
-            }
-
-            // Check if current user is developer (devs can save stats even with debug)
-            let isDeveloper = false;
-            try {
-                const loggedInUser = localStorage.getItem('aadish_roulette_logged_in_user');
-                if (loggedInUser) {
-                    const u = JSON.parse(loggedInUser);
-                    isDeveloper = u.username?.toLowerCase() === (import.meta.env.VITE_DEV_USERNAME || 'aadish').toLowerCase();
+        const persistStats = async () => {
+            if (matchData && !hasSavedRef.current) {
+                hasSavedRef.current = true;
+                
+                if (winner === 'PLAYER') {
+                    matchData.result = 'WIN';
+                } else if (winner === 'DEALER') {
+                    matchData.result = 'LOSS';
                 }
-            } catch (e) {}
 
-            if (isMultiplayer || !isDebugUsed || isDeveloper) {
-                saveGameStats(matchData);
-            } else {
-                console.log("Stats NOT saved: debug cheats used.");
+                // Check if current user is developer (devs can save stats even with debug)
+                let isDeveloper = false;
+                try {
+                    const loggedInUser = localStorage.getItem('aadish_roulette_logged_in_user');
+                    if (loggedInUser) {
+                        const u = JSON.parse(loggedInUser);
+                        isDeveloper = u.username?.toLowerCase() === (import.meta.env.VITE_DEV_USERNAME || 'aadish').toLowerCase();
+                    }
+                } catch (e) {}
+
+                if (isMultiplayer || !isDebugUsed || isDeveloper) {
+                    await saveGameStats(matchData);
+                } else {
+                    console.log("Stats NOT saved: debug cheats used.");
+                }
+                const score = calculateMatchScore(matchData);
+                setFinalScore(score);
+                setStats(getStoredStats());
+            } else if (!matchData) {
+                setStats(getStoredStats());
             }
-            const score = calculateMatchScore(matchData);
-            setFinalScore(score);
-            setStats(getStoredStats());
-        } else if (!matchData) {
-            setStats(getStoredStats());
-        }
-    }, []);
+        };
+
+        void persistStats();
+    }, [matchData, winner, isDebugUsed, isMultiplayer]);
 
     useEffect(() => {
         if (finalScore === 0) return;

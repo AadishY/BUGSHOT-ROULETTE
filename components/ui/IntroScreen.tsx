@@ -2,8 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import { Scoreboard } from './Scoreboard';
 import { Settings as SettingsIcon, HelpCircle, Trophy, ShieldAlert, Lock, User, Terminal, BookOpen, Crown, Shield, Skull, X, Crosshair, Swords, Activity, Award } from 'lucide-react';
 import { audioManager } from '../../utils/audioManager';
-import { loginUser, registerUser, getLeaderboard } from '../../utils/redisService';
+import { loginUser, registerUser, getLeaderboard, saveUserStatsToRedis } from '../../utils/redisService';
 import { GAME_VERSION } from '../../constants';
+import { getStoredStats, mergeGameStats } from '../../utils/statsManager';
 
 const AUTH_QUOTES = [
     "The odds are equal, the consequences are not.",
@@ -272,6 +273,14 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         window.location.reload();
     };
 
+    const syncStatsToAccount = async (username: string, remoteStats: any) => {
+        const localStats = getStoredStats();
+        const mergedStats = mergeGameStats(localStats, remoteStats);
+        localStorage.setItem('aadish_roulette_stats_v1', JSON.stringify(mergedStats));
+        await saveUserStatsToRedis(username, mergedStats);
+        return mergedStats;
+    };
+
     const handleLoginSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoginError('');
@@ -305,7 +314,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                 if (res.success && res.user) {
                     setLoginSuccess('IDENTITY VERIFIED');
                     localStorage.setItem('aadish_roulette_logged_in_user', JSON.stringify({ username: res.user.username }));
-                    localStorage.setItem('aadish_roulette_stats_v1', JSON.stringify(res.user.stats));
+                    await syncStatsToAccount(res.user.username, res.user.stats);
                     setLoggedInUser({ username: res.user.username });
                     setInputName(res.user.username.toUpperCase());
                     setTimeout(() => {
@@ -322,7 +331,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                 if (res.success && res.user) {
                     setLoginSuccess('CREDENTIALS SAVED');
                     localStorage.setItem('aadish_roulette_logged_in_user', JSON.stringify({ username: res.user.username }));
-                    localStorage.setItem('aadish_roulette_stats_v1', JSON.stringify(res.user.stats));
+                    await syncStatsToAccount(res.user.username, res.user.stats);
                     setLoggedInUser({ username: res.user.username });
                     setInputName(res.user.username.toUpperCase());
                     setTimeout(() => {
@@ -1009,6 +1018,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                             ) : (
                                 leaderboard.map((entry, idx) => {
                                     const winPercentage = Math.round((entry.wins / Math.max(1, entry.wins + entry.losses)) * 100);
+                                    const multiplayerMatchCount = (entry.stats?.matchHistory || []).filter((match: any) => match?.isMultiplayer).length;
                                     
                                     // Golden theme for rank 1, Silver for 2, Bronze for 3, Dark for rest
                                     const cardTheme = idx === 0 
@@ -1056,6 +1066,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                                     {entry.hardModeWins > 0 && (
                                                         <span className="text-amber-400 flex items-center gap-0.5 shrink-0" title="Hard Mode Wins">
                                                             <Skull size={10} className="text-red-500 animate-pulse animate-duration-1000 sm:w-[13px] sm:h-[13px]" />{entry.hardModeWins}
+                                                        </span>
+                                                    )}
+                                                    {multiplayerMatchCount > 0 && (
+                                                        <span className="text-cyan-400 flex items-center gap-0.5 shrink-0" title={`${multiplayerMatchCount} multiplayer matches`}>
+                                                            <Swords size={10} className="text-cyan-400 sm:w-[13px] sm:h-[13px]" />{multiplayerMatchCount}
                                                         </span>
                                                     )}
                                                 </div>

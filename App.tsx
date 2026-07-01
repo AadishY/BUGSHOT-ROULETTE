@@ -18,7 +18,7 @@ import { useMultiplayer } from './hooks/useMultiplayer';
 import { MultiplayerLobby } from './components/MultiplayerLobby';
 import { ChatBox } from './components/ChatBox';
 import { MultiplayerSelection } from './components/MultiplayerSelection';
-import { generateLootBatch } from './utils/game/inventory';
+import { generateLootBatch, resolveJackpotOutcome } from './utils/game/inventory';
 import { randomInt } from './utils/gameUtils';
 import { ShellType, ItemType, TurnOwner, AimTarget } from './types';
 
@@ -454,16 +454,9 @@ export default function App() {
         const shuffled = [...allTarotNames].sort(() => Math.random() - 0.5);
         deckCards = shuffled.slice(0, 6);
       } else if (item === 'JACKPOT') {
-        const rand = Math.random();
-        if (rand < 0.20) {
-          jackpotOutcome = 'JACKPOT';
-          if (mp.room) {
-            mp.sendMessage(mp.room.id, '[STICKER]:sticker9.gif');
-          }
-        } else if (rand < 0.50) {
-          jackpotOutcome = 'NORMAL';
-        } else {
-          jackpotOutcome = 'LOSE';
+        jackpotOutcome = resolveJackpotOutcome();
+        if (jackpotOutcome === 'JACKPOT' && mp.room) {
+          mp.sendMessage(mp.room.id, '[STICKER]:sticker9.gif');
         }
       } else if (item === 'CRUSHER') {
         if (isThreePlayer) {

@@ -32,6 +32,46 @@ export interface MatchStats {
 
 const STORAGE_KEY = 'aadish_roulette_stats_v1';
 
+const emptyStats = (): GameStats => ({
+    wins: 0,
+    losses: 0,
+    totalRounds: 0,
+    shotsFired: 0,
+    shotsHit: 0,
+    selfShots: 0,
+    damageDealt: 0,
+    itemsUsed: 0,
+    mostUsedItem: 'NONE',
+    highestRound: 0,
+    itemPoints: 0,
+    matchHistory: []
+});
+
+const createMatchHistorySignature = (entry: any): string => {
+    const normalizedItems = Object.entries(entry?.itemsUsed || {})
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([item, count]) => `${item}:${count}`)
+        .join('|');
+
+    const mpPlayers = Array.isArray(entry?.mpPlayers)
+        ? entry.mpPlayers.map((player: any) => `${player?.id || ''}:${player?.name || ''}:${player?.result || ''}`).join('~')
+        : '';
+
+    return [
+        entry?.timestamp ?? '',
+        entry?.result ?? '',
+        entry?.roundsSurvived ?? '',
+        entry?.shotsFired ?? '',
+        entry?.shotsHit ?? '',
+        entry?.damageDealt ?? '',
+        entry?.totalScore ?? '',
+        entry?.isHardMode ? 'hard' : 'normal',
+        entry?.isMultiplayer ? 'mp' : 'sp',
+        mpPlayers,
+        normalizedItems
+    ].join('|');
+};
+
 export const getStoredStats = (): GameStats => {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -94,7 +134,56 @@ export const calculateMatchScore = (stats: MatchStats): number => {
 
 import { saveUserStatsToRedis } from './redisService';
 
-export const saveGameStats = (matchStats: MatchStats) => {
+export const mergeGameStats = (localStats?: GameStats | null, remoteStats?: GameStats | null): GameStats => {
+    const base = localStats ? { ...emptyStats(), ...localStats } : emptyStats();
+    const incoming = remoteStats ? { ...emptyStats(), ...remoteStats } : emptyStats();
+
+    const mergedMatchHistory = [
+        ...(base.matchHistory || []),
+        ...(incoming.matchHistory || [])
+    ]
+        .filter((entry: any) => entry && typeof entry === 'object')
+        .reduce((acc: { seen: Set<string>; entries: any[] }, entry: any) => {
+            const signature = createMatchHistorySignature(entry);
+            if (!signature || acc.seen.has(signature)) {
+                return acc;
+            }
+            acc.seen.add(signature);
+            acc.entries.push(entry);
+            return acc;
+        }, { seen: new Set<string>(), entries: [] as any[] })
+        .entries.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0))
+        .slice(0, 20);
+
+    const usageTotals = new Map<string, number>();
+    mergedMatchHistory.forEach((entry: any) => {
+        Object.entries(entry.itemsUsed || {}).forEach(([item, count]) => {
+            const parsedCount = Number(count) || 0;
+            if (parsedCount > 0) {
+                usageTotals.set(item, (usageTotals.get(item) || 0) + parsedCount);
+            }
+        });
+    });
+
+    const mostUsedItem = [...usageTotals.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || base.mostUsedItem || incoming.mostUsedItem || 'NONE';
+
+    return {
+        wins: (base.wins || 0) + (incoming.wins || 0),
+        losses: (base.losses || 0) + (incoming.losses || 0),
+        totalRounds: (base.totalRounds || 0) + (incoming.totalRounds || 0),
+        shotsFired: (base.shotsFired || 0) + (incoming.shotsFired || 0),
+        shotsHit: (base.shotsHit || 0) + (incoming.shotsHit || 0),
+        selfShots: (base.selfShots || 0) + (incoming.selfShots || 0),
+        damageDealt: (base.damageDealt || 0) + (incoming.damageDealt || 0),
+        itemsUsed: (base.itemsUsed || 0) + (incoming.itemsUsed || 0),
+        mostUsedItem,
+        highestRound: Math.max(base.highestRound || 0, incoming.highestRound || 0),
+        itemPoints: (base.itemPoints || 0) + (incoming.itemPoints || 0),
+        matchHistory: mergedMatchHistory
+    };
+};
+
+export const saveGameStats = async (matchStats: MatchStats): Promise<GameStats> => {
     const current = getStoredStats();
 
     // Update Totals
@@ -119,10 +208,12 @@ export const saveGameStats = (matchStats: MatchStats) => {
 
     // Add History
     if (!current.matchHistory) current.matchHistory = [];
-    const historyEntry = {
+    const historyEntry: MatchStats = {
         ...matchStats,
         totalScore: calculateMatchScore(matchStats), // Ensure score is set with multiplier
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        isMultiplayer: Boolean(matchStats.isMultiplayer),
+        mpPlayers: matchStats.mpPlayers || []
     };
     current.matchHistory.unshift(historyEntry);
     // Keep last 20 games
@@ -130,15 +221,13 @@ export const saveGameStats = (matchStats: MatchStats) => {
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
 
-    // Async sync to Upstash Redis if user session is active
+    // Sync to Upstash Redis if user session is active
     const loggedInUser = localStorage.getItem('aadish_roulette_logged_in_user');
     if (loggedInUser) {
         try {
             const userObj = JSON.parse(loggedInUser);
             if (userObj && userObj.username) {
-                saveUserStatsToRedis(userObj.username, current).catch(err => {
-                    console.error("Failed to sync stats to Redis:", err);
-                });
+                await saveUserStatsToRedis(userObj.username, current);
             }
         } catch (e) {
             console.error("Error parsing logged-in user for Redis sync:", e);

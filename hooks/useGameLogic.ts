@@ -5,7 +5,7 @@ import { randomInt, wait } from '../utils/gameUtils';
 import * as ItemActions from '../utils/game/itemActions';
 import { audioManager } from '../utils/audioManager';
 import { performShot } from '../utils/game/shooting';
-import { distributeItems as distributeItemsAction, getRandomItem } from '../utils/game/inventory';
+import { distributeItems as distributeItemsAction, getRandomItem, resolveJackpotOutcome } from '../utils/game/inventory';
 import { MatchStats } from '../utils/statsManager';
 
 export const useGameLogic = () => {
@@ -1411,7 +1411,7 @@ export const useGameLogic = () => {
                 break;
 
             case 'JACKPOT':
-                const spinOutcome = jackpotOutcomeOverride || (Math.random() < 0.20 ? 'JACKPOT' : (Math.random() < 0.50 ? 'NORMAL' : 'LOSE'));
+                const spinOutcome = jackpotOutcomeOverride ?? resolveJackpotOutcome();
                 audioManager.playSound('slotmachine', { dimMusic: shouldDimMusic });
                 setAnim(p => ({ ...p, triggerJackpot: p.triggerJackpot + 1, jackpotResult: spinOutcome }));
                 addLog(`${userName.toUpperCase()} SPUN THE JACKPOT MACHINE`, 'info');
@@ -1648,22 +1648,12 @@ export const useGameLogic = () => {
         // Roll the jackpot outcome
         let outcome: 'JACKPOT' | 'NORMAL' | 'LOSE';
         
-        if (jackpotOutcomeOverride) {
+        if ((window as any).__debugJackpotForcedOutcome) {
+          outcome = (window as any).__debugJackpotForcedOutcome;
+        } else if (jackpotOutcomeOverride) {
           outcome = jackpotOutcomeOverride;
         } else {
-          const rand = Math.random();
-          // Allow forcing outcomes for debugging
-          if ((window as any).__debugJackpotForcedOutcome) {
-            outcome = (window as any).__debugJackpotForcedOutcome;
-          } else {
-            if (rand < 0.20) {
-              outcome = 'JACKPOT';
-            } else if (rand < 0.50) {
-              outcome = 'NORMAL';
-            } else {
-              outcome = 'LOSE';
-            }
-          }
+          outcome = resolveJackpotOutcome();
         }
 
         // Trigger animation

@@ -19,6 +19,12 @@ export const getCustomWeightedItem = (weights: Record<string, number>): ItemType
     return 'BEER';
 };
 
+export const resolveJackpotOutcome = (random: number = Math.random()): 'JACKPOT' | 'NORMAL' | 'LOSE' => {
+    if (random < 0.20) return 'JACKPOT';
+    if (random < 0.50) return 'NORMAL';
+    return 'LOSE';
+};
+
 type StateSetter<T> = React.Dispatch<React.SetStateAction<T>>;
 
 // From useGameLogic
