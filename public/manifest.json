@@ -50,7 +50,7 @@
   "screenshots": [
     {
       "src": "/image/preview-normalquality.jpg",
-      "sizes": "1920x1080",
+      "sizes": "1024x572",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Aadish Roulette Wide Gameplay"
