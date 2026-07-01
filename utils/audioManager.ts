@@ -9,6 +9,7 @@ class AudioManager {
     public musicVolume: number = 0.5;
     public sfxVolume: number = 0.7;
     private initialized: boolean = false;
+    private initializationPromise: Promise<void> | null = null;
     private activeDimmingCount: number = 0;
     private loadPromises: Promise<void>[] = [];
     private pendingMusic: string | null = null;
@@ -119,44 +120,58 @@ class AudioManager {
 
     // Call this on the first user interaction (e.g., clicking "ENTER" or anywhere on splash screen)
     public async initialize() {
-        if (this.initialized) return;
-
-        try {
-            await Promise.allSettled(this.loadPromises);
-
-            const allAudio = [
-                ...Object.values(this.sounds),
-                ...Object.values(this.music)
-            ];
-
-            const results = await Promise.allSettled(allAudio.map(async (s) => {
-                s.volume = 0;
-                s.muted = true;
-                try {
-                    await s.play();
-                } catch (error) {
-                    // Ignore autoplay prevention errors, we only want playback unlocking if possible.
-                }
-                s.pause();
-                s.currentTime = 0;
-                s.muted = false;
-            }));
-
-            const anySuccess = results.some(r => r.status === 'fulfilled');
-            this.isInitialized = anySuccess || allAudio.length === 0;
-
-            if (this.currentMusic && this.music[this.currentMusic]) {
-                const music = this.music[this.currentMusic];
-                this.applyMusicVolume();
-                music.play().catch(() => { });
-            } else if (this.pendingMusic) {
-                const queued = this.pendingMusic;
-                this.pendingMusic = null;
-                this.playMusic(queued);
-            }
-        } catch (e) {
-            console.warn('Audio initialization failed:', e);
+        if (this.initialized) {
+            return;
         }
+
+        if (this.initializationPromise) {
+            return this.initializationPromise;
+        }
+
+        this.initializationPromise = (async () => {
+            try {
+                await Promise.allSettled(this.loadPromises);
+
+                const allAudio = [
+                    ...Object.values(this.sounds),
+                    ...Object.values(this.music)
+                ];
+
+                const results = await Promise.allSettled(allAudio.map(async (s) => {
+                    s.volume = 0;
+                    s.muted = true;
+                    try {
+                        await s.play();
+                    } catch (error) {
+                        // Ignore autoplay prevention errors, we only want playback unlocking if possible.
+                    }
+                    s.pause();
+                    s.currentTime = 0;
+                    s.muted = false;
+                }));
+
+                const anySuccess = results.some(r => r.status === 'fulfilled');
+                this.isInitialized = anySuccess || allAudio.length === 0;
+                this.initialized = true;
+
+                if (this.currentMusic && this.music[this.currentMusic]) {
+                    const music = this.music[this.currentMusic];
+                    this.applyMusicVolume();
+                    music.play().catch(() => { });
+                } else if (this.pendingMusic) {
+                    const queued = this.pendingMusic;
+                    this.pendingMusic = null;
+                    this.playMusic(queued);
+                }
+            } catch (e) {
+                this.initialized = true;
+                console.warn('Audio initialization failed:', e);
+            } finally {
+                this.initializationPromise = null;
+            }
+        })();
+
+        return this.initializationPromise;
     }
 
     public playSound(key: string, options?: { volume?: number, playbackRate?: number }) {
