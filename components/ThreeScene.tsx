@@ -582,7 +582,20 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
             }
             if (containerRef.current) containerRef.current.innerHTML = '';
         };
-    }, [gameState.isMultiplayer, gameState.isThreePlayer, gameState.multiplayerState?.players?.map(p => p.id).join(','), settings.ultraPerformance, settings.balancedPerformance, settings.debugHeadModel, isPaused, dealerModel]); // Rebuild scene when switching SP/MP, toggling perf/head override, or unpausing the game
+    }, [
+        gameState.isMultiplayer,
+        gameState.isThreePlayer,
+        gameState.multiplayerState?.players?.map(p => p.id).join(','),
+        Object.entries(gameState.multiplayerState?.debugPlayerModels || {})
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([playerId, modelKey]) => `${playerId}:${modelKey}`)
+            .join(','),
+        settings.ultraPerformance,
+        settings.balancedPerformance,
+        settings.debugHeadModel,
+        isPaused,
+        dealerModel
+    ]); // Rebuild scene when switching SP/MP, toggling perf/head override, or unpausing the game
 
     // Separate effect for Pixel Scale / Resolution updates (No Rebuild)
     useEffect(() => {

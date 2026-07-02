@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { GameState, PlayerState, LogEntry, TurnOwner, ItemType, AimTarget, ShellType, CameraView, GameSettings, ChatMessage } from '../types';
-import { Settings as SettingsIcon, Skull, Smile } from 'lucide-react';
+import { Settings as SettingsIcon, Skull, Send, Smile, Minimize2 } from 'lucide-react';
 import { audioManager } from '../utils/audioManager';
 import { StatusDisplay } from './ui/StatusDisplay';
 import { Inventory } from './ui/Inventory';
@@ -122,13 +122,17 @@ export const GameUI: React.FC<GameUIProps> = ({
     const [isChatMinimized, setIsChatMinimized] = useState(true);
     const [unreadCount, setUnreadCount] = useState(0);
     const [pendingItemIndex, setPendingItemIndex] = useState<number | null>(null);
+    const [showChatPreview, setShowChatPreview] = useState(false);
+    const [chatPreviewMessages, setChatPreviewMessages] = useState<ChatMessage[]>([]);
+    const [chatDraft, setChatDraft] = useState('');
     const prevMsgLength = useRef(messages.length);
     const fullscreenRequestedRef = useRef(false);
+    const chatPreviewTimeoutRef = useRef<number | null>(null);
 
     const [isStickersOpen, setIsStickersOpen] = useState(false);
     const [activeStickers, setActiveStickers] = useState<{ id: string; sender: string; color: string; filename: string }[]>([]);
     const lastStickerMsgIndex = useRef(-1);
-    const stickerTimeoutsRef = useRef<any[]>([]);
+    const stickerTimeoutsRef = useRef<Record<string, number>>({});
 
     const getOpponentName = () => {
         if (!mpGameState) return 'DEALER';
@@ -136,11 +140,13 @@ export const GameUI: React.FC<GameUIProps> = ({
         return opp ? opp.name : 'DEALER';
     };
 
-    // Cleanup active timeout references on unmount
+    // Cleanup active timer references on unmount
     useEffect(() => {
         return () => {
-            stickerTimeoutsRef.current.forEach(clearTimeout);
-            stickerTimeoutsRef.current = [];
+            if (chatPreviewTimeoutRef.current) {
+                window.clearTimeout(chatPreviewTimeoutRef.current);
+                chatPreviewTimeoutRef.current = null;
+            }
         };
     }, []);
 
@@ -151,53 +157,90 @@ export const GameUI: React.FC<GameUIProps> = ({
             if (msg.text && msg.text.startsWith('[STICKER]:') && i > lastStickerMsgIndex.current) {
                 lastStickerMsgIndex.current = i;
                 const filename = msg.text.split(':')[1];
-                const newSticker = {
-                    id: `${msg.timestamp || Date.now()}-${i}-${Math.random()}`,
-                    sender: msg.sender,
-                    color: msg.color || '#fff',
-                    filename
-                };
-                
+                const id = `${msg.timestamp || Date.now()}-${i}-${Math.random()}`;
                 setActiveStickers(prev => {
-                    const updated = [...prev, newSticker];
-                    if (updated.length > 3) {
-                        return updated.slice(updated.length - 3);
-                    }
-                    return updated;
+                    const merged = [...prev, { id, sender: msg.sender, color: msg.color || '#fff', filename }];
+                    return merged.slice(-3);
                 });
 
-                const tId = setTimeout(() => {
-                    setActiveStickers(prev => prev.filter(s => s.id !== newSticker.id));
+                stickerTimeoutsRef.current[id] = window.setTimeout(() => {
+                    setActiveStickers(prev => prev.filter(s => s.id !== id));
+                    delete stickerTimeoutsRef.current[id];
                 }, 8000);
-                stickerTimeoutsRef.current.push(tId);
             }
         }
     }, [messages]);
 
     useEffect(() => {
-        if (isChatMinimized && messages.length > prevMsgLength.current) {
-            const newMsgs = messages.slice(prevMsgLength.current).filter(m => m.sender !== 'SYSTEM' && m.text && !m.text.startsWith('SYSTEM:') && !m.text.startsWith('[STICKER]:'));
-            if (newMsgs.length > 0) {
-                setUnreadCount(prev => prev + newMsgs.length);
-            }
+        return () => {
+            Object.values(stickerTimeoutsRef.current).forEach(window.clearTimeout);
+            stickerTimeoutsRef.current = {};
+        };
+    }, []);
+
+    const resetChatPreviewTimer = (previewMessages: ChatMessage[]) => {
+        setChatPreviewMessages(previewMessages.slice(-5));
+        setShowChatPreview(true);
+        if (chatPreviewTimeoutRef.current) {
+            window.clearTimeout(chatPreviewTimeoutRef.current);
+        }
+        chatPreviewTimeoutRef.current = window.setTimeout(() => {
+            setShowChatPreview(false);
+            chatPreviewTimeoutRef.current = null;
+        }, 30000);
+    };
+
+    useEffect(() => {
+        if (!isChatMinimized) {
+            prevMsgLength.current = messages.length;
+            return;
+        }
+
+        const newMsgs = messages.slice(prevMsgLength.current).filter(m => m.sender !== 'SYSTEM' && m.text && !m.text.startsWith('SYSTEM:') && !m.text.startsWith('[STICKER]:'));
+        if (newMsgs.length > 0) {
+            setUnreadCount(prev => prev + newMsgs.length);
+            resetChatPreviewTimer(newMsgs);
         }
         prevMsgLength.current = messages.length;
     }, [messages, isChatMinimized]);
 
     useEffect(() => {
-        if (!isChatMinimized) {
-            setUnreadCount(0);
+        if (isChatMinimized && messages.length > 0) {
+            const recent = messages.filter(m => m.sender !== 'SYSTEM' && m.text && !m.text.startsWith('SYSTEM:') && !m.text.startsWith('[STICKER]:')).slice(-5);
+            if (recent.length > 0) {
+                resetChatPreviewTimer(recent);
+            }
         }
     }, [isChatMinimized]);
+
+    useEffect(() => {
+        if (!isChatMinimized) {
+            setUnreadCount(0);
+            setShowChatPreview(false);
+            if (chatPreviewTimeoutRef.current) {
+                window.clearTimeout(chatPreviewTimeoutRef.current);
+                chatPreviewTimeoutRef.current = null;
+            }
+        }
+    }, [isChatMinimized]);
+
+    useEffect(() => {
+        return () => {
+            if (chatPreviewTimeoutRef.current) {
+                clearTimeout(chatPreviewTimeoutRef.current);
+                chatPreviewTimeoutRef.current = null;
+            }
+        };
+    }, []);
 
     useEffect(() => { if (playerName) setInputName(playerName); }, [playerName]);
 
     const chatScrollRef = React.useRef<HTMLDivElement>(null);
     useEffect(() => {
-        if (chatScrollRef.current) {
+        if (!isChatMinimized && chatScrollRef.current) {
             chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
         }
-    }, [messages]);
+    }, [messages, isChatMinimized]);
 
     const handleStartGame = (hardMode?: boolean) => {
         if (inputName.trim()) {
@@ -327,7 +370,7 @@ export const GameUI: React.FC<GameUIProps> = ({
                     onOpenSettings={onOpenSettings}
                     onOpenGuide={onOpenGuide}
                     onOpenScoreboard={onOpenScoreboard}
-                    onStartMultiplayer={onStartMultiplayer}
+                    onStartMultiplayer={onStartMultiplayer ?? (() => {})}
                 />
             )}
 
@@ -803,7 +846,7 @@ export const GameUI: React.FC<GameUIProps> = ({
                     {!isChatMinimized && (
                         <div className="absolute bottom-4 left-4 z-[100] w-[260px] sm:w-[320px] md:w-[360px] h-[180px] sm:h-[240px] md:h-[300px] pointer-events-auto transition-all duration-300 animate-in fade-in duration-200">
                             <div className="h-full flex flex-col justify-end">
-                                <div className="bg-gradient-to-t from-black/80 to-black/40 backdrop-blur-2xl border border-white/[0.02] rounded-xl overflow-hidden flex flex-col h-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] group/chat transition-all hover:border-white/[0.05]">
+                                <div className="bg-gradient-to-t from-black/90 to-black/50 backdrop-blur-3xl border border-white/[0.06] rounded-3xl overflow-hidden flex flex-col h-full shadow-[0_24px_80px_rgba(0,0,0,0.65)] group/chat transition-all hover:border-cyan-400/30">
                                     <div className="px-3 py-1.5 sm:px-4 sm:py-2 bg-white/5 border-b border-white/[0.02] flex justify-between items-center select-none">
                                         <span className="text-[9px] sm:text-[10px] font-black tracking-[0.3em] text-stone-550 uppercase">ChatBox</span>
                                         <div className="flex items-center gap-3">
@@ -812,8 +855,9 @@ export const GameUI: React.FC<GameUIProps> = ({
                                                     audioManager.playSound('click');
                                                     setIsChatMinimized(true);
                                                 }}
-                                                className="text-stone-600 hover:text-cyan-400 transition-colors text-[7px] sm:text-[8px] uppercase tracking-wider font-bold cursor-pointer bg-transparent border-none outline-none"
+                                                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.22em] text-stone-100 transition-all duration-200 hover:bg-cyan-500/15 hover:border-cyan-400/40 hover:text-cyan-300 shadow-sm shadow-cyan-500/10"
                                             >
+                                                <Minimize2 size={12} className="text-cyan-300" />
                                                 Minimize
                                             </button>
                                         </div>
@@ -840,10 +884,9 @@ export const GameUI: React.FC<GameUIProps> = ({
                                     <form
                                         onSubmit={(e) => {
                                             e.preventDefault();
-                                            const input = e.currentTarget.elements.namedItem('chat-input') as HTMLInputElement;
-                                            if (input.value.trim() && onSendMessage) {
-                                                onSendMessage(input.value.trim());
-                                                input.value = '';
+                                            if (chatDraft.trim() && onSendMessage) {
+                                                onSendMessage(chatDraft.trim());
+                                                setChatDraft('');
                                             }
                                         }}
                                         className="p-2 sm:p-3 bg-white/5 border-t border-white/5 flex gap-2"
@@ -851,11 +894,19 @@ export const GameUI: React.FC<GameUIProps> = ({
                                         <input
                                             name="chat-input"
                                             type="text"
+                                            value={chatDraft}
+                                            onChange={(e) => setChatDraft(e.target.value)}
                                             autoComplete="off"
                                             placeholder="TYPE A MESSAGE..."
                                             className="flex-1 bg-black/40 border border-white/[0.04] rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 text-[9px] sm:text-[10px] md:text-xs text-stone-100 placeholder:text-stone-755 focus:outline-none focus:border-white/15 transition-all focus:bg-black/50 shadow-inner"
                                             onKeyDown={(e) => e.stopPropagation()}
                                         />
+                                        <button
+                                            type="submit"
+                                            className="inline-flex items-center justify-center rounded-lg border border-white/[0.08] bg-cyan-500/10 text-cyan-200 hover:bg-cyan-500/20 px-3 py-1.5 text-[9px] sm:text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transition-all duration-200 hover:text-white"
+                                        >
+                                            <Send size={14} />
+                                        </button>
                                     </form>
                                 </div>
                             </div>
@@ -927,17 +978,14 @@ export const GameUI: React.FC<GameUIProps> = ({
             )}
 
             {/* Minimized Chat Overlay - Visible in-game at above left corner when minimized (Filters out sticker logs) */}
-            {isMultiplayer && gameState.phase !== 'INTRO' && gameState.phase !== 'BOOT' && isChatMinimized && (
+            {isMultiplayer && gameState.phase !== 'INTRO' && gameState.phase !== 'BOOT' && isChatMinimized && showChatPreview && (
                 <div className="absolute top-28 left-4 z-[100] pointer-events-none max-w-xs md:max-w-sm space-y-2 select-none">
-                    {messages
-                        .filter(m => m.sender !== 'SYSTEM' && m.text && !m.text.startsWith('SYSTEM:') && !m.text.startsWith('[STICKER]:'))
-                        .slice(-5) // Show last 5 messages
-                        .map((msg, i) => (
-                            <div key={i} className="text-white text-xs font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] animate-in fade-in slide-in-from-left-2 duration-300 flex items-baseline gap-1.5">
-                                <span style={{ color: msg.color }} className="font-extrabold uppercase text-[10px] tracking-widest shrink-0">{msg.sender}:</span>
-                                <span className="break-words">{msg.text}</span>
-                            </div>
-                        ))}
+                    {chatPreviewMessages.map((msg, i) => (
+                        <div key={`${msg.timestamp}-${i}`} className="text-white text-xs font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] animate-in fade-in slide-in-from-left-2 duration-300 flex items-baseline gap-1.5">
+                            <span style={{ color: msg.color }} className="font-extrabold uppercase text-[10px] tracking-widest shrink-0">{msg.sender}:</span>
+                            <span className="break-words">{msg.text}</span>
+                        </div>
+                    ))}
                 </div>
             )}
 
@@ -960,7 +1008,7 @@ export const GameUI: React.FC<GameUIProps> = ({
             {/* Pinned Jackpot Sticker (Immunity Active) - shown in both singleplayer & multiplayer */}
             {gameState.phase !== 'INTRO' && gameState.phase !== 'BOOT' && (
                 <>
-                    {player.jackpotImmunityShots > 0 && (
+                    {(player.jackpotImmunityShots || 0) > 0 && (
                         <div className="absolute top-[200px] left-4 z-[100] pointer-events-none flex flex-col items-start bg-transparent animate-pulse select-none">
                             <span className="font-extrabold uppercase text-[7px] tracking-widest text-amber-400 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.95)]">
                                 {playerName} IMMUNITY ({player.jackpotImmunityShots})
@@ -970,7 +1018,7 @@ export const GameUI: React.FC<GameUIProps> = ({
                             </div>
                         </div>
                     )}
-                    {dealer.jackpotImmunityShots > 0 && (
+                    {(dealer.jackpotImmunityShots || 0) > 0 && (
                         <div className="absolute top-[200px] left-28 sm:left-32 z-[100] pointer-events-none flex flex-col items-start bg-transparent animate-pulse select-none">
                             <span className="font-extrabold uppercase text-[7px] tracking-widest text-stone-400 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.95)]">
                                 {isMultiplayer ? getOpponentName() : 'DEALER'} IMMUNITY ({dealer.jackpotImmunityShots})

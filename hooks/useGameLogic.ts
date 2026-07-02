@@ -201,13 +201,27 @@ export const useGameLogic = () => {
   const [aimTarget, setAimTarget] = useState<AimTarget>('IDLE');
   const [cameraView, setCameraView] = useState<CameraView>('PLAYER');
   const [overlayColor, setOverlayColor] = useState<'none' | 'red' | 'green' | 'scan'>('none');
-  const [overlayText, setOverlayText] = useState<string | null>(null);
+  const [overlayText, setOverlayTextState] = useState<string | null>(null);
+  const [overlayTextUpdatedAt, setOverlayTextUpdatedAt] = useState<number>(0);
   const [showBlood, setShowBlood] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const [showFlashbang, setShowFlashbang] = useState(false);
 
   const [receivedItems, setReceivedItems] = useState<ItemType[]>([]);
   const [showLootOverlay, setShowLootOverlay] = useState(false);
+
+  const setOverlayText = (nextValue: React.SetStateAction<string | null>) => {
+    const resolvedValue = typeof nextValue === 'function'
+      ? (nextValue as (prevState: string | null) => string | null)(overlayText)
+      : nextValue;
+
+    if (overlayHideTimeoutRef.current) {
+      clearTimeout(overlayHideTimeoutRef.current);
+      overlayHideTimeoutRef.current = null;
+    }
+    setOverlayTextUpdatedAt(Date.now());
+    setOverlayTextState(resolvedValue);
+  };
 
   const getOpponentName = () => {
     return gameState.isMultiplayer ? (gameState.opponentName || 'OPPONENT') : 'DEALER';
@@ -233,6 +247,37 @@ export const useGameLogic = () => {
   };
 
   const resetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const overlayHideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!gameState.isMultiplayer) {
+      if (overlayHideTimeoutRef.current) {
+        clearTimeout(overlayHideTimeoutRef.current);
+        overlayHideTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    if (overlayText) {
+      if (overlayHideTimeoutRef.current) {
+        clearTimeout(overlayHideTimeoutRef.current);
+      }
+      overlayHideTimeoutRef.current = setTimeout(() => {
+        setOverlayText(null);
+        overlayHideTimeoutRef.current = null;
+      }, 30000);
+    } else if (overlayHideTimeoutRef.current) {
+      clearTimeout(overlayHideTimeoutRef.current);
+      overlayHideTimeoutRef.current = null;
+    }
+
+    return () => {
+      if (overlayHideTimeoutRef.current) {
+        clearTimeout(overlayHideTimeoutRef.current);
+        overlayHideTimeoutRef.current = null;
+      }
+    };
+  }, [overlayText, overlayTextUpdatedAt, gameState.isMultiplayer]);
 
   const resetStats = () => {
     matchStatsRef.current = {
