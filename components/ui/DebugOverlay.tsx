@@ -291,26 +291,26 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
         return (
             <button
                 onClick={() => setIsCollapsed(false)}
-                className="fixed bottom-2 right-2 md:bottom-4 md:right-4 z-[999] p-2 md:p-3 bg-red-950/80 border border-red-700/50 text-red-500 rounded-full hover:bg-red-900 shadow-lg shadow-black/80 hover:scale-115 active:scale-95 transition-all flex items-center justify-center cursor-pointer animate-pulse"
+                className="fixed bottom-2 right-2 md:bottom-4 md:right-4 z-[999] p-1 md:p-1.5 bg-red-950/80 border border-red-700/50 text-red-500 rounded-full hover:bg-red-900 shadow-lg shadow-black/80 hover:scale-110 active:scale-95 transition-all flex items-center justify-center cursor-pointer animate-pulse"
                 title="Open Debug Panel"
             >
-                <Bug size={16} className="md:w-5 md:h-5" />
+                <Bug size={12} className="md:w-4 md:h-4" />
             </button>
         );
     }
 
     return (
-        <div className="fixed bottom-2 right-2 md:bottom-4 md:right-4 z-[999] w-[80vw] sm:w-[45vw] md:w-[35vw] max-h-[50vh] md:max-h-[85vh] bg-stone-950/90 backdrop-blur-md border border-red-900/40 rounded-xl md:rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col font-mono text-[7.5px] md:text-xs select-none">
+        <div className="fixed bottom-2 right-2 md:bottom-4 md:right-4 z-[999] w-[88vw] sm:w-[44vw] md:w-[32vw] max-h-[70vh] sm:max-h-[78vh] md:max-h-[85vh] bg-stone-950/90 backdrop-blur-md border border-red-900/40 rounded-xl md:rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col font-mono text-[5px] sm:text-[6px] md:text-[10px] select-none">
             {/* Header */}
-            <div className="p-1.5 md:p-3 bg-red-950/30 border-b border-red-900/30 flex justify-between items-center">
-                <div className="flex items-center gap-1 md:gap-2 text-red-500 font-extrabold tracking-widest text-[7.5px] md:text-[10px] uppercase">
-                    <Bug size={10} className="md:w-3 md:h-3 animate-pulse" />
+            <div className="p-1 bg-red-950/30 border-b border-red-900/30 flex justify-between items-center">
+                <div className="flex items-center gap-1 text-red-500 font-extrabold tracking-widest text-[5px] sm:text-[6px] md:text-[8.5px] uppercase">
+                    <Bug size={9} className="md:w-3 md:h-3 animate-pulse" />
                     <span>Debug Panel</span>
                 </div>
-                <div className="flex gap-1 md:gap-2">
+                <div className="flex gap-1">
                     <button
                         onClick={() => setIsCollapsed(true)}
-                        className="text-stone-500 hover:text-white px-1 py-0.5 md:px-1.5 border border-stone-800 hover:border-stone-600 rounded bg-stone-900 cursor-pointer text-[7px] md:text-[9px] uppercase font-bold"
+                        className="text-stone-500 hover:text-white px-1 py-0.5 md:px-1.5 border border-stone-800 hover:border-stone-600 rounded bg-stone-900 cursor-pointer text-[6px] sm:text-[7px] md:text-[9px] uppercase font-bold"
                     >
                         Minimize
                     </button>
@@ -326,61 +326,61 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
             <div className="flex border-b border-stone-800 bg-stone-900/40">
                 <button
                     onClick={() => setActiveTab('chamber')}
-                    className={`flex-1 py-1 md:py-2 text-center font-bold tracking-wider text-[7.5px] md:text-[9px] uppercase cursor-pointer transition-all border-b-2 ${activeTab === 'chamber' ? 'text-red-500 border-red-600 bg-red-950/10' : 'text-stone-500 border-transparent hover:text-stone-300'}`}
+                    className={`flex-1 py-0.5 text-center font-bold tracking-wider text-[5.5px] sm:text-[6.5px] md:text-[8.5px] uppercase cursor-pointer transition-all border-b-2 ${activeTab === 'chamber' ? 'text-red-500 border-red-600 bg-red-950/10' : 'text-stone-500 border-transparent hover:text-stone-300'}`}
                 >
                     Chamber
                 </button>
                 <button
                     onClick={() => setActiveTab('items')}
-                    className={`flex-1 py-1 md:py-2 text-center font-bold tracking-wider text-[7.5px] md:text-[9px] uppercase cursor-pointer transition-all border-b-2 ${activeTab === 'items' ? 'text-red-500 border-red-600 bg-red-950/10' : 'text-stone-500 border-transparent hover:text-stone-300'}`}
+                    className={`flex-1 py-0.5 text-center font-bold tracking-wider text-[5px] sm:text-[6px] md:text-[8px] uppercase cursor-pointer transition-all border-b-2 ${activeTab === 'items' ? 'text-red-500 border-red-600 bg-red-950/10' : 'text-stone-500 border-transparent hover:text-stone-300'}`}
                 >
                     Items
                 </button>
                 <button
                     onClick={() => setActiveTab('status')}
-                    className={`flex-1 py-1 md:py-2 text-center font-bold tracking-wider text-[7.5px] md:text-[9px] uppercase cursor-pointer transition-all border-b-2 ${activeTab === 'status' ? 'text-red-500 border-red-600 bg-red-950/10' : 'text-stone-500 border-transparent hover:text-stone-300'}`}
+                    className={`flex-1 py-0.5 text-center font-bold tracking-wider text-[5px] sm:text-[6px] md:text-[8px] uppercase cursor-pointer transition-all border-b-2 ${activeTab === 'status' ? 'text-red-500 border-red-600 bg-red-950/10' : 'text-stone-500 border-transparent hover:text-stone-300'}`}
                 >
                     Status
                 </button>
                 <button
                     onClick={() => setActiveTab('tarot')}
-                    className={`flex-1 py-1 md:py-2 text-center font-bold tracking-wider text-[7.5px] md:text-[9px] uppercase cursor-pointer transition-all border-b-2 ${activeTab === 'tarot' ? 'text-red-500 border-red-600 bg-red-950/10' : 'text-stone-500 border-transparent hover:text-stone-300'}`}
+                    className={`flex-1 py-0.5 text-center font-bold tracking-wider text-[5px] sm:text-[6px] md:text-[8px] uppercase cursor-pointer transition-all border-b-2 ${activeTab === 'tarot' ? 'text-red-500 border-red-600 bg-red-950/10' : 'text-stone-500 border-transparent hover:text-stone-300'}`}
                 >
                     Item Power
                 </button>
             </div>
 
             {/* Content Area */}
-            <div className="p-1.5 md:p-4 flex-1 overflow-y-auto max-h-[25vh] md:max-h-96 space-y-2 md:space-y-4 custom-scrollbar text-stone-300">
+            <div className="p-1 md:p-2 flex-1 overflow-y-auto max-h-[44vh] sm:max-h-[50vh] md:max-h-96 space-y-1.5 md:space-y-2 custom-scrollbar text-stone-300">
                 
                 {/* TAB 1: CHAMBER */}
                 {activeTab === 'chamber' && (
                     <div className="space-y-3 md:space-y-4">
                         <div className="flex justify-between items-center">
-                            <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px]">Chamber State</span>
-                            <span className="text-[8.5px] md:text-[10px] text-white bg-stone-900 border border-white/5 px-1.5 py-0.5 rounded">
+                            <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[5.5px] md:text-[7px]">Chamber State</span>
+                            <span className="text-[6px] md:text-[7px] text-white bg-stone-900 border border-white/5 px-1 py-0.5 rounded">
                                 {gameState.liveCount}L | {gameState.blankCount}B
                             </span>
                         </div>
 
                         {/* Chamber Shell Grid */}
                         {gameState.chamber.length === 0 ? (
-                            <div className="text-center py-4 text-stone-600 uppercase tracking-widest text-[8px] md:text-[9px]">
+                            <div className="text-center py-3 text-stone-600 uppercase tracking-widest text-[7px] md:text-[8px]">
                                 Chamber is Empty
                             </div>
                         ) : (
-                            <div className="grid grid-cols-4 gap-1 md:gap-2">
+                            <div className="grid grid-cols-4 gap-0.5">
                                 {gameState.chamber.map((shell, idx) => {
                                     const isCurrent = gameState.currentShellIndex === idx;
                                     return (
                                         <button
                                             key={idx}
                                             onClick={() => toggleShell(idx)}
-                                            className={`p-1 md:p-2 border rounded-md md:rounded-lg flex flex-col items-center justify-center gap-0.5 md:gap-1 transition-all cursor-pointer select-none active:scale-95 ${isCurrent ? 'ring-2 ring-red-500 border-red-600' : 'border-stone-800 hover:border-stone-600'} ${shell === 'LIVE' ? 'bg-red-950/20 text-red-400 border-red-900/30' : 'bg-blue-950/20 text-blue-400 border-blue-900/30'}`}
+                                            className={`p-0.5 md:p-1 border rounded-md md:rounded-lg flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer select-none active:scale-95 ${isCurrent ? 'ring-2 ring-red-500 border-red-600' : 'border-stone-800 hover:border-stone-600'} ${shell === 'LIVE' ? 'bg-red-950/20 text-red-400 border-red-900/30' : 'bg-blue-950/20 text-blue-400 border-blue-900/30'}`}
                                         >
                                             <span className="text-[7px] md:text-[8px] font-bold text-stone-500 uppercase">#{idx + 1}</span>
-                                            <span className="font-black text-[8px] md:text-[10px]">{shell}</span>
-                                            {isCurrent && <span className="text-[6px] md:text-[7px] bg-red-500 text-white font-extrabold px-0.5 md:px-1 rounded uppercase animate-pulse">Current</span>}
+                                            <span className="font-black text-[7px] md:text-[8px]">{shell}</span>
+                                            {isCurrent && <span className="text-[5.5px] md:text-[6.5px] bg-red-500 text-white font-extrabold px-0.5 rounded uppercase animate-pulse">Current</span>}
                                         </button>
                                     );
                                 })}
@@ -388,22 +388,22 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                         )}
 
                         {/* Quick Chamber Controls */}
-                        <div className="grid grid-cols-3 gap-1 md:gap-2 pt-1.5 md:pt-2 border-t border-stone-900">
+                        <div className="grid grid-cols-3 gap-0.5 pt-1 border-t border-stone-900">
                             <button
                                 onClick={() => makeAllShells('LIVE')}
-                                className="py-1 md:py-1.5 bg-red-950/40 border border-red-900/40 text-red-400 rounded hover:bg-red-900/40 cursor-pointer font-bold uppercase text-[8px] md:text-[9px]"
+                                className="py-0.5 bg-red-950/40 border border-red-900/40 text-red-400 rounded hover:bg-red-900/40 cursor-pointer font-bold uppercase text-[6px] md:text-[7px]"
                             >
                                 All Live
                             </button>
                             <button
                                 onClick={() => makeAllShells('BLANK')}
-                                className="py-1 md:py-1.5 bg-blue-950/40 border border-blue-900/40 text-blue-400 rounded hover:bg-blue-900/40 cursor-pointer font-bold uppercase text-[8px] md:text-[9px]"
+                                className="py-0.5 md:py-1 bg-blue-950/40 border border-blue-900/40 text-blue-400 rounded hover:bg-blue-900/40 cursor-pointer font-bold uppercase text-[7px] md:text-[8px]"
                             >
                                 All Blank
                             </button>
                             <button
                                 onClick={randomizeChamber}
-                                className="py-1 md:py-1.5 bg-stone-900 border border-stone-800 text-stone-300 rounded hover:bg-stone-850 cursor-pointer font-bold uppercase text-[8px] md:text-[9px] flex items-center justify-center gap-0.5 md:gap-1"
+                                className="py-0.5 md:py-1 bg-stone-900 border border-stone-800 text-stone-300 rounded hover:bg-stone-850 cursor-pointer font-bold uppercase text-[7px] md:text-[8px] flex items-center justify-center gap-0.5"
                             >
                                 <RefreshCw size={8} className="md:w-[10px] md:h-[10px]" /> Rand
                             </button>
@@ -421,29 +421,29 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                             return (
                                 <div key={target} className="space-y-1.5 md:space-y-2 border-b border-stone-900 pb-2.5 md:pb-3 last:border-0 last:pb-0">
                                     <div className="flex justify-between items-center">
-                                        <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px]">{targetName} Inventory</span>
+                                        <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[6px] md:text-[8px]">{targetName} Inventory</span>
                                         <button
                                             onClick={() => clearItems(target as any)}
-                                            className="text-[7.5px] md:text-[9px] text-red-500 hover:text-red-400 font-bold uppercase tracking-wider cursor-pointer"
+                                            className="text-[6px] md:text-[7.5px] text-red-500 hover:text-red-400 font-bold uppercase tracking-wider cursor-pointer"
                                         >
                                             Clear All
                                         </button>
                                     </div>
 
                                     {/* Inventory Items List */}
-                                    <div className="flex flex-wrap gap-1 md:gap-1.5 min-h-4 md:min-h-6">
+                                    <div className="flex flex-wrap gap-0.5 min-h-4 md:min-h-6">
                                         {state.items.length === 0 ? (
-                                            <span className="text-[8px] md:text-[10px] text-stone-600 uppercase tracking-widest">No Items</span>
+                                            <span className="text-[6px] md:text-[7.5px] text-stone-600 uppercase tracking-widest">No Items</span>
                                         ) : (
                                             state.items.map((item, idx) => (
                                                 <div
                                                     key={idx}
-                                                    className="flex items-center gap-0.5 md:gap-1 bg-stone-900 border border-stone-800 px-1 py-0.5 md:px-2 md:py-1 rounded-md text-[8.5px] md:text-[10px]"
+                                                    className="flex items-center gap-0.5 bg-stone-900 border border-stone-800 px-0.5 py-0.5 rounded-md text-[6.5px] md:text-[8px]"
                                                 >
                                                     <span className="text-white font-extrabold">{item}</span>
                                                     <button
                                                         onClick={() => removeItem(target as any, idx)}
-                                                        className="text-red-500 hover:text-red-400 ml-0.5 md:ml-1 cursor-pointer"
+                                                        className="text-red-500 hover:text-red-400 ml-0.5 cursor-pointer"
                                                     >
                                                         <Trash2 size={8} className="md:w-[10px] md:h-[10px]" />
                                                     </button>
@@ -453,14 +453,14 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                                     </div>
 
                                     {/* Quick Add Items Palette */}
-                                    <div className="pt-1.5 md:pt-2">
-                                        <span className="text-[7.5px] md:text-[8px] text-stone-600 uppercase font-bold tracking-widest block mb-1 md:mb-1.5">Add Item:</span>
-                                        <div className="flex flex-wrap gap-0.5 md:gap-1 max-h-16 md:max-h-24 overflow-y-auto pr-0.5 md:pr-1 custom-scrollbar">
+                                    <div className="pt-1 md:pt-1.5">
+                                        <span className="text-[6.5px] md:text-[7.5px] text-stone-600 uppercase font-bold tracking-widest block mb-1 md:mb-1.5">Add Item:</span>
+                                        <div className="flex flex-wrap gap-0.5 max-h-16 md:max-h-24 overflow-y-auto pr-0.5 custom-scrollbar">
                                             {ITEMS.map((item) => (
                                                 <button
                                                     key={item}
                                                     onClick={() => addItem(target as any, item)}
-                                                    className="px-1 py-0.5 md:px-1.5 bg-stone-900 hover:bg-stone-800 text-[7px] md:text-[8px] text-stone-400 hover:text-white font-extrabold rounded border border-stone-800 cursor-pointer uppercase tracking-wider"
+                                                    className="px-0.5 py-0.5 md:px-1 bg-stone-900 hover:bg-stone-800 text-[6px] md:text-[7px] text-stone-400 hover:text-white font-extrabold rounded border border-stone-800 cursor-pointer uppercase tracking-wider"
                                                 >
                                                     +{item}
                                                 </button>
@@ -480,24 +480,24 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                         <div className="space-y-2 md:space-y-3">
                             <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px] block">Players</span>
                             <div className="space-y-1">
-                                <div className="flex justify-between items-center bg-stone-900/50 px-2 py-1 rounded border border-stone-800">
-                                    <span className="text-[6.5px] md:text-[8px] text-stone-500 uppercase tracking-widest">You</span>
-                                    <span className="font-black text-white text-[8px] md:text-[10px] uppercase tracking-wide">{playerDisplayName}</span>
+                                <div className="flex justify-between items-center bg-stone-900/50 px-1.5 py-0.75 rounded border border-stone-800">
+                                    <span className="text-[6px] md:text-[7.5px] text-stone-500 uppercase tracking-widest">You</span>
+                                    <span className="font-black text-white text-[7px] md:text-[8.5px] uppercase tracking-wide">{playerDisplayName}</span>
                                 </div>
                                 <div className="flex justify-between items-center bg-stone-900/50 px-2 py-1 rounded border border-stone-800">
                                     <span className="text-[6.5px] md:text-[8px] text-stone-500 uppercase tracking-widest">Front</span>
-                                    <span className="font-black text-white text-[8px] md:text-[10px] uppercase tracking-wide">{dealerDisplayName}</span>
+                                    <span className="font-black text-white text-[7px] md:text-[8.5px] uppercase tracking-wide">{dealerDisplayName}</span>
                                 </div>
                                 {(gameState.isThreePlayer || gameState.isFourPlayer) && (
                                     <div className="flex justify-between items-center bg-stone-900/50 px-2 py-1 rounded border border-stone-800">
                                         <span className="text-[6.5px] md:text-[8px] text-stone-500 uppercase tracking-widest">Left</span>
-                                        <span className="font-black text-white text-[8px] md:text-[10px] uppercase tracking-wide">{player3DisplayName}</span>
+                                        <span className="font-black text-white text-[7px] md:text-[8.5px] uppercase tracking-wide">{player3DisplayName}</span>
                                     </div>
                                 )}
                                 {gameState.isFourPlayer && (
                                     <div className="flex justify-between items-center bg-stone-900/50 px-2 py-1 rounded border border-stone-800">
                                         <span className="text-[6.5px] md:text-[8px] text-stone-500 uppercase tracking-widest">Right</span>
-                                        <span className="font-black text-white text-[8px] md:text-[10px] uppercase tracking-wide">{player4DisplayName}</span>
+                                        <span className="font-black text-white text-[7px] md:text-[8.5px] uppercase tracking-wide">{player4DisplayName}</span>
                                     </div>
                                 )}
                             </div>
@@ -508,14 +508,14 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                                 <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px] block">Multiplayer Avatar Models</span>
                                 <div className="space-y-1.5">
                                     {(gameState.multiplayerState?.players || []).map((entry: any) => (
-                                        <div key={entry.id} className="flex items-center justify-between gap-2 bg-stone-900/50 px-2 py-1 rounded border border-stone-800">
-                                            <span className="font-bold text-[8px] md:text-[9px] uppercase text-stone-300">
+                                        <div key={entry.id} className="flex items-center justify-between gap-1 bg-stone-900/50 px-1 py-0.75 rounded border border-stone-800">
+                                            <span className="font-bold text-[6px] md:text-[7.5px] uppercase text-stone-300">
                                                 {entry.id === gameState.localPlayerId ? 'YOU' : entry.name}
                                             </span>
                                             <select
                                                 value={gameState.multiplayerState?.debugPlayerModels?.[entry.id] || 'DEFAULT'}
                                                 onChange={(e) => handleMultiplayerModelChange(entry.id, e.target.value as PlayerModelKey)}
-                                                className="bg-stone-950 border border-stone-700 text-[7.5px] md:text-[8px] text-stone-200 rounded px-1.5 py-0.5 font-bold uppercase cursor-pointer"
+                                                className="bg-stone-950 border border-stone-700 text-[5.5px] md:text-[6.5px] text-stone-200 rounded px-1 py-0.5 font-bold uppercase cursor-pointer"
                                             >
                                                 {modelOptions.map((option) => (
                                                     <option key={option.value} value={option.value}>{option.label}</option>
@@ -526,17 +526,17 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                                 </div>
                             </div>
                         )}
-                        <div className="space-y-2 md:space-y-3 pt-1.5 md:pt-2 border-t border-stone-900">
-                            <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px] block">Local Head Model</span>
-                            <div className="flex items-center justify-between gap-2 bg-stone-900/50 px-2 py-1 rounded border border-stone-800">
-                                <span className="font-bold text-[8px] md:text-[9px] uppercase text-stone-300">Dealer Head</span>
+                        <div className="space-y-2 md:space-y-3 pt-1 border-t border-stone-900">
+                            <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[6.5px] md:text-[8px] block">Local Head Model</span>
+                            <div className="flex items-center justify-between gap-1 bg-stone-900/50 px-1 py-1 rounded border border-stone-800">
+                                <span className="font-bold text-[7px] md:text-[8px] uppercase text-stone-300">Dealer Head</span>
                                 <select
                                     value={settings.debugHeadModel || 'DEFAULT'}
                                     onChange={(e) => setSettings({
                                         ...settings,
                                         debugHeadModel: e.target.value as PlayerModelKey
                                     })}
-                                    className="bg-stone-950 border border-stone-700 text-[7.5px] md:text-[8px] text-stone-200 rounded px-1.5 py-0.5 font-bold uppercase cursor-pointer"
+                                    className="bg-stone-950 border border-stone-700 text-[6.5px] md:text-[7.5px] text-stone-200 rounded px-1 py-0.5 font-bold uppercase cursor-pointer"
                                 >
                                     {modelOptions.map((option) => (
                                         <option key={option.value} value={option.value}>{option.label}</option>
@@ -547,38 +547,38 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
 
                         {/* Health settings */}
                         <div className="space-y-2 md:space-y-3">
-                            <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px] block">Health Editor</span>
+                            <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[6px] md:text-[7.5px] block">Health Editor</span>
                             {['player', 'dealer', ...(gameState.isThreePlayer && player3 ? ['player3'] : [])].map((target) => {
                                 const state = target === 'player' ? player : (target === 'player3' ? player3! : dealer);
                                 const targetName = target === 'player' ? playerDisplayName : (target === 'player3' ? player3DisplayName : dealerDisplayName);
                                 return (
-                                    <div key={target} className="flex justify-between items-center bg-stone-900/50 p-1 md:p-2 border border-stone-900 rounded-lg">
-                                        <span className="font-bold text-[8.5px] md:text-[10px] uppercase text-stone-400">{targetName} HP:</span>
+                                    <div key={target} className="flex justify-between items-center bg-stone-900/50 p-1 border border-stone-900 rounded-lg">
+                                        <span className="font-bold text-[6.5px] md:text-[8px] uppercase text-stone-400">{targetName} HP:</span>
                                         
-                                        <div className="flex items-center gap-1.5 md:gap-4">
+                                        <div className="flex items-center gap-1 md:gap-1.5">
                                             {/* HP indicator */}
                                             <div className="flex items-center gap-0.5 md:gap-1">
-                                                <Heart size={8} className="md:w-[10px] md:h-[10px] text-red-500 fill-red-500" />
-                                                <span className="font-black text-white tabular-nums text-[8.5px] md:text-xs">{state.hp}/{state.maxHp}</span>
+                                                <Heart size={7} className="md:w-[9px] md:h-[9px] text-red-500 fill-red-500" />
+                                                <span className="font-black text-white tabular-nums text-[6px] md:text-[7.5px]">{state.hp}/{state.maxHp}</span>
                                             </div>
 
                                             {/* Modifiers */}
                                             <div className="flex gap-0.5 md:gap-1">
                                                 <button
                                                     onClick={() => adjustHp(target as any, -1)}
-                                                    className="w-4 h-4 md:w-5 md:h-5 bg-stone-950 border border-stone-800 text-stone-400 hover:text-white font-black rounded flex items-center justify-center cursor-pointer active:scale-90 text-[8px] md:text-[10px]"
+                                                    className="w-4 h-4 md:w-5 md:h-5 bg-stone-950 border border-stone-800 text-stone-400 hover:text-white font-black rounded flex items-center justify-center cursor-pointer active:scale-90 text-[7px] md:text-[8px]"
                                                 >
                                                     -
                                                 </button>
                                                 <button
                                                     onClick={() => adjustHp(target as any, 1)}
-                                                    className="w-4 h-4 md:w-5 md:h-5 bg-stone-950 border border-stone-800 text-stone-400 hover:text-white font-black rounded flex items-center justify-center cursor-pointer active:scale-90 text-[8px] md:text-[10px]"
+                                                    className="w-4 h-4 md:w-5 md:h-5 bg-stone-950 border border-stone-800 text-stone-400 hover:text-white font-black rounded flex items-center justify-center cursor-pointer active:scale-90 text-[7px] md:text-[8px]"
                                                 >
                                                     +
                                                 </button>
                                                 <button
                                                     onClick={() => setMaxHp(target as any, 1)}
-                                                    className="px-0.5 md:px-1 bg-stone-950 border border-stone-800 text-[6.5px] md:text-[8px] text-stone-500 hover:text-white font-black rounded flex items-center justify-center cursor-pointer active:scale-90 uppercase tracking-widest"
+                                                    className="px-0.5 md:px-1 bg-stone-950 border border-stone-800 text-[5.5px] md:text-[7px] text-stone-500 hover:text-white font-black rounded flex items-center justify-center cursor-pointer active:scale-90 uppercase tracking-widest"
                                                     title="Increase Max HP"
                                                 >
                                                     +Max
@@ -591,28 +591,28 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                         </div>
 
                         {/* Phase & Winner Controls */}
-                        <div className="space-y-2 md:space-y-3 pt-1.5 md:pt-2 border-t border-stone-900">
-                            <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px] block">Flow Commands</span>
+                        <div className="space-y-2 md:space-y-3 pt-1 md:pt-1.5 border-t border-stone-900">
+                            <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[6.5px] md:text-[8px] block">Flow Commands</span>
                             
-                            <div className="grid grid-cols-2 gap-1 md:gap-2">
+                            <div className="grid grid-cols-2 gap-0.5 md:gap-1">
                                 <button
                                     onClick={togglePhase}
-                                    className="py-1 md:py-2 bg-stone-900 border border-stone-800 hover:border-stone-700 text-stone-300 rounded hover:bg-stone-850 cursor-pointer font-bold uppercase text-[8px] md:text-[9px] flex items-center justify-center gap-1 md:gap-1.5"
+                                    className="py-0.5 md:py-1 bg-stone-900 border border-stone-800 hover:border-stone-700 text-stone-300 rounded hover:bg-stone-850 cursor-pointer font-bold uppercase text-[6px] md:text-[7px] flex items-center justify-center gap-1"
                                 >
-                                    <Zap size={9} className="md:w-[11px] md:h-[11px] text-yellow-500" /> Switch Turn
+                                    <Zap size={8} className="md:w-[10px] md:h-[10px] text-yellow-500" /> Switch Turn
                                 </button>
                                 <button
                                     onClick={() => setWinnerInstantly('PLAYER')}
-                                    className="py-1 md:py-2 bg-green-950/40 border border-green-900/40 text-green-400 rounded hover:bg-green-900/30 cursor-pointer font-bold uppercase text-[8px] md:text-[9px] flex items-center justify-center gap-1 md:gap-1.5"
+                                    className="py-0.5 md:py-1 bg-green-950/40 border border-green-900/40 text-green-400 rounded hover:bg-green-900/30 cursor-pointer font-bold uppercase text-[6px] md:text-[7px] flex items-center justify-center gap-1"
                                 >
-                                    <Award size={9} className="md:w-[11px] md:h-[11px]" /> Win {playerDisplayName}
+                                    <Award size={8} className="md:w-[10px] md:h-[10px]" /> Win {playerDisplayName}
                                 </button>
                                 <button
                                     onClick={() => setWinnerInstantly('DEALER')}
-                                    className="py-1 md:py-2 bg-red-950/40 border border-red-900/40 text-red-400 rounded hover:bg-red-900/30 cursor-pointer font-bold uppercase text-[8px] md:text-[9px] flex items-center justify-center gap-1 md:gap-1.5"
+                                    className="py-0.5 md:py-1 bg-red-950/40 border border-red-900/40 text-red-400 rounded hover:bg-red-900/30 cursor-pointer font-bold uppercase text-[6px] md:text-[7px] flex items-center justify-center gap-1"
                                     style={{ gridColumn: 'span 2' }}
                                 >
-                                    <Award size={9} className="md:w-[11px] md:h-[11px]" /> Win {dealerDisplayName}
+                                    <Award size={8} className="md:w-[10px] md:h-[10px]" /> Win {dealerDisplayName}
                                 </button>
                             </div>
 
@@ -630,13 +630,13 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                     <div className="space-y-2 md:space-y-3">
                         {/* Jackpot Cheats */}
                         <div className="space-y-1.5 md:space-y-2 pb-2 border-b border-stone-900">
-                            <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7px] md:text-[8.5px] block">Jackpot Cheats</span>
-                            <div className="grid grid-cols-3 gap-1 md:gap-1.5 mb-1.5">
+                            <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[6px] md:text-[7.5px] block">Jackpot Cheats</span>
+                            <div className="grid grid-cols-3 gap-0.5 mb-1">
                                 <button
                                     onClick={() => {
                                         (window as any).__debugJackpotForcedOutcome = 'JACKPOT';
                                     }}
-                                    className="py-1 bg-yellow-950/40 border border-yellow-800/40 text-yellow-400 rounded hover:bg-yellow-900/30 cursor-pointer font-bold uppercase text-[7px] md:text-[8px]"
+                                    className="py-0.5 bg-yellow-950/40 border border-yellow-800/40 text-yellow-400 rounded hover:bg-yellow-900/30 cursor-pointer font-bold uppercase text-[6px] md:text-[7px]"
                                 >
                                     Force Win
                                 </button>
@@ -644,7 +644,7 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                                     onClick={() => {
                                         (window as any).__debugJackpotForcedOutcome = 'NORMAL';
                                     }}
-                                    className="py-1 bg-blue-950/40 border border-blue-800/40 text-blue-400 rounded hover:bg-blue-900/30 cursor-pointer font-bold uppercase text-[7px] md:text-[8px]"
+                                    className="py-0.5 bg-blue-950/40 border border-blue-800/40 text-blue-400 rounded hover:bg-blue-900/30 cursor-pointer font-bold uppercase text-[6px] md:text-[7px]"
                                 >
                                     Force Normal
                                 </button>
@@ -652,7 +652,7 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                                     onClick={() => {
                                         (window as any).__debugJackpotForcedOutcome = 'LOSE';
                                     }}
-                                    className="py-1 bg-red-950/40 border border-red-800/40 text-red-400 rounded hover:bg-red-900/30 cursor-pointer font-bold uppercase text-[7px] md:text-[8px]"
+                                    className="py-0.5 bg-red-950/40 border border-red-800/40 text-red-400 rounded hover:bg-red-900/30 cursor-pointer font-bold uppercase text-[6px] md:text-[7px]"
                                 >
                                     Force Lose
                                 </button>
@@ -662,16 +662,16 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                                     onClick={() => {
                                         processItemEffect('PLAYER', 'JACKPOT');
                                     }}
-                                    className="w-full py-1 bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 hover:bg-emerald-900/30 cursor-pointer font-bold uppercase text-[7px] md:text-[8px] text-center"
+                                    className="w-full py-0.5 bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 hover:bg-emerald-900/30 cursor-pointer font-bold uppercase text-[6px] md:text-[7px] text-center"
                                 >
                                     🎰 Trigger Jackpot Power
                                 </button>
                             )}
                         </div>
 
-                        <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[7.5px] md:text-[9px] block">Trigger Tarot Power</span>
+                        <span className="font-extrabold tracking-widest text-stone-500 uppercase text-[6px] md:text-[7.5px] block">Trigger Tarot Power</span>
                         
-                        <div className="grid grid-cols-2 gap-1 md:gap-1.5 max-h-[18vh] md:max-h-60 overflow-y-auto pr-0.5 custom-scrollbar p-0.5">
+                        <div className="grid grid-cols-2 gap-0.5 md:gap-1 max-h-[18vh] md:max-h-60 overflow-y-auto pr-0.5 custom-scrollbar p-0.5">
                             {[
                                 'The Magician', 'The Hanged Man', 'The Hermit', 'The Moon', 
                                 'Judgment', 'Wheel of Fortune', 'The Sun', 'Death', 
@@ -681,7 +681,7 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
                                     key={cardName}
                                     onClick={() => triggerTarotCardPower(cardName)}
                                     disabled={gameState.phase === 'CARD_SELECT' && gameState.selectedCardIndex !== null}
-                                    className="py-1 md:py-1.5 bg-purple-950/20 hover:bg-purple-900/35 border border-purple-900/40 hover:border-purple-600 text-purple-400 hover:text-purple-300 rounded cursor-pointer font-bold uppercase text-[7px] md:text-[8.5px] disabled:opacity-40 disabled:pointer-events-none transition-all active:scale-95 text-center"
+                                    className="py-0.5 bg-purple-950/20 hover:bg-purple-900/35 border border-purple-900/40 hover:border-purple-600 text-purple-400 hover:text-purple-300 rounded cursor-pointer font-bold uppercase text-[5.5px] md:text-[7px] disabled:opacity-40 disabled:pointer-events-none transition-all active:scale-95 text-center"
                                 >
                                     {cardName}
                                 </button>

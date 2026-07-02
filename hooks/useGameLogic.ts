@@ -540,7 +540,7 @@ export const useGameLogic = () => {
     addLog(`${lives} LIVE, ${blanks} BLANK`);
     setOverlayText(`${lives} LIVE  |  ${blanks} BLANK`);
     audioManager.playSound('insert');
-    await wait(3500);
+    await wait(4100);
     setOverlayText(null);
 
     // Pass overrides to distributeItems if needed, or rely on setGameState above having propagated?
