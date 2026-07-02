@@ -2,9 +2,9 @@
   "name": "Aadish Roulette",
   "short_name": "Roulette",
   "description": "A high-stakes tabletop horror game where you play Russian Roulette with a 12-gauge pump-action shotgun. Features 3D graphics, strategic items, and multiplayer.",
-  "start_url": "https://aadishroulette.pages.dev/",
-  "id": "https://aadishroulette.pages.dev/",
-  "scope": "https://aadishroulette.pages.dev/",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "display": "fullscreen",
   "display_override": [
     "fullscreen",

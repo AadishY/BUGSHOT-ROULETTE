@@ -59,11 +59,6 @@
   <link rel="manifest" href="/manifest.json">
   <script>
     window.deferredPWAPrompt = null;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      window.deferredPWAPrompt = e;
-      window.dispatchEvent(new CustomEvent('pwa-prompt-available', { detail: e }));
-    });
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
