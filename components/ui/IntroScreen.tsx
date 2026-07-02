@@ -571,7 +571,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                         </div>
 
                         {/* Form */}
-                        <form onSubmit={handleLoginSubmit} className="space-y-3 sm:space-y-4">
+                        <form onSubmit={handleLoginSubmit} autoComplete="on" className="space-y-3 sm:space-y-4">
                             {/* Username Input */}
                             <div>
                                 <div className="flex justify-between items-center mb-1 px-1">
@@ -585,6 +585,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                     <span className="absolute left-2.5 text-stone-650 group-focus-within/input:text-red-500 transition-colors font-bold text-xs pointer-events-none">[</span>
                                     <input
                                         type="text"
+                                        name="username"
+                                        autoComplete="username"
                                         value={loginUsername}
                                         onChange={(e) => setLoginUsername(e.target.value)}
                                         placeholder="ENTER AGENT IDENTITY"
@@ -609,6 +611,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                                     <span className="absolute left-2.5 text-stone-655 group-focus-within/input:text-red-500 transition-colors font-bold text-xs pointer-events-none">[</span>
                                     <input
                                         type="password"
+                                        name="password"
+                                        autoComplete="current-password"
                                         value={loginPassword}
                                         onChange={(e) => setLoginPassword(e.target.value)}
                                         placeholder="••••••••••••••"
