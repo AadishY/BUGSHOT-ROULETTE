@@ -242,19 +242,16 @@ npm run build
 
 This project is a fan-made, open-source tribute built to explore web-based 3D graphics and real-time multiplayer implementation, deeply inspired by the tabletop suspense of the original game[cite: 1].
 
-### 💻 Core Development
-*   **Aadish** ([@aadishy](https://github.com/aadishy)) — Game architecture, multiplayer synchronization, and 3D tabletop loop design for the [aadishy/aadish-roulette](https://github.com/aadishy/aadish-roulette) repository[cite: 1].
 
 ### 🎨 Original Concept
 *   **Mike Klubnika** ([Official Website](https://mikeklubnika.com/) / [Itch.io](https://mikeklubnika.itch.io/)) — The brilliant mind behind the official **Buckshot Roulette**. This project exists purely out of admiration for his work. Please support the official release on [Steam](https://store.steampowered.com/app/283550/Buckshot_Roulette/) and [Itch.io](https://mikeklubnika.itch.io/buckshot-roulette)[cite: 1].
 
-### 🔊 Audio & SFX
-*   **Ambient & Item Sounds**: Sourced entirely from public web domains and community creative commons archives[cite: 1]. No original game files were extracted, ripped, or reverse-engineered to obtain these sounds[cite: 1].
-*   **Audio credit**: Game audio inspired by / attributed to <https://github.com/uncreativeCultist/buckshot-decomp-public> and <https://github.com/uncreativeCultist>.
-
 ### 🎨 Asset Credits
 *   Dealer model by <https://sketchfab.com/VibaPop>.
 *   Hand model by <https://sketchfab.com/bttkller>.
+
+### 🔊 Audio & SFX
+*   **Audio credit**: Game audio inspired by / attributed to <https://github.com/uncreativeCultist/buckshot-decomp-public>
 
 ### 🛠️ Built With
 *   [React](https://react.dev/) & [TypeScript](https://www.typescriptlang.org/) — Powering the reactive state machine and type-safe gameplay loop[cite: 1].
