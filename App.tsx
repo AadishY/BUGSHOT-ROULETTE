@@ -14,6 +14,7 @@ import { DebugOverlay } from './components/ui/DebugOverlay';
 import { TutorialGuide } from './components/TutorialGuide';
 import { Scoreboard } from './components/ui/Scoreboard';
 import { audioManager } from './utils/audioManager';
+import { preloadAllModels, getGLBLoadingProgress } from './utils/three/glbPreloader';
 import { useMultiplayer } from './hooks/useMultiplayer';
 import { MultiplayerLobby } from './components/MultiplayerLobby';
 import { ChatBox } from './components/ChatBox';
@@ -75,6 +76,13 @@ export default function App() {
       // If successful, ensure menu music starts immediately without waiting for state update cycle
       audioManager.playMusic('menu');
     }).catch(() => { });
+  }, []);
+
+  // Preload all 3D GLB models immediately on mount to cache them in memory
+  useEffect(() => {
+    preloadAllModels().catch((err) => {
+      console.error("[Preloader] Failed to preload 3D models:", err);
+    });
   }, []);
 
   // Handle direct url invite link joining if name is already cached AND user is logged in
@@ -1983,7 +1991,7 @@ export default function App() {
               if (appState === 'LOADING_MP') mp.connect();
             }}
             showClose={appState === 'LOADING_MP'}
-            progress={appState === 'LOADING_GAME' ? audioManager.getAudioLoadingProgress() : undefined}
+            progress={(appState === 'LOADING_GAME' || appState === 'LOADING_SP') ? Math.round((audioManager.getAudioLoadingProgress() + getGLBLoadingProgress()) / 2) : undefined}
           />
         </div>
       )}

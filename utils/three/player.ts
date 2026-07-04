@@ -1,7 +1,6 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { getPreloadedGLB } from './glbPreloader';
 
 type PlayerModelKey = 'DEFAULT' | 'AADISH' | 'ASP' | 'YASH' | 'YUVRAJ';
 
@@ -86,11 +85,7 @@ const setTextureQuality = (texture: THREE.Texture | null | undefined, isColor = 
     }
 };
 
-const _dracoLoader = new DRACOLoader();
-_dracoLoader.setDecoderPath(`${import.meta.env.BASE_URL}draco/`);
-_dracoLoader.preload(); // Compile WASM decoder eagerly
-const _sharedPlayerLoader = new GLTFLoader();
-_sharedPlayerLoader.setDRACOLoader(_dracoLoader);
+// Shared loader removed in favor of glbPreloader caching system
 
 export const createPlayerAvatar = (scene: THREE.Scene, position: THREE.Vector3, rotationY: number, name: string, hp: number = 4, maxHp: number = 4, modelKey: PlayerModelKey = 'DEFAULT') => {
     const avatarGroup = new THREE.Group();
@@ -113,9 +108,8 @@ export const createPlayerAvatar = (scene: THREE.Scene, position: THREE.Vector3, 
     placeholderGroup.name = 'BODY_PLACEHOLDER';
     avatarGroup.add(placeholderGroup);
 
-    _sharedPlayerLoader.load(
-        resolveAssetPath(config.path),
-        (gltf) => {
+    getPreloadedGLB(resolveAssetPath(config.path))
+        .then((gltf) => {
             const model = clone(gltf.scene as THREE.Group);
             model.traverse((obj: THREE.Object3D) => {
                 if (obj instanceof THREE.Light || obj instanceof THREE.Camera || (obj as any).isHelper) {
@@ -184,6 +178,20 @@ export const createPlayerAvatar = (scene: THREE.Scene, position: THREE.Vector3, 
                                 if (m.color) {
                                     m.color.setHex(0xffffff);
                                 }
+
+                                if (ultraPerformance) {
+                                    m.normalMap = null;
+                                    m.bumpMap = null;
+                                    m.roughnessMap = null;
+                                    m.metalnessMap = null;
+                                    m.aoMap = null;
+                                    m.lightMap = null;
+                                    m.emissiveMap = null;
+                                } else if (balancedPerformance) {
+                                    m.normalMap = null;
+                                    m.bumpMap = null;
+                                }
+
                                 m.needsUpdate = true;
                             }
                         }
@@ -206,12 +214,10 @@ export const createPlayerAvatar = (scene: THREE.Scene, position: THREE.Vector3, 
 
             avatarGroup.remove(placeholderGroup);
             avatarGroup.add(model);
-        },
-        undefined,
-        (error) => {
+        })
+        .catch((error) => {
             console.warn(`[PlayerAvatar] Failed to load GLB "${config.path}":`, error);
-        }
-    );
+        });
 
     // === HEALTH BAR REMOVED AT USER REQUEST ===
     /*

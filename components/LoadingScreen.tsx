@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { X } from 'lucide-react';
 
 interface LoadingScreenProps {
@@ -54,14 +54,14 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         onCompleteRef.current = onComplete;
     }, [onComplete]);
 
+    const progressPropRef = useRef(progressProp);
+    useEffect(() => {
+        progressPropRef.current = progressProp;
+    }, [progressProp]);
+
     // Progress Timer Effect with fixed frame-based increments (resilient to thread freezes)
     useEffect(() => {
         if (error) return;
-
-        const audioProgress = typeof progressProp === 'number' ? Math.max(0, Math.min(progressProp, 100)) : null;
-        if (audioProgress !== null) {
-            setDisplayProgress(prev => Math.max(prev, audioProgress));
-        }
 
         let currentProgress = 0;
         let active = true;
@@ -72,7 +72,12 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
             // We increment by a stable frame-based step.
             const frameIncrement = 100 / (duration / 16.67);
             currentProgress = Math.min(currentProgress + frameIncrement, 100);
-            const combinedProgress = Math.max(currentProgress, audioProgress || 0);
+            
+            const targetVal = progressPropRef.current;
+            const combinedProgress = typeof targetVal === 'number'
+                ? Math.min(currentProgress, Math.max(0, Math.min(targetVal, 100)))
+                : currentProgress;
+
             setDisplayProgress(prev => Math.max(prev, combinedProgress));
 
             if (combinedProgress >= 100) {
@@ -89,7 +94,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
         return () => {
             active = false;
         };
-    }, [duration, error, progressProp]);
+    }, [duration, error]);
 
     // Terminal Lines Effect
     useEffect(() => {

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { getPreloadedGLB } from './glbPreloader';
 
 type DebugHeadModel = 'DEFAULT' | 'YASH' | 'YUVRAJ' | 'ASP' | 'AADISH';
 
@@ -52,11 +52,7 @@ const MODEL_CONFIGS: Record<DebugHeadModel, ModelConfig> = {
 // ---------------------------------------------------------------------------
 // Shared singleton loader — avoids re-allocating GLTFLoader on every call
 // ---------------------------------------------------------------------------
-const _dracoLoader = new DRACOLoader();
-_dracoLoader.setDecoderPath(`${import.meta.env.BASE_URL}draco/`);
-_dracoLoader.preload(); // Compile WASM decoder eagerly
-const _sharedLoader = new GLTFLoader();
-_sharedLoader.setDRACOLoader(_dracoLoader);
+// Shared loader removed in favor of glbPreloader caching system
 
 // ---------------------------------------------------------------------------
 // Shared smoke canvas texture — generated once, reused across all sprites
@@ -183,12 +179,10 @@ export const createDealerModel = (scene: THREE.Scene, debugHeadModel: DebugHeadM
     dummyHead.name = 'HEAD';
     dealerGroup.add(dummyHead);
 
-    // Load the selected GLB asynchronously
-    _sharedLoader.load(
-        resolveAssetPath(config.path),
-        (gltf) => {
-            // Use gltf.scene directly — avoids expensive deep-clone on large GLBs
-            const model: THREE.Group = gltf.scene;
+    // Load the selected GLB from cache asynchronously
+    getPreloadedGLB(resolveAssetPath(config.path))
+        .then((gltf) => {
+            const model = clone(gltf.scene) as THREE.Group;
 
             dealerGroup.remove(dummyHead);
 
@@ -267,6 +261,20 @@ export const createDealerModel = (scene: THREE.Scene, debugHeadModel: DebugHeadM
                                 if (isDefaultHead) {
                                     configureDealerMaterialEffects(m, { pixelate: true, blur: true });
                                 }
+
+                                if (ultraPerformance) {
+                                    m.normalMap = null;
+                                    m.bumpMap = null;
+                                    m.roughnessMap = null;
+                                    m.metalnessMap = null;
+                                    m.aoMap = null;
+                                    m.lightMap = null;
+                                    m.emissiveMap = null;
+                                } else if (balancedPerformance) {
+                                    m.normalMap = null;
+                                    m.bumpMap = null;
+                                }
+
                                 m.needsUpdate = true;
                             }
                         }
@@ -331,12 +339,10 @@ export const createDealerModel = (scene: THREE.Scene, debugHeadModel: DebugHeadM
 
             // Keep the loaded model fully visible by avoiding any large group-level offset.
             dealerGroup.position.set(0, 0, 0);
-        },
-        undefined,
-        (error: ErrorEvent | Error) => {
+        })
+        .catch((error) => {
             console.warn(`[Dealer] Failed to load GLB "${config.path}":`, error);
-        }
-    );
+        });
 
     // Group-level transform (identical for all models)
     dealerGroup.position.set(0, 3.0, -8);

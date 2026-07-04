@@ -9,6 +9,7 @@ export const cleanScene = (scene: THREE.Scene) => {
 
     const disposeResource = (resource: any) => {
         if (!resource || disposedResources.has(resource)) return;
+        if (resource.userData?.isCachedAsset) return; // Skip cached assets to avoid corruption
         disposedResources.add(resource);
         try {
             if (typeof resource.dispose === 'function') {
@@ -24,13 +25,16 @@ export const cleanScene = (scene: THREE.Scene) => {
 
         materials.forEach((mat) => {
             if (!mat || disposedResources.has(mat)) return;
+            if (mat.userData?.isCachedAsset) return; // Keep cached materials alive
 
             const materialWithMaps = mat as THREE.Material & Record<string, any>;
             const textureKeys = ['map', 'alphaMap', 'normalMap', 'roughnessMap', 'metalnessMap', 'emissiveMap', 'aoMap', 'bumpMap', 'displacementMap', 'envMap'];
 
             textureKeys.forEach((key) => {
-                if (materialWithMaps[key] instanceof THREE.Texture) {
-                    disposeResource(materialWithMaps[key]);
+                const tex = materialWithMaps[key];
+                if (tex instanceof THREE.Texture) {
+                    if (tex.userData?.isCachedAsset) return; // Keep cached textures alive
+                    disposeResource(tex);
                 }
             });
 
