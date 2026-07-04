@@ -506,7 +506,8 @@ const serializeRoomForClient = (room) => {
             items: Array.isArray(player.items) ? player.items.slice() : [],
             isHandcuffed: !!player.isHandcuffed,
             isSawedActive: !!player.isSawedActive,
-            disconnected: !!player.disconnected
+            disconnected: !!player.disconnected,
+            model: player.model
         })) : [],
         settings: room.settings,
         gameState: safeGameState,
@@ -658,7 +659,11 @@ const joinSocketToRoom = (socket, room, playerName, authId) => {
             }
             
             // Re-assign socket ID and reset state
+            const wasHost = room.hostId === oldPlayer.id;
             oldPlayer.id = socket.id;
+            if (wasHost) {
+                room.hostId = socket.id;
+            }
             oldPlayer.name = newPlayerName; // Update name in case it changed
             oldPlayer.ready = false;
             
@@ -692,6 +697,35 @@ const joinSocketToRoom = (socket, room, playerName, authId) => {
         finalName = `${newPlayerName}(${suffix})`;
     }
 
+    // Name-based head model mapping (case-insensitive prefixes)
+    const ALL_PLAYER_MODELS = ['AADISH', 'ASP', 'YASH', 'YUVRAJ'];
+    const lowerFinal = finalName.toLowerCase();
+    let preferredModel = null;
+    if (lowerFinal.startsWith('aadish')) {
+        preferredModel = 'AADISH';
+    } else if (lowerFinal.startsWith('yuvraj')) {
+        preferredModel = 'YUVRAJ';
+    } else if (lowerFinal.startsWith('yash')) {
+        preferredModel = 'YASH';
+    } else if (lowerFinal.startsWith('aditya')) {
+        preferredModel = 'ASP';
+    }
+
+    const usedModels = room.players.map(p => p.model).filter(Boolean);
+    let assignedModel;
+
+    if (preferredModel && !usedModels.includes(preferredModel)) {
+        assignedModel = preferredModel;
+    } else {
+        const availableModels = ALL_PLAYER_MODELS.filter(m => !usedModels.includes(m));
+        if (availableModels.length > 0) {
+            const randIndex = Math.floor(Math.random() * availableModels.length);
+            assignedModel = availableModels[randIndex];
+        } else {
+            assignedModel = preferredModel || ALL_PLAYER_MODELS[Math.floor(Math.random() * ALL_PLAYER_MODELS.length)];
+        }
+    }
+
     const playerColor = PLAYER_COLORS[room.players.length % PLAYER_COLORS.length];
     const newPlayer = {
         id: socket.id,
@@ -703,7 +737,8 @@ const joinSocketToRoom = (socket, room, playerName, authId) => {
         items: [],
         isHandcuffed: false,
         isSawedActive: false,
-        authId: cleanAuthId
+        authId: cleanAuthId,
+        model: assignedModel
     };
 
     room.players.push(newPlayer);
@@ -811,6 +846,10 @@ io.on('connection', (socket) => {
 
     socket.on('createRoom', ({ playerName, settings, authId }) => {
         if (shouldThrottle({ type: 'LOBBY' })) return;
+        if (!authId) {
+            socket.emit('error', 'Authentication required. Please sign in to access multiplayer.');
+            return;
+        }
         
         let roomId;
         let attempts = 0;
@@ -833,6 +872,10 @@ io.on('connection', (socket) => {
 
     socket.on('joinRoom', ({ roomId, playerName, authId }) => {
         if (shouldThrottle({ type: 'LOBBY' })) return;
+        if (!authId) {
+            socket.emit('error', 'Authentication required. Please sign in to access multiplayer.');
+            return;
+        }
         const safeRoomId = sanitizeRoomId(roomId);
         if (!safeRoomId) {
             socket.emit('error', 'Invalid room code.');
@@ -850,6 +893,10 @@ io.on('connection', (socket) => {
 
     socket.on('quickJoin', ({ playerName, settings, authId }) => {
         if (shouldThrottle({ type: 'LOBBY' })) return;
+        if (!authId) {
+            socket.emit('error', 'Authentication required. Please sign in to access multiplayer.');
+            return;
+        }
         
         let availableRoom = null;
         for (const room of rooms.values()) {
@@ -870,7 +917,7 @@ io.on('connection', (socket) => {
             } while (rooms.has(roomId) && attempts < MAX_ROOM_ID_ATTEMPTS);
 
             const hostName = sanitizePlayerName(playerName);
-            const room = createRoomObject(roomId, socket.id, hostName, settings);
+            const room = createRoomObject(roomId, socket.id, hostName, { ...settings, isPrivate: false });
             rooms.set(roomId, room);
 
             joinSocketToRoom(socket, room, playerName, authId);

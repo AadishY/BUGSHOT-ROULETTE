@@ -255,6 +255,7 @@ export function useMultiplayer() {
             setConnectionStatus('');
             connectionAttemptsRef.current = 0;
             setRoom(null);
+            setPlayerId(null);
             setError(null);
             lastJoinRef.current = null;
         }

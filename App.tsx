@@ -277,14 +277,19 @@ export default function App() {
     } else if (appState === 'GAME') {
       const phase = spGame.gameState.phase;
       if (phase === 'GAME_OVER') {
-        audioManager.playMusic('endscreen');
+        const isMultiWin = spGame.gameState.winner === 'PLAYER' && (spGame.gameState.isThreePlayer || spGame.gameState.isFourPlayer);
+        if (isMultiWin) {
+          audioManager.playJackpotIntro();
+        } else {
+          audioManager.playMusic('endscreen');
+        }
       } else if (phase === 'INTRO' || phase === 'BOOT') {
         audioManager.playMusic('menu');
       } else {
         audioManager.playMusic('gameplay');
       }
     }
-  }, [appState, spGame.gameState.phase]);
+  }, [appState, spGame.gameState.phase, spGame.gameState.winner, spGame.gameState.isThreePlayer, spGame.gameState.isFourPlayer]);
 
   const [isHardModeSelected, setIsHardModeSelected] = useState(false);
 
@@ -1133,6 +1138,11 @@ export default function App() {
             gameData.hpOverride, // Apply HP from settings
             room.settings
           );
+          spGame.setGameState(prev => ({
+            ...prev,
+            localPlayerId: mp.playerId || '',
+            multiplayerState: room
+          }));
         }, 100);
       });
 
@@ -1560,18 +1570,20 @@ export default function App() {
     }
   }, [appState, mp.clearError]);
 
-  // Sync multiplayerState in gameState with mp.room dynamically
+  // Sync multiplayerState and localPlayerId in gameState with mp.room dynamically
   useEffect(() => {
     if (appState === 'GAME' && mp.room) {
       spGame.setGameState(prev => {
-        if (prev.multiplayerState === mp.room) return prev;
+        const nextLocalPlayerId = mp.playerId || prev.localPlayerId || '';
+        if (prev.multiplayerState === mp.room && prev.localPlayerId === nextLocalPlayerId) return prev;
         return {
           ...prev,
+          localPlayerId: nextLocalPlayerId,
           multiplayerState: mp.room
         };
       });
     }
-  }, [mp.room, appState, spGame.setGameState]);
+  }, [mp.room, appState, mp.playerId, spGame.setGameState]);
 
   // Sync state broadcast from host to keep clients in sync
   // Throttled to at most once per 350ms to prevent spam during rapid item-use chains

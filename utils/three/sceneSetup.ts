@@ -305,6 +305,12 @@ export const initThreeScene = (container: HTMLElement, props: any): SceneContext
         if (Object.prototype.hasOwnProperty.call(roomDebugModels, playerIndex)) {
             return roomDebugModels[playerIndex] as PlayerModelKey;
         }
+        if (playerId && props.gameState?.multiplayerState?.players) {
+            const playerInRoom = props.gameState.multiplayerState.players.find((p: any) => p.id === playerId);
+            if (playerInRoom && playerInRoom.model) {
+                return playerInRoom.model as PlayerModelKey;
+            }
+        }
         return getDefaultModelForPlayer(playerId, seat);
     };
 

@@ -37,7 +37,7 @@ export const handleContract = async (
 
         if (hasJackpot) {
             const nextImmunity = Math.max(0, (player.jackpotImmunityShots ?? 0) - 1);
-            setPlayer(p => ({ ...p, jackpotImmunityShots: nextImmunity }));
+            setPlayer(p => ({ ...p, jackpotImmunityShots: nextImmunity, hasJackpotWinActive: nextImmunity > 0 ? p.hasJackpotWinActive : false }));
             if (nextImmunity <= 0) {
                 audioManager.stopJackpotMusic();
             }

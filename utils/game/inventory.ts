@@ -20,7 +20,12 @@ export const getCustomWeightedItem = (weights: Record<string, number>): ItemType
 };
 
 export const resolveJackpotOutcome = (random: number = Math.random()): 'JACKPOT' | 'NORMAL' | 'LOSE' => {
-    if (random < 0.20) return 'JACKPOT';
+    // Math.random() generates a pseudo-random number in the range [0, 1)
+    // Probability distribution:
+    // - JACKPOT (3 Shot Immunity): 12% chance (random < 0.12)
+    // - NORMAL (1 Shot Immunity): 38% chance (0.12 <= random < 0.50)
+    // - LOSE (No Win): 50% chance (random >= 0.50)
+    if (random < 0.12) return 'JACKPOT';
     if (random < 0.50) return 'NORMAL';
     return 'LOSE';
 };

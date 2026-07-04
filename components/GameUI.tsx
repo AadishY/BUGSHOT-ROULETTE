@@ -536,6 +536,7 @@ export const GameUI: React.FC<GameUIProps> = ({
                         matchData={matchData}
                         isDebugUsed={gameState.isDebugUsed}
                         isMultiplayer={isMultiplayer}
+                        isThreeOrFourPlayerWin={gameState.winner === 'PLAYER' && (gameState.isThreePlayer || gameState.isFourPlayer)}
                     />
                 )}
 
@@ -1013,9 +1014,11 @@ export const GameUI: React.FC<GameUIProps> = ({
                             <span className="font-extrabold uppercase text-[7px] tracking-widest text-amber-400 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.95)]">
                                 {playerName} IMMUNITY ({player.jackpotImmunityShots})
                             </span>
-                            <div className="w-[40px] h-[40px] sm:w-[90px] sm:h-[90px] object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,0.85)] mt-0.5 bg-transparent border border-amber-500/40 rounded-lg p-1 bg-amber-950/20">
-                                <img src="/sticker/sticker9.gif" alt="Jackpot Pinned" className="w-full h-full object-contain bg-transparent" />
-                            </div>
+                            {player.hasJackpotWinActive && (
+                                <div className="w-[40px] h-[40px] sm:w-[90px] sm:h-[90px] object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,0.85)] mt-0.5 bg-transparent border border-amber-500/40 rounded-lg p-1 bg-amber-950/20">
+                                    <img src="/sticker/sticker9.gif" alt="Jackpot Pinned" className="w-full h-full object-contain bg-transparent" />
+                                </div>
+                            )}
                         </div>
                     )}
                     {(dealer.jackpotImmunityShots || 0) > 0 && (
@@ -1023,9 +1026,11 @@ export const GameUI: React.FC<GameUIProps> = ({
                             <span className="font-extrabold uppercase text-[7px] tracking-widest text-stone-400 drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.95)]">
                                 {isMultiplayer ? getOpponentName() : 'DEALER'} IMMUNITY ({dealer.jackpotImmunityShots})
                             </span>
-                            <div className="w-[40px] h-[40px] sm:w-[90px] sm:h-[90px] object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,0.85)] mt-0.5 bg-transparent border border-stone-500/40 rounded-lg p-1 bg-stone-950/20">
-                                <img src="/sticker/sticker9.gif" alt="Jackpot Pinned" className="w-full h-full object-contain bg-transparent" />
-                            </div>
+                            {dealer.hasJackpotWinActive && (
+                                <div className="w-[40px] h-[40px] sm:w-[90px] sm:h-[90px] object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,0.85)] mt-0.5 bg-transparent border border-stone-500/40 rounded-lg p-1 bg-stone-950/20">
+                                    <img src="/sticker/sticker9.gif" alt="Jackpot Pinned" className="w-full h-full object-contain bg-transparent" />
+                                </div>
+                            )}
                         </div>
                     )}
                 </>

@@ -291,7 +291,11 @@ export const performShot = async (
 
             if (hasJackpot) {
                 // Decrement jackpot shots
-                setPlayer(p => ({ ...p, jackpotImmunityShots: nextImmunity }));
+                setPlayer(p => ({ 
+                    ...p, 
+                    jackpotImmunityShots: nextImmunity,
+                    hasJackpotWinActive: nextImmunity > 0 ? p.hasJackpotWinActive : false
+                }));
                 if (nextImmunity <= 0) {
                     audioManager.stopJackpotMusic();
                 }
@@ -392,7 +396,11 @@ export const performShot = async (
 
             if (hasJackpot) {
                 // Decrement jackpot shots
-                setDealer(d => ({ ...d, jackpotImmunityShots: nextImmunity }));
+                setDealer(d => ({ 
+                    ...d, 
+                    jackpotImmunityShots: nextImmunity,
+                    hasJackpotWinActive: nextImmunity > 0 ? d.hasJackpotWinActive : false
+                }));
                 if (nextImmunity <= 0) {
                     audioManager.stopJackpotMusic();
                 }

@@ -105,6 +105,12 @@ export const DebugOverlay: React.FC<DebugOverlayProps> = ({
         if (Object.prototype.hasOwnProperty.call(debugModels, index)) {
             return debugModels[index] as PlayerModelKey;
         }
+        if (gameState.multiplayerState?.players) {
+            const playerInRoom = gameState.multiplayerState.players.find((p: any) => p.id === playerId);
+            if (playerInRoom && playerInRoom.model) {
+                return playerInRoom.model as PlayerModelKey;
+            }
+        }
         return 'DEFAULT';
     };
 

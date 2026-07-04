@@ -585,7 +585,7 @@ export const ThreeScene: React.FC<ThreeSceneProps> = ({
     }, [
         gameState.isMultiplayer,
         gameState.isThreePlayer,
-        gameState.multiplayerState?.players?.map(p => p.id).join(','),
+        gameState.multiplayerState?.players?.map(p => `${p.id}:${p.model || ''}`).join(','),
         Object.entries(gameState.multiplayerState?.debugPlayerModels || {})
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([playerId, modelKey]) => `${playerId}:${modelKey}`)

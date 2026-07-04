@@ -6,3 +6,5 @@ discord integration improvement
 adding discord bot commands 
 item probability improvement
 hdr
+reconnection feature by adding a button of reconnect in multiplayer screen and improving grace period
+

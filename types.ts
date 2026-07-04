@@ -67,6 +67,7 @@ export interface MultiplayerPlayer extends PlayerState {
   name: string;
   color: string;
   ready: boolean;
+  model?: PlayerModelKey;
 }
 
 export interface RoomSettings {
@@ -100,6 +101,7 @@ export interface PlayerState {
   lastTurnItemsUsed?: ItemType[];
   currentTurnItemsUsed?: ItemType[];
   jackpotImmunityShots?: number;
+  hasJackpotWinActive?: boolean;
 }
 
 export interface LogEntry {

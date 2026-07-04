@@ -11,6 +11,7 @@ interface GameOverScreenProps {
     matchData?: MatchStats;
     isDebugUsed?: boolean; // Added
     isMultiplayer?: boolean;
+    isThreeOrFourPlayerWin?: boolean;
 }
 
 const WIN_QUOTES = [
@@ -36,7 +37,7 @@ const LOSS_QUOTES = [
 ];
 
 
-export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onResetGame, matchData, isDebugUsed, isMultiplayer }) => {
+export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onResetGame, matchData, isDebugUsed, isMultiplayer, isThreeOrFourPlayerWin }) => {
     const [stats, setStats] = useState<GameStats | null>(null);
     const [selectedMPMatch, setSelectedMPMatch] = useState<any>(null);
     const [finalScore, setFinalScore] = useState(0);
@@ -121,7 +122,17 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ winner, onResetG
             </div>
 
             {/* Main Header */}
-            <div className="relative mb-12 text-center animate-in zoom-in-95 fade-in duration-1000 px-4">
+            <div className="relative mb-12 text-center animate-in zoom-in-95 fade-in duration-1000 px-4 flex flex-col items-center">
+                {isThreeOrFourPlayerWin && (
+                    <div className="mb-6 flex flex-col items-center animate-bounce">
+                        <div className="w-[100px] h-[100px] md:w-[150px] md:h-[150px] object-contain drop-shadow-[0_0_20px_rgba(245,158,11,0.6)] bg-transparent border-2 border-amber-500/50 rounded-2xl p-2 bg-amber-950/30 backdrop-blur-md">
+                            <img src="/sticker/sticker9.gif" alt="Jackpot Winner" className="w-full h-full object-contain bg-transparent" />
+                        </div>
+                        <span className="mt-2 text-xs md:text-sm font-black tracking-[0.4em] text-amber-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] uppercase animate-pulse">
+                            ✨ ULTIMATE CHAMPION ✨
+                        </span>
+                    </div>
+                )}
                 <div className={`text-6xl md:text-9xl font-black tracking-tighter mb-4 px-2 relative inline-block ${winner === 'PLAYER' ? 'text-green-500' : 'text-red-700'}`}>
                     <span className="relative z-10">{winner === 'PLAYER' ? 'VICTORY' : 'ELIMINATED'}</span>
                     <div className={`absolute -inset-x-8 inset-y-4 blur-3xl -z-10 opacity-30 ${winner === 'PLAYER' ? 'bg-green-500' : 'bg-red-600'}`} />

@@ -319,10 +319,10 @@ export const useGameLogic = () => {
       normalModeState: undefined
     });
       audioManager.stopJackpotMusic();
-    setPlayer({ hp: MAX_HP, maxHp: MAX_HP, items: [], isHandcuffed: false, isSawedActive: false, luckycharmsUsed: 0, isFlashbanged: false, jackpotImmunityShots: 0 });
-    setDealer({ hp: MAX_HP, maxHp: MAX_HP, items: [], isHandcuffed: false, isSawedActive: false, luckycharmsUsed: 0, isFlashbanged: false, jackpotImmunityShots: 0 });
-    setPlayer3({ hp: MAX_HP, maxHp: MAX_HP, items: [], isHandcuffed: false, isSawedActive: false, luckycharmsUsed: 0, isFlashbanged: false, jackpotImmunityShots: 0 });
-    setPlayer4({ hp: MAX_HP, maxHp: MAX_HP, items: [], isHandcuffed: false, isSawedActive: false, luckycharmsUsed: 0, isFlashbanged: false, jackpotImmunityShots: 0 });
+    setPlayer({ hp: MAX_HP, maxHp: MAX_HP, items: [], isHandcuffed: false, isSawedActive: false, luckycharmsUsed: 0, isFlashbanged: false, jackpotImmunityShots: 0, hasJackpotWinActive: false });
+    setDealer({ hp: MAX_HP, maxHp: MAX_HP, items: [], isHandcuffed: false, isSawedActive: false, luckycharmsUsed: 0, isFlashbanged: false, jackpotImmunityShots: 0, hasJackpotWinActive: false });
+    setPlayer3({ hp: MAX_HP, maxHp: MAX_HP, items: [], isHandcuffed: false, isSawedActive: false, luckycharmsUsed: 0, isFlashbanged: false, jackpotImmunityShots: 0, hasJackpotWinActive: false });
+    setPlayer4({ hp: MAX_HP, maxHp: MAX_HP, items: [], isHandcuffed: false, isSawedActive: false, luckycharmsUsed: 0, isFlashbanged: false, jackpotImmunityShots: 0, hasJackpotWinActive: false });
     setLogs([]);
     setKnownShell(null);
     setAnim({
@@ -526,6 +526,7 @@ export const useGameLogic = () => {
         isFlashbanged: false, 
         luckycharmsUsed: 0, 
         jackpotImmunityShots: 0,
+        hasJackpotWinActive: false,
         hp: targetHp, 
         maxHp: targetHp,
         ...(resetItems ? { items: [] } : {})
@@ -538,6 +539,7 @@ export const useGameLogic = () => {
         isFlashbanged: false, 
         luckycharmsUsed: 0, 
         jackpotImmunityShots: 0,
+        hasJackpotWinActive: false,
         hp: targetHp, 
         maxHp: targetHp,
         ...(resetItems ? { items: [] } : {})
@@ -550,6 +552,7 @@ export const useGameLogic = () => {
         isFlashbanged: false, 
         luckycharmsUsed: 0, 
         jackpotImmunityShots: 0,
+        hasJackpotWinActive: false,
         hp: targetHp, 
         maxHp: targetHp,
         items: p3ItemsOverride || (resetItems ? [] : p3.items)
@@ -562,6 +565,7 @@ export const useGameLogic = () => {
         isFlashbanged: false, 
         luckycharmsUsed: 0, 
         jackpotImmunityShots: 0,
+        hasJackpotWinActive: false,
         hp: targetHp, 
         maxHp: targetHp,
         items: p4ItemsOverride || (resetItems ? [] : p4.items)
@@ -1030,7 +1034,14 @@ export const useGameLogic = () => {
         const targetImmune = targetState.jackpotImmunityShots !== undefined && targetState.jackpotImmunityShots > 0;
         
         if (targetImmune) {
-          targetSetter(p => ({ ...p, jackpotImmunityShots: Math.max(0, (p.jackpotImmunityShots || 0) - 1) }));
+          targetSetter(p => {
+            const nextImmunity = Math.max(0, (p.jackpotImmunityShots || 0) - 1);
+            return {
+              ...p,
+              jackpotImmunityShots: nextImmunity,
+              hasJackpotWinActive: nextImmunity > 0 ? p.hasJackpotWinActive : false
+            };
+          });
           addLog(`${targetName.toUpperCase()}'S JACKPOT SHIELD BLOCKED SHOT!`, 'safe');
         } else {
           damage = isSawed ? 2 : 1;
@@ -1475,17 +1486,17 @@ export const useGameLogic = () => {
                 audioManager.playSound('slotmachine', { dimMusic: shouldDimMusic });
                 setAnim(p => ({ ...p, triggerJackpot: p.triggerJackpot + 1, jackpotResult: spinOutcome }));
                 addLog(`${userName.toUpperCase()} SPUN THE JACKPOT MACHINE`, 'info');
-                await wait(3500);
+                await wait(4200);
 
                 if (spinOutcome === 'JACKPOT') {
                     addLog("JACKPOT WIN! IMMUNE TO NEXT 3 SHOTS", 'safe');
                     setOverlayText(`✨ JACKPOT WIN! ✨\n3 SHOT IMMUNITY FOR ${userName.toUpperCase()}`);
-                    userSetter(p => ({ ...p, jackpotImmunityShots: 3 }));
+                    userSetter(p => ({ ...p, jackpotImmunityShots: 3, hasJackpotWinActive: true }));
                     audioManager.playJackpotIntro({ dimMusic: shouldDimMusic });
                 } else if (spinOutcome === 'NORMAL') {
                     addLog("NORMAL WIN! IMMUNE TO NEXT 1 SHOT", 'safe');
                     setOverlayText(`👍 NORMAL WIN! 👍\n1 SHOT IMMUNITY FOR ${userName.toUpperCase()}`);
-                    userSetter(p => ({ ...p, jackpotImmunityShots: (p.jackpotImmunityShots || 0) + 1 }));
+                    userSetter(p => ({ ...p, jackpotImmunityShots: (p.jackpotImmunityShots || 0) + 1, hasJackpotWinActive: false }));
                 } else {
                     addLog("NO WIN. TRY AGAIN", 'neutral');
                     setOverlayText("❌ LOSE ❌\nBETTER LUCK NEXT TIME");
@@ -1727,19 +1738,19 @@ export const useGameLogic = () => {
         addLog(`${userName} SPUN THE JACKPOT MACHINE`, 'info');
 
         // Let the spin happen
-        await wait(3500);
+        await wait(4200);
 
         const setOwner = user === 'PLAYER' ? setPlayer : setDealer;
 
         if (outcome === 'JACKPOT') {
           addLog("JACKPOT WIN! IMMUNE TO NEXT 3 SHOTS", 'safe');
           setOverlayText(`✨ JACKPOT WIN! ✨\n3 SHOT IMMUNITY FOR ${userName.toUpperCase()}`);
-          setOwner(p => ({ ...p, jackpotImmunityShots: 3 }));
+          setOwner(p => ({ ...p, jackpotImmunityShots: 3, hasJackpotWinActive: true }));
           audioManager.playJackpotIntro({ dimMusic: shouldDimMusic });
         } else if (outcome === 'NORMAL') {
           addLog("NORMAL WIN! IMMUNE TO NEXT 1 SHOT", 'safe');
           setOverlayText(`👍 NORMAL WIN! 👍\n1 SHOT IMMUNITY FOR ${userName.toUpperCase()}`);
-          setOwner(p => ({ ...p, jackpotImmunityShots: (p.jackpotImmunityShots || 0) + 1 }));
+          setOwner(p => ({ ...p, jackpotImmunityShots: (p.jackpotImmunityShots || 0) + 1, hasJackpotWinActive: false }));
         } else {
           addLog("NO WIN. TRY AGAIN", 'neutral');
           setOverlayText("❌ LOSE ❌\nBETTER LUCK NEXT TIME");
