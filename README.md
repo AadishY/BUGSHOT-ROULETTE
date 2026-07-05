@@ -213,30 +213,6 @@ npm run build
 </div>
 
 ---
- 
-## 📜 Changelog
-
-### v2.1.2 (Slot Machine Model & Staggered Spins)
-- **Upgraded Jackpot Slot Machine 3D Model**: Developed a larger, premium 3D cabinet housing featuring three separate horizontal cylinders, golden chrome panels, vertical divider trims, and high-definition vertical emoji canvas strips.
-- **Realistic Staggered Spin Physics**: Programmed sequential wheel braking (Left reel at 1.8s, Center at 2.15s, Right at 2.5s) decelerating smoothly via a trigonometric ease-out curve.
-- **Jackpot Probability Redesign**: Tuned spin outcome distributions to: 20% Jackpot Win (7-7-7 reel match), 30% Normal Win (Cherry-Cherry-Lemon match), and 50% No Win (Apple-Lemon-Bell match).
-
-### v2.1.1 (Performance Safeguards & Jackpot Refinements)
-- **Performance Detector**: Integrated real-time frame rate monitoring in the ThreeJS canvas loop. Automatically prompts players with a CRT warning pop-up if the frame rate dips below 30 FPS, giving quick controls to switch graphics profiles to Balanced or Potato.
-- **Exempt Blank Shots**: Prevent blank shells (fired by either the Player or Dealer) from decrementing the player's Jackpot immunity. Only live shots and Blood Contract sacrifices decrement immunity.
-- **Blood Contract Integration**: Using a Blood Contract with active Jackpot immunity consumes 1 immunity shot and triggers the RCT healing animation sequence instead of permanently losing 1 HP.
-- **Persistent Jackpot Loop**: Ensured that the Jackpot win background loop persists across round transitions and shotgun reloads if the player still has remaining immunity.
-
-### v2.1.0 (Jackpot Protocols & Audio Dimming)
-- **Jackpot Audio Fixed**: Realigned slot machine audio pathways (`slotmachine`, `jackpot`, and `jackpotloop` files loaded properly).
-- **Dynamic Music Dimming**: Game music dims to 35% during standard item SFX, and to 5% (almost muted) while the Jackpot looping immunity theme is active.
-- **Inventory Icon Fix**: Jackpot item now successfully renders a golden Coins icon in inventory, loot, and debug screens.
-- **Drop Rate Balancing**:
-  - Normal Mode: Jackpot is a rare drop (2.0%) just above Totem (1.0%).
-  - Hard Mode: Totem (1.0%) and Jackpot (1.0%) are equal rarity.
-- **Debug Relocation**: Reorganized Developer console panel, renaming the 'Tarot' section to 'Item Power' and moving the Jackpot forced win cheats there.
- 
----
 
 ## 🏆 Credits & Acknowledgments
 
