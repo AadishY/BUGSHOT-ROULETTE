@@ -9,7 +9,7 @@
 
 # 🎯 BUGSHOT ROULETTE
 
-<img src="public/image/Banner.jpg" alt="Bugshot Roulette Banner" width="100%" style="border-radius: 12px;" />
+<img src="public/image/banner.webp" alt="Bugshot Roulette Banner" width="100%" style="border-radius: 12px;" />
 
 ### A Deadly Game of Chance
 

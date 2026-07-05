@@ -49,16 +49,16 @@
   ],
   "screenshots": [
     {
-      "src": "/image/preview-normalquality.jpg",
+      "src": "/image/banner.webp",
       "sizes": "1920x1080",
-      "type": "image/jpeg",
+      "type": "image/webp",
       "form_factor": "wide",
       "label": "Bugshot Roulette Wide Gameplay"
     },
     {
-      "src": "/image/preview-lowquality.jpg",
+      "src": "/image/banner mobile.webp",
       "sizes": "1080x1920",
-      "type": "image/jpeg",
+      "type": "image/webp",
       "form_factor": "narrow",
       "label": "Bugshot Roulette Mobile Gameplay"
     }
