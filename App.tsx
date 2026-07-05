@@ -998,6 +998,19 @@ export default function App() {
               }));
               break;
             }
+            case 'SYNC_MP_GAME_OVER': {
+              const resolvedWinner = mp.playerId === mp.room?.hostId
+                ? action.winner
+                : (action.winner === 'PLAYER' ? 'DEALER' : 'PLAYER');
+
+              spGame.setGameState(prev => ({
+                ...prev,
+                winner: resolvedWinner,
+                phase: 'GAME_OVER',
+                multiModeState: action.multiModeState || prev.multiModeState
+              }));
+              break;
+            }
             case 'SYNC_STATE':
               // Deep sync if host tells us the ground truth
               // CRITICAL: We must invert the perspective for the remote player
@@ -1519,6 +1532,24 @@ export default function App() {
 
         // If match is over, don't start a new round
         if (pWin >= winsNeeded || oWin >= winsNeeded) {
+          if (isHost) {
+            mp.sendImmediateAction(mp.room.id, {
+              type: 'SYNC_MP_GAME_OVER',
+              winner,
+              multiModeState: { playerWins: pWin, opponentWins: oWin }
+            });
+          }
+
+          const resolvedWinner = mp.playerId === mp.room.hostId
+            ? winner
+            : (winner === 'PLAYER' ? 'DEALER' : 'PLAYER');
+
+          spGame.setGameState(prev => ({
+            ...prev,
+            winner: resolvedWinner,
+            phase: 'GAME_OVER',
+            multiModeState: { playerWins: pWin, opponentWins: oWin }
+          }));
           return;
         }
 
@@ -1897,6 +1928,9 @@ export default function App() {
             ? {
                 ...spGame.matchStats,
                 isMultiplayer: true,
+                result: spGame.gameState.winner === 'PLAYER' || (spGame.gameState.winner === null && spGame.gameState.turnOwner === 'PLAYER')
+                  ? 'WIN'
+                  : 'LOSS',
                 mpPlayers: mp.room.players.map((p: any) => {
                   const isMe = p.id === mp.playerId;
                   const isHost = p.id === mp.room.hostId;

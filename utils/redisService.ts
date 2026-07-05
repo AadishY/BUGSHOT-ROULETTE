@@ -147,14 +147,8 @@ const createMatchHistorySignature = (entry: any): string => {
     ].join('|');
 };
 
-export const mergeGameStats = (localStats?: GameStats | null, remoteStats?: GameStats | null): GameStats => {
-    const base = localStats ? { ...emptyStats(), ...localStats } : emptyStats();
-    const incoming = remoteStats ? { ...emptyStats(), ...remoteStats } : emptyStats();
-
-    const mergedMatchHistory = [
-        ...(base.matchHistory || []),
-        ...(incoming.matchHistory || [])
-    ]
+const buildStatsFromMatchHistory = (matchHistory: any[]): GameStats => {
+    const dedupedEntries = (matchHistory || [])
         .filter((entry: any) => entry && typeof entry === 'object')
         .reduce((acc: { seen: Set<string>; entries: any[] }, entry: any) => {
             const signature = createMatchHistorySignature(entry);
@@ -168,19 +162,38 @@ export const mergeGameStats = (localStats?: GameStats | null, remoteStats?: Game
         .entries.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0))
         .slice(0, 20);
 
+    const totals = dedupedEntries.reduce((acc: GameStats, entry: any) => {
+        if (entry.result === 'WIN') acc.wins += 1;
+        else if (entry.result === 'LOSS') acc.losses += 1;
+
+        acc.totalRounds += entry.roundsSurvived || 0;
+        acc.shotsFired += entry.shotsFired || 0;
+        acc.shotsHit += entry.shotsHit || 0;
+        acc.selfShots += entry.selfShots || 0;
+        acc.damageDealt += entry.damageDealt || 0;
+
+        const itemCount = Object.values(entry.itemsUsed || {})
+            .reduce((sum: number, count: any) => sum + (Number(count) || 0), 0);
+        acc.itemsUsed += itemCount;
+        acc.highestRound = Math.max(acc.highestRound, entry.roundsSurvived || 0);
+        return acc;
+    }, emptyStats());
+
     return {
-        wins: (base.wins || 0) + (incoming.wins || 0),
-        losses: (base.losses || 0) + (incoming.losses || 0),
-        totalRounds: (base.totalRounds || 0) + (incoming.totalRounds || 0),
-        shotsFired: (base.shotsFired || 0) + (incoming.shotsFired || 0),
-        shotsHit: (base.shotsHit || 0) + (incoming.shotsHit || 0),
-        selfShots: (base.selfShots || 0) + (incoming.selfShots || 0),
-        damageDealt: (base.damageDealt || 0) + (incoming.damageDealt || 0),
-        itemsUsed: (base.itemsUsed || 0) + (incoming.itemsUsed || 0),
-        highestRound: Math.max(base.highestRound || 0, incoming.highestRound || 0),
-        // itemPoints and mostUsedItem removed
-        matchHistory: mergedMatchHistory
+        ...totals,
+        matchHistory: dedupedEntries
     };
+};
+
+export const mergeGameStats = (localStats?: GameStats | null, remoteStats?: GameStats | null): GameStats => {
+    const base = localStats ? { ...emptyStats(), ...localStats } : emptyStats();
+    const incoming = remoteStats ? { ...emptyStats(), ...remoteStats } : emptyStats();
+    const mergedHistory = [
+        ...(base.matchHistory || []),
+        ...(incoming.matchHistory || [])
+    ];
+
+    return buildStatsFromMatchHistory(mergedHistory);
 };
 
 export const registerUser = async (username: string, passwordHash: string): Promise<{ success: boolean; error?: string; user?: { username: string; stats: GameStats; isDeveloper?: boolean } }> => {
@@ -337,6 +350,7 @@ export const saveUserStatsToRedis = async (username: string, stats: GameStats): 
         userData.stats = mergedStats;
 
         await executeRedisCommand(['SET', key, JSON.stringify(userData)]);
+        console.info(`[Upstash] Saved stats for ${cleanUsername}`);
         return true;
     } catch (err) {
         console.error(`Failed to sync stats to Redis for ${cleanUsername}:`, err);

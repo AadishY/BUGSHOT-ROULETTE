@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Bell } from 'lucide-react';
 
 interface AnnouncementModalProps {
@@ -7,6 +7,18 @@ interface AnnouncementModalProps {
 }
 
 export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ isOpen, onClose }) => {
+    const [isFrameLoaded, setIsFrameLoaded] = useState(false);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setIsFrameLoaded(false);
+            return;
+        }
+
+        const timer = window.setTimeout(() => setIsFrameLoaded(true), 180);
+        return () => window.clearTimeout(timer);
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     return (
@@ -49,16 +61,29 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ isOpen, on
                     </div>
 
                     <div className="grid grid-cols-1 gap-3">
-                        <div className="relative overflow-hidden rounded-3xl border border-stone-800 bg-black/80 shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/90 pointer-events-none" />
-                            <iframe
-                                className="w-full aspect-video rounded-3xl"
-                                src="https://www.youtube.com/embed/nwWeNF0ljNQ?si=VZKOk7WieMm5P6iK"
-                                title="New Player Models Preview"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                                loading="lazy"
-                            />
+                        <div className="relative overflow-hidden rounded-[1.5rem] border border-stone-800/90 bg-stone-950/90 shadow-[0_16px_50px_rgba(0,0,0,0.85)]">
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(245,158,11,0.18),transparent_55%)] pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/70 pointer-events-none" />
+                            <div className="relative aspect-video w-full overflow-hidden rounded-[1.5rem] bg-stone-950">
+                                {!isFrameLoaded && (
+                                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-stone-950/95">
+                                        <div className="flex flex-col items-center gap-3 text-center">
+                                            <div className="h-10 w-10 animate-spin rounded-full border-2 border-amber-400/40 border-t-amber-300" />
+                                            <p className="text-[10px] uppercase tracking-[0.35em] text-stone-400">Loading preview…</p>
+                                        </div>
+                                    </div>
+                                )}
+                                <iframe
+                                    className={`absolute inset-0 h-full w-full rounded-[1.5rem] border-0 transition-opacity duration-300 ${isFrameLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                    src="https://www.youtube.com/embed/nwWeNF0ljNQ?si=VZKOk7WieMm5P6iK&rel=0&modestbranding=1&playsinline=1&controls=1&showinfo=0"
+                                    title="New Player Models Preview"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                    loading="eager"
+                                    referrerPolicy="strict-origin-when-cross-origin"
+                                    onLoad={() => setIsFrameLoaded(true)}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

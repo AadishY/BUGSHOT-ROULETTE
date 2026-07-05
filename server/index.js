@@ -4,6 +4,9 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import os from 'os';
 import compression from 'compression';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: new URL('.env', import.meta.url) });
 
 const app = express();
 
@@ -49,11 +52,15 @@ const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 if (!REDIS_URL || !REDIS_TOKEN) {
-    console.error("[CRITICAL ERROR] UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN environment variables are missing!");
+    console.warn("[WARN] UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN environment variables are missing. Redis-backed features will be unavailable until they are configured.");
 }
 
 // --- SHARED REDIS PROXY HANDLERS ---
 const handleRedisProxy = async (req, res) => {
+    if (!REDIS_URL || !REDIS_TOKEN) {
+        return res.status(503).json({ error: 'Maybe Aadish Forget to do something? idk message him.' });
+    }
+
     try {
         const response = await fetch(REDIS_URL, {
             method: 'POST',
@@ -72,6 +79,10 @@ const handleRedisProxy = async (req, res) => {
 };
 
 const handleRedisPipelineProxy = async (req, res) => {
+    if (!REDIS_URL || !REDIS_TOKEN) {
+        return res.status(503).json({ error: 'Maybe Aadish Forget to do something? idk message him.' });
+    }
+
     try {
         const response = await fetch(`${REDIS_URL}/pipeline`, {
             method: 'POST',
@@ -193,12 +204,14 @@ const ROOM_ID_PATTERN = /^[0-9]{4}$/;
 const THROTTLE_EXEMPT_ACTIONS = new Set([
     'SHOOT', 'USE_ITEM', 'SELECT_CARD', 'PICKUP_GUN', 'STEAL_ITEM',
     'SYNC_STATE', 'SYNC_THREE_PLAYER_STATE', 'SYNC_ROUND', 'SYNC_THREE_PLAYER_ROUND',
+    'SYNC_MP_GAME_OVER',
     'DEBUG_SYNC_PLAYER', 'DEBUG_SYNC_DEALER', 'DEBUG_SYNC_GAMESTATE',
     'DEBUG_SYNC_THREE_PLAYER', 'DEBUG_SYNC_PLAYER_MODEL', 'DEBUG_SET_PLAYER_MODEL'
 ]);
 const VALID_GAME_ACTIONS = new Set([
     'SHOOT', 'USE_ITEM', 'SELECT_CARD', 'PICKUP_GUN', 'STEAL_ITEM', 'HOVER_TARGET',
     'SYNC_STATE', 'SYNC_THREE_PLAYER_STATE', 'SYNC_ROUND', 'SYNC_THREE_PLAYER_ROUND',
+    'SYNC_MP_GAME_OVER',
     'DEBUG_SYNC_PLAYER', 'DEBUG_SYNC_DEALER', 'DEBUG_SYNC_GAMESTATE',
     'DEBUG_SYNC_THREE_PLAYER', 'DEBUG_SYNC_PLAYER_MODEL', 'DEBUG_SET_PLAYER_MODEL'
 ]);
