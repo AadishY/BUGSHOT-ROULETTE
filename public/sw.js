@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bugshot-roulette-v5';
+const CACHE_NAME = 'bugshot-roulette-v6';
 const ASSETS_TO_CACHE = [
     '/',
     '/manifest.json'

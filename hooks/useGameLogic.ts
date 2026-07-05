@@ -136,6 +136,15 @@ export const useGameLogic = () => {
     }
   }, [gameState.turnOwner, gameState.phase]);
 
+  // Reset lastTurnWasSkipped flag when phase changes to a turn phase
+  useEffect(() => {
+    if (gameState.phase === 'PLAYER_TURN' || gameState.phase === 'DEALER_TURN' || gameState.phase === 'PLAYER3_TURN' || gameState.phase === 'PLAYER4_TURN') {
+      if (gameState.lastTurnWasSkipped) {
+        setGameState(prev => ({ ...prev, lastTurnWasSkipped: false }));
+      }
+    }
+  }, [gameState.phase]);
+
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [knownShell, setKnownShell] = useState<ShellType | null>(null);
 

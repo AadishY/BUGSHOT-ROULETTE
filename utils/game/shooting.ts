@@ -574,12 +574,17 @@ export const performShot = async (
     const ownerPhase = nextOwner === 'PLAYER' ? 'PLAYER_TURN' : 'DEALER_TURN';
     setGameState(prev => ({ ...prev, turnOwner: nextOwner, phase: ownerPhase, lastTurnWasSkipped: skipped }));
     
+    // Note: lastTurnWasSkipped should be cleared when the skipped player's turn comes around again
+    // This will be handled by the turn transition logic in useGameLogic
+    
     if (skipped) {
         if (nextOwner === 'PLAYER') {
-            setCameraView('GUN');
-            setAimTarget('CHOOSING');
+            // Player gets another turn - release the gun so they can use items
+            setCameraView('PLAYER');
+            setAimTarget('IDLE');
         } else {
-            setCameraView('DEALER_GUN');
+            // Dealer gets another turn
+            setCameraView('DEALER');
             setAimTarget('IDLE');
         }
     } else {
